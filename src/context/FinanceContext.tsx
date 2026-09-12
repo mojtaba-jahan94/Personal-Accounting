@@ -8,6 +8,10 @@ import {
   Debt,
   Cheque,
   Currency,
+  ThemeConfig,
+  AccentColor,
+  GlassIntensity,
+  AnimationSpeed,
 } from '../types';
 import { DEFAULT_ACCOUNTS, DEFAULT_CATEGORIES, getDemoData } from '../utils/sampleData';
 
@@ -21,6 +25,7 @@ interface FinanceContextType {
   cheques: Cheque[];
   currency: Currency;
   darkMode: boolean;
+  themeConfig: ThemeConfig;
 
   // Actions
   addTransaction: (tx: Omit<Transaction, 'id'>) => void;
@@ -55,6 +60,7 @@ interface FinanceContextType {
 
   setCurrency: (c: Currency) => void;
   toggleDarkMode: () => void;
+  updateThemeConfig: (config: Partial<ThemeConfig>) => void;
   loadDemoData: () => void;
   exportDataJSON: () => string;
   importDataJSON: (jsonStr: string) => boolean;
@@ -77,7 +83,15 @@ const STORAGE_KEYS = {
   DEBTS: 'pf_debts_v1',
   CHEQUES: 'pf_cheques_v1',
   CURRENCY: 'pf_currency_v1',
-  THEME: 'pf_theme_v1',
+  THEME_CONFIG: 'pf_theme_config_v2',
+};
+
+const DEFAULT_THEME_CONFIG: ThemeConfig = {
+  mode: 'dark',
+  accent: 'indigo',
+  glassIntensity: 'medium',
+  ambientOrbs: true,
+  animationSpeed: 'fast',
 };
 
 export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -94,7 +108,6 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS);
     if (saved) return JSON.parse(saved);
-    // If first time, load demo data so app is not completely empty
     const demo = getDemoData();
     return demo.transactions;
   });
@@ -131,13 +144,50 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return (localStorage.getItem(STORAGE_KEYS.CURRENCY) as Currency) || 'toman';
   });
 
-  const [darkMode, setDarkMode] = useState<boolean>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.THEME);
-    if (saved !== null) return saved === 'dark';
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const [themeConfig, setThemeConfig] = useState<ThemeConfig>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.THEME_CONFIG);
+    if (saved) {
+      try {
+        return { ...DEFAULT_THEME_CONFIG, ...JSON.parse(saved) };
+      } catch (e) {
+        return DEFAULT_THEME_CONFIG;
+      }
+    }
+    return DEFAULT_THEME_CONFIG;
   });
 
-  // Sync to localStorage
+  const darkMode = themeConfig.mode === 'dark';
+
+  // Apply Theme Settings to Root Document
+  useEffect(() => {
+    const root = document.documentElement;
+    if (themeConfig.mode === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    root.setAttribute('data-accent', themeConfig.accent);
+    root.setAttribute('data-glass', themeConfig.glassIntensity);
+    root.setAttribute('data-anim', themeConfig.animationSpeed);
+
+    localStorage.setItem(STORAGE_KEYS.THEME_CONFIG, JSON.stringify(themeConfig));
+  }, [themeConfig]);
+
+  const toggleDarkMode = () => {
+    setThemeConfig(prev => ({
+      ...prev,
+      mode: prev.mode === 'dark' ? 'light' : 'dark',
+    }));
+  };
+
+  const updateThemeConfig = (updates: Partial<ThemeConfig>) => {
+    setThemeConfig(prev => ({
+      ...prev,
+      ...updates,
+    }));
+  };
+
+  // Sync state to localStorage
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(accounts));
   }, [accounts]);
@@ -170,23 +220,11 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     localStorage.setItem(STORAGE_KEYS.CURRENCY, currency);
   }, [currency]);
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.THEME, darkMode ? 'dark' : 'light');
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [darkMode]);
-
-  const toggleDarkMode = () => setDarkMode(prev => !prev);
-
-  // Transaction Actions with Account Balance update
+  // Transaction Actions
   const addTransaction = (tx: Omit<Transaction, 'id'>) => {
     const id = 'tx-' + Date.now();
     const newTx: Transaction = { ...tx, id };
 
-    // Update account balances
     setAccounts(prev =>
       prev.map(acc => {
         if (newTx.type === 'expense' && acc.id === newTx.accountId) {
@@ -212,7 +250,6 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const updateTransaction = (updatedTx: Transaction) => {
-    // Revert old transaction effect, apply new transaction effect
     const oldTx = transactions.find(t => t.id === updatedTx.id);
     if (!oldTx) return;
 
@@ -264,7 +301,6 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const deleteTransaction = (id: string) => {
     const tx = transactions.find(t => t.id === id);
     if (tx) {
-      // Revert account balance effect
       setAccounts(prev =>
         prev.map(acc => {
           if (tx.type === 'expense' && acc.id === tx.accountId) {
@@ -345,7 +381,6 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       prev.map(g => (g.id === id ? { ...g, currentAmount: g.currentAmount + amount } : g))
     );
     if (accountId) {
-      // Deduct from account balance as an expense or goal savings transfer
       setAccounts(prev =>
         prev.map(a => (a.id === accountId ? { ...a, balance: a.balance - amount } : a))
       );
@@ -413,7 +448,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const exportDataJSON = (): string => {
     const data = {
-      version: 1,
+      version: 2,
       exportDate: new Date().toISOString(),
       accounts,
       transactions,
@@ -423,6 +458,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       debts,
       cheques,
       currency,
+      themeConfig,
     };
     return JSON.stringify(data, null, 2);
   };
@@ -438,6 +474,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (data.debts) setDebts(data.debts);
       if (data.cheques) setCheques(data.cheques);
       if (data.currency) setCurrency(data.currency);
+      if (data.themeConfig) setThemeConfig(data.themeConfig);
       return true;
     } catch (e) {
       console.error('Error importing backup:', e);
@@ -477,6 +514,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         cheques,
         currency,
         darkMode,
+        themeConfig,
         addTransaction,
         updateTransaction,
         deleteTransaction,
@@ -502,6 +540,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         changeChequeStatus,
         setCurrency,
         toggleDarkMode,
+        updateThemeConfig,
         loadDemoData,
         exportDataJSON,
         importDataJSON,

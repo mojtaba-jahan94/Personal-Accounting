@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FinanceProvider } from './context/FinanceContext';
+import { FinanceProvider, useFinance } from './context/FinanceContext';
 import { Header } from './components/layout/Header';
 import { Sidebar, TabType } from './components/layout/Sidebar';
 import { BottomNav } from './components/layout/BottomNav';
@@ -17,6 +17,7 @@ import { SettingsView } from './components/settings/SettingsView';
 import { Transaction } from './types';
 
 const MainApp: React.FC = () => {
+  const { themeConfig } = useFinance();
   const [currentTab, setCurrentTab] = useState<TabType>('dashboard');
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
@@ -67,33 +68,43 @@ const MainApp: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col transition-colors relative z-10">
+    <div className="min-h-screen flex flex-col transition-colors relative">
+      {/* Ambient Lighting Orbs (Controlled by Theme Settings) */}
+      {themeConfig.ambientOrbs && (
+        <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+          <div className="absolute -top-32 -left-32 w-80 sm:w-96 h-80 sm:h-96 bg-indigo-500/15 dark:bg-indigo-600/20 rounded-full blur-3xl animate-float-optimized" />
+          <div
+            className="absolute top-1/3 -right-32 w-80 sm:w-96 h-80 sm:h-96 bg-purple-500/12 dark:bg-purple-600/15 rounded-full blur-3xl animate-float-optimized"
+            style={{ animationDelay: '2s' }}
+          />
+          <div
+            className="absolute -bottom-32 left-1/4 w-80 sm:w-96 h-80 sm:h-96 bg-emerald-500/12 dark:bg-emerald-600/12 rounded-full blur-3xl animate-float-optimized"
+            style={{ animationDelay: '4s' }}
+          />
+        </div>
+      )}
+
       <Header
         onOpenTransactionModal={() => handleOpenTransactionModal()}
         onOpenTransferModal={() => setIsTransferModalOpen(true)}
       />
 
-      <div className="flex-1 flex max-w-7xl w-full mx-auto">
-        {/* Desktop Liquid Glass Sidebar */}
+      <div className="flex-1 flex max-w-7xl w-full mx-auto relative z-10">
         <Sidebar currentTab={currentTab} onSelectTab={setCurrentTab} />
 
-        {/* Main Content Area */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 pb-24 lg:pb-12">
           {renderCurrentView()}
         </main>
       </div>
 
-      {/* Mobile Bottom Navigation Bar */}
       <BottomNav
         currentTab={currentTab}
         onSelectTab={setCurrentTab}
         onOpenTransactionModal={() => handleOpenTransactionModal()}
       />
 
-      {/* PWA Mobile Install Banner */}
       <InstallPrompt />
 
-      {/* Modals */}
       <TransactionModal
         isOpen={isTransactionModalOpen}
         onClose={() => {

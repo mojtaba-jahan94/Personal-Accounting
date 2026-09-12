@@ -55,7 +55,7 @@ export interface Goal {
   color?: string;
 }
 
-export type DebtType = 'debt' | 'credit'; // debt = بدهی من به دیگران, credit = طلب من از دیگران
+export type DebtType = 'debt' | 'credit';
 
 export interface Debt {
   id: string;
@@ -69,8 +69,8 @@ export interface Debt {
   isSettled: boolean;
 }
 
-export type ChequeType = 'receivable' | 'payable'; // چک دریافتی یا پرداختی
-export type ChequeStatus = 'pending' | 'passed' | 'bounced'; // در جریان، پاس شده، برگشت خورده
+export type ChequeType = 'receivable' | 'payable';
+export type ChequeStatus = 'pending' | 'passed' | 'bounced';
 
 export interface Cheque {
   id: string;
@@ -80,12 +80,25 @@ export interface Cheque {
   bankName: string;
   chequeNumber: string;
   sayadNumber?: string;
-  partyName: string; // صادرکننده یا دریافت‌کننده
+  partyName: string;
   status: ChequeStatus;
   notes?: string;
 }
 
 export type Currency = 'toman' | 'rial';
+
+// Theme Studio Pro Types
+export type AccentColor = 'indigo' | 'emerald' | 'rose' | 'amber' | 'cyan' | 'purple';
+export type GlassIntensity = 'low' | 'medium' | 'high';
+export type AnimationSpeed = 'fast' | 'normal' | 'none';
+
+export interface ThemeConfig {
+  mode: 'dark' | 'light';
+  accent: AccentColor;
+  glassIntensity: GlassIntensity;
+  ambientOrbs: boolean;
+  animationSpeed: AnimationSpeed;
+}
 
 export interface FilterOptions {
   searchQuery: string;
