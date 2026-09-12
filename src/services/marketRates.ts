@@ -112,8 +112,8 @@ export const DEFAULT_SOURCE_CONFIG: MarketSourceConfig = {
   telegramUsdChannel: 'tahran_sabza',
   lastTelegramMessageGold: '',
   lastTelegramMessageUsd: '',
-  goldSourceUnit: 'auto',
-  usdSourceUnit: 'auto',
+  goldSourceUnit: 'toman',
+  usdSourceUnit: 'toman',
   tgjuSourceUnit: 'rial',
 };
 
@@ -168,8 +168,9 @@ export function normalizePriceToToman(
   // Auto-detection based on typical Iranian market thresholds
   switch (symbolId) {
     case 'gold_18k':
-      // 1 gram gold is normally between 1M and 15M Tomans (10M to 150M Rials)
-      return rawPrice >= 12000000 ? Math.round(rawPrice / 10) : Math.round(rawPrice);
+      // In Iranian telegram channels, gold prices are in Tomans (e.g. 4,520,000 or 23,807,655).
+      // Only values >= 40,000,000 (40M) are in Rials (40M Rials = 4M Tomans).
+      return rawPrice >= 40000000 ? Math.round(rawPrice / 10) : Math.round(rawPrice);
 
     case 'coin_emami':
       // Full coin is between 15M and 120M Tomans (150M to 1.2B Rials)

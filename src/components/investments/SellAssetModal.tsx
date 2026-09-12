@@ -25,6 +25,7 @@ interface SellAssetModalProps {
 export const SellAssetModal: React.FC<SellAssetModalProps> = ({ isOpen, onClose, asset }) => {
   const { accounts, currency, sellAsset } = useFinance();
 
+  const [inputUnit, setInputUnit] = useState<'toman' | 'rial'>(currency);
   const [amountToSell, setAmountToSell] = useState<string>('');
   const [sellingPrice, setSellingPrice] = useState<string>('');
   const [sellFee, setSellFee] = useState<string>('');
@@ -35,8 +36,11 @@ export const SellAssetModal: React.FC<SellAssetModalProps> = ({ isOpen, onClose,
 
   useEffect(() => {
     if (asset) {
+      setInputUnit(currency);
+      const isRial = currency === 'rial';
+      const basePrice = asset.currentPrice || asset.buyPrice;
       setAmountToSell(String(asset.amount));
-      setSellingPrice(String(asset.currentPrice || asset.buyPrice));
+      setSellingPrice(isRial ? String(basePrice * 10) : String(basePrice));
       setSellFee('');
       setSellDate(getTodayJalali());
       setNotes(`فروش ${asset.name}`);
@@ -44,7 +48,20 @@ export const SellAssetModal: React.FC<SellAssetModalProps> = ({ isOpen, onClose,
         setSelectedAccountId(accounts[0].id);
       }
     }
-  }, [asset, accounts]);
+  }, [asset, accounts, currency]);
+
+  const handleUnitToggle = (newUnit: 'toman' | 'rial') => {
+    if (newUnit === inputUnit) return;
+    setInputUnit(newUnit);
+    const numP = parseFloat(sellingPrice);
+    if (!isNaN(numP) && numP > 0) {
+      setSellingPrice(newUnit === 'rial' ? Math.round(numP * 10).toString() : Math.round(numP / 10).toString());
+    }
+    const numF = parseFloat(sellFee);
+    if (!isNaN(numF) && numF > 0) {
+      setSellFee(newUnit === 'rial' ? Math.round(numF * 10).toString() : Math.round(numF / 10).toString());
+    }
+  };
 
   if (!isOpen || !asset) return null;
 
@@ -52,9 +69,12 @@ export const SellAssetModal: React.FC<SellAssetModalProps> = ({ isOpen, onClose,
   const numSellingPrice = parseFloat(sellingPrice) || 0;
   const numSellFee = parseFloat(sellFee) || 0;
 
-  // Real-time calculations
-  const grossProceeds = Math.round(numAmount * numSellingPrice);
-  const netProceeds = Math.max(0, grossProceeds - numSellFee);
+  // Real-time calculations in canonical Tomans
+  const canonicalSellingPrice = inputUnit === 'rial' ? Math.round(numSellingPrice / 10) : numSellingPrice;
+  const canonicalSellFee = inputUnit === 'rial' ? Math.round(numSellFee / 10) : numSellFee;
+
+  const grossProceeds = Math.round(numAmount * canonicalSellingPrice);
+  const netProceeds = Math.max(0, grossProceeds - canonicalSellFee);
   const costOfSold = Math.round(numAmount * asset.buyPrice);
   const realizedProfitLoss = netProceeds - costOfSold;
   const roiPercent = costOfSold > 0 ? (realizedProfitLoss / costOfSold) * 100 : 0;
@@ -84,8 +104,8 @@ export const SellAssetModal: React.FC<SellAssetModalProps> = ({ isOpen, onClose,
     sellAsset({
       assetId: asset.id,
       amountToSell: numAmount,
-      pricePerUnit: numSellingPrice,
-      fee: numSellFee > 0 ? numSellFee : undefined,
+      pricePerUnit: canonicalSellingPrice,
+      fee: canonicalSellFee > 0 ? canonicalSellFee : undefined,
       depositToAccountId: depositToAccount ? selectedAccountId : undefined,
       description: notes.trim() || `فروش ${toPersianDigits(numAmount)} ${asset.unitName} ${asset.name}`,
       date: sellDate,
@@ -174,18 +194,44 @@ export const SellAssetModal: React.FC<SellAssetModalProps> = ({ isOpen, onClose,
             )}
           </div>
 
-          {/* Price per unit */}
+          {/* Price per unit + Unit Switcher */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-              قیمت فروش هر واحد ({currency === 'toman' ? 'تومان' : 'ریال'})
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                قیمت فروش هر واحد ({inputUnit === 'toman' ? 'تومان' : 'ریال'})
+              </label>
+              <div className="flex items-center gap-1 bg-slate-200/70 dark:bg-slate-800 p-0.5 rounded-xl text-[11px] font-bold">
+                <button
+                  type="button"
+                  onClick={() => handleUnitToggle('toman')}
+                  className={`px-2 py-0.5 rounded-lg transition ${
+                    inputUnit === 'toman'
+                      ? 'bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                  }`}
+                >
+                  تومان
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleUnitToggle('rial')}
+                  className={`px-2 py-0.5 rounded-lg transition ${
+                    inputUnit === 'rial'
+                      ? 'bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                  }`}
+                >
+                  ریال
+                </button>
+              </div>
+            </div>
             <input
               type="number"
               min="0"
               required
               value={sellingPrice}
               onChange={e => setSellingPrice(e.target.value)}
-              placeholder="قیمت توافقی فروش هر واحد"
+              placeholder={inputUnit === 'toman' ? 'قیمت توافقی فروش به تومان...' : 'قیمت توافقی فروش به ریال...'}
               className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-bold font-mono outline-none focus:border-amber-500 transition"
             />
           </div>
@@ -193,7 +239,7 @@ export const SellAssetModal: React.FC<SellAssetModalProps> = ({ isOpen, onClose,
           {/* Sell Fee / Commission */}
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-              کارمزد / کمیسیون فروش ({currency === 'toman' ? 'تومان' : 'ریال'}) - اختیاری
+              کارمزد / کمیسیون فروش ({inputUnit === 'toman' ? 'تومان' : 'ریال'}) - اختیاری
             </label>
             <input
               type="number"
@@ -201,7 +247,7 @@ export const SellAssetModal: React.FC<SellAssetModalProps> = ({ isOpen, onClose,
               step="any"
               value={sellFee}
               onChange={e => setSellFee(e.target.value)}
-              placeholder="مثلاً: ۵۰,۰۰۰ تومان"
+              placeholder={`مثلاً: ${inputUnit === 'toman' ? '۵۰,۰۰۰ تومان' : '۵۰۰,۰۰۰ ریال'}`}
               className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-bold font-mono outline-none focus:border-amber-500 transition"
             />
           </div>

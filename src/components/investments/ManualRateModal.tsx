@@ -20,8 +20,10 @@ export const ManualRateModal: React.FC<ManualRateModalProps> = ({
 }) => {
   if (!isOpen || !rate) return null;
 
-  const [inputUnit, setInputUnit] = useState<'toman' | 'rial'>('toman');
-  const [customPrice, setCustomPrice] = useState<string>(rate.priceToman.toString());
+  const [inputUnit, setInputUnit] = useState<'toman' | 'rial'>(currency);
+  const [customPrice, setCustomPrice] = useState<string>(
+    currency === 'rial' ? (rate.priceToman * 10).toString() : rate.priceToman.toString()
+  );
 
   const handleUnitChange = (newUnit: 'toman' | 'rial') => {
     if (newUnit === inputUnit) return;

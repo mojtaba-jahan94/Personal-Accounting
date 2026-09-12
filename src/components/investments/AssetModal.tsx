@@ -36,6 +36,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({
   const [marketSymbol, setMarketSymbol] = useState<string>('gold_18k');
   const [amount, setAmount] = useState('');
   const [unitName, setUnitName] = useState('گرم');
+  const [inputUnit, setInputUnit] = useState<'toman' | 'rial'>(currency);
   const [buyPrice, setBuyPrice] = useState('');
   const [buyFee, setBuyFee] = useState('');
   const [deductFromAccount, setDeductFromAccount] = useState(false);
@@ -43,6 +44,23 @@ export const AssetModal: React.FC<AssetModalProps> = ({
   const [currentPrice, setCurrentPrice] = useState('');
   const [buyDate, setBuyDate] = useState(getTodayJalali());
   const [notes, setNotes] = useState('');
+
+  const handleUnitToggle = (newUnit: 'toman' | 'rial') => {
+    if (newUnit === inputUnit) return;
+    setInputUnit(newUnit);
+    const numBuy = parseFloat(buyPrice);
+    if (!isNaN(numBuy) && numBuy > 0) {
+      setBuyPrice(newUnit === 'rial' ? Math.round(numBuy * 10).toString() : Math.round(numBuy / 10).toString());
+    }
+    const numCur = parseFloat(currentPrice);
+    if (!isNaN(numCur) && numCur > 0) {
+      setCurrentPrice(newUnit === 'rial' ? Math.round(numCur * 10).toString() : Math.round(numCur / 10).toString());
+    }
+    const numFee = parseFloat(buyFee);
+    if (!isNaN(numFee) && numFee > 0) {
+      setBuyFee(newUnit === 'rial' ? Math.round(numFee * 10).toString() : Math.round(numFee / 10).toString());
+    }
+  };
 
   // Handle template selection and auto-fill current market price
   const handleTemplateChange = (templateName: string) => {
@@ -56,23 +74,26 @@ export const AssetModal: React.FC<AssetModalProps> = ({
       if (t.symbol) {
         const rate = marketRates.find(r => r.id === t.symbol);
         if (rate) {
-          setCurrentPrice(rate.priceToman.toString());
-          if (!buyPrice) setBuyPrice(rate.priceToman.toString());
+          const formatted = inputUnit === 'rial' ? rate.priceToman * 10 : rate.priceToman;
+          setCurrentPrice(formatted.toString());
+          if (!buyPrice) setBuyPrice(formatted.toString());
         }
       }
     }
   };
 
   useEffect(() => {
+    setInputUnit(currency);
+    const isRial = currency === 'rial';
     if (initialAsset) {
       setName(initialAsset.name);
       setType(initialAsset.type);
       setMarketSymbol(initialAsset.marketSymbol || '');
       setAmount(initialAsset.amount.toString());
       setUnitName(initialAsset.unitName);
-      setBuyPrice(initialAsset.buyPrice.toString());
-      setBuyFee(initialAsset.buyFee ? initialAsset.buyFee.toString() : '');
-      setCurrentPrice(initialAsset.currentPrice.toString());
+      setBuyPrice(isRial ? (initialAsset.buyPrice * 10).toString() : initialAsset.buyPrice.toString());
+      setBuyFee(initialAsset.buyFee ? (isRial ? (initialAsset.buyFee * 10).toString() : initialAsset.buyFee.toString()) : '');
+      setCurrentPrice(isRial ? (initialAsset.currentPrice * 10).toString() : initialAsset.currentPrice.toString());
       setBuyDate(initialAsset.buyDate || getTodayJalali());
       setNotes(initialAsset.notes || '');
       setDeductFromAccount(false);
@@ -86,7 +107,8 @@ export const AssetModal: React.FC<AssetModalProps> = ({
       setBuyFee('');
       setDeductFromAccount(false);
       const defaultRate = marketRates.find(r => r.id === defaultT.symbol);
-      const priceStr = defaultRate ? defaultRate.priceToman.toString() : '3740000';
+      const rawPrice = defaultRate ? defaultRate.priceToman : 4520000;
+      const priceStr = (isRial ? rawPrice * 10 : rawPrice).toString();
       setBuyPrice(priceStr);
       setCurrentPrice(priceStr);
       setBuyDate(getTodayJalali());
@@ -95,7 +117,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({
         setSelectedAccountId(accounts[0].id);
       }
     }
-  }, [initialAsset, isOpen, marketRates, accounts]);
+  }, [initialAsset, isOpen, marketRates, accounts, currency]);
 
   if (!isOpen) return null;
 
@@ -114,16 +136,20 @@ export const AssetModal: React.FC<AssetModalProps> = ({
       return;
     }
 
+    const canonicalBuyPrice = inputUnit === 'rial' ? Math.round(numBuyPrice / 10) : numBuyPrice;
+    const canonicalCurrentPrice = inputUnit === 'rial' ? Math.round(numCurrentPrice / 10) : numCurrentPrice;
+    const canonicalBuyFee = inputUnit === 'rial' ? Math.round(numBuyFee / 10) : numBuyFee;
+
     const assetData = {
       name: name.trim(),
       type,
       marketSymbol: marketSymbol || undefined,
       amount: numAmount,
       unitName: unitName.trim() || 'واحد',
-      buyPrice: numBuyPrice,
-      buyFee: numBuyFee > 0 ? numBuyFee : undefined,
-      currentPrice: numCurrentPrice,
-      buyDate,
+      buyPrice: canonicalBuyPrice,
+      buyFee: canonicalBuyFee > 0 ? canonicalBuyFee : undefined,
+      currentPrice: canonicalCurrentPrice > 0 ? canonicalCurrentPrice : canonicalBuyPrice,
+      buyDate: buyDate.trim() || getTodayJalali(),
       notes: notes.trim() || undefined,
     };
 
@@ -226,48 +252,80 @@ export const AssetModal: React.FC<AssetModalProps> = ({
             </div>
           </div>
 
-          {/* Buy Price and Current Price per unit */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-                قیمت خرید هر واحد (تومان)
-              </label>
-              <input
-                type="number"
-                step="any"
-                min="0"
-                required
-                value={buyPrice}
-                onChange={(e) => setBuyPrice(e.target.value)}
-                placeholder="قیمت خرید..."
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold outline-none"
-              />
+          {/* Buy Price and Current Price per unit + Unit Switcher */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                مبالغ و نرخ‌های دارایی:
+              </span>
+              <div className="flex items-center gap-1 bg-slate-200/70 dark:bg-slate-800 p-0.5 rounded-xl text-[11px] font-bold">
+                <button
+                  type="button"
+                  onClick={() => handleUnitToggle('toman')}
+                  className={`px-2.5 py-0.5 rounded-lg transition ${
+                    inputUnit === 'toman'
+                      ? 'bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                  }`}
+                >
+                  تومان
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleUnitToggle('rial')}
+                  className={`px-2.5 py-0.5 rounded-lg transition ${
+                    inputUnit === 'rial'
+                      ? 'bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-xs'
+                      : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                  }`}
+                >
+                  ریال
+                </button>
+              </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center justify-between">
-                <span>قیمت روز (تومان)</span>
-                {marketSymbol && (
-                  <span className="text-[10px] text-amber-500 font-normal">نرخ بازار</span>
-                )}
-              </label>
-              <input
-                type="number"
-                step="any"
-                min="0"
-                required
-                value={currentPrice}
-                onChange={(e) => setCurrentPrice(e.target.value)}
-                placeholder="قیمت روز..."
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold outline-none text-emerald-600 dark:text-emerald-400"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
+                  قیمت خرید هر واحد ({inputUnit === 'toman' ? 'تومان' : 'ریال'})
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  required
+                  value={buyPrice}
+                  onChange={(e) => setBuyPrice(e.target.value)}
+                  placeholder={inputUnit === 'toman' ? 'قیمت خرید به تومان...' : 'قیمت خرید به ریال...'}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1 flex items-center justify-between">
+                  <span>قیمت روز ({inputUnit === 'toman' ? 'تومان' : 'ریال'})</span>
+                  {marketSymbol && (
+                    <span className="text-[10px] text-amber-500 font-normal">نرخ بازار</span>
+                  )}
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  required
+                  value={currentPrice}
+                  onChange={(e) => setCurrentPrice(e.target.value)}
+                  placeholder={inputUnit === 'toman' ? 'قیمت روز به تومان...' : 'قیمت روز به ریال...'}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold outline-none text-emerald-600 dark:text-emerald-400"
+                />
+              </div>
             </div>
           </div>
 
           {/* Buy Fee / Commission */}
           <div>
             <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
-              کارمزد / اجرت / کمیسیون خرید (تومان) - اختیاری
+              کارمزد / اجرت / کمیسیون خرید ({inputUnit === 'toman' ? 'تومان' : 'ریال'}) - اختیاری
             </label>
             <input
               type="number"
@@ -275,7 +333,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({
               min="0"
               value={buyFee}
               onChange={(e) => setBuyFee(e.target.value)}
-              placeholder="مثلاً: ۱۵۰,۰۰۰ تومان"
+              placeholder={`مثلاً: ${inputUnit === 'toman' ? '۱۵۰,۰۰۰ تومان' : '۱,۵۰۰,۰۰۰ ریال'}`}
               className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold outline-none"
             />
           </div>
@@ -310,7 +368,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({
                     ))}
                   </select>
                   <p className="text-[10px] text-slate-400">
-                    مبلغ کل {formatCurrency(totalCost, currency)} از این حساب کسر و تراکنش هزینه ثبت خواهد شد.
+                    مبلغ کل {formatCurrency(inputUnit === 'rial' ? Math.round(totalCost / 10) : totalCost, currency)} از این حساب کسر و تراکنش هزینه ثبت خواهد شد.
                   </p>
                 </div>
               )}
@@ -323,7 +381,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({
               <div className="flex justify-between">
                 <span className="text-slate-500">ارزش کل روز:</span>
                 <span className="font-black text-slate-900 dark:text-white">
-                  {formatCurrency(totalValue, currency)}
+                  {formatCurrency(inputUnit === 'rial' ? Math.round(totalValue / 10) : totalValue, currency)}
                 </span>
               </div>
               <div className="flex justify-between">
@@ -334,7 +392,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({
                   }`}
                 >
                   {profitLoss >= 0 ? '+ ' : ''}
-                  {formatCurrency(profitLoss, currency)} (
+                  {formatCurrency(inputUnit === 'rial' ? Math.round(profitLoss / 10) : profitLoss, currency)} (
                   {totalCost > 0 ? ((profitLoss / totalCost) * 100).toFixed(1) : 0}٪)
                 </span>
               </div>
