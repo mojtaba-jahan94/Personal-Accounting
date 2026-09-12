@@ -49,20 +49,20 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={() => setShowPwaTip(!showPwaTip)}
             title="نصب اپلیکیشن روی گوشی (PWA)"
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 rounded-xl border border-indigo-200/50 dark:border-indigo-800/50 transition shadow-xs"
+            className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 text-xs font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50/80 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 rounded-xl border border-indigo-200/50 dark:border-indigo-800/50 transition shadow-xs"
           >
-            <Smartphone className="w-4 h-4 text-indigo-500" />
-            <span className="hidden sm:inline">نصب برنامه</span>
+            <Smartphone className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-500" />
+            <span className="hidden md:inline">نصب برنامه</span>
           </button>
 
           {/* SMS Assistant button */}
           <button
             onClick={onOpenSmsModal}
-            title="دستیار هوشمند پیامک بانکی (ثبت خودکار از پیامک)"
-            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-bold text-sky-700 dark:text-sky-300 bg-sky-50/80 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900/60 rounded-xl border border-sky-200/50 dark:border-sky-800/50 transition shadow-xs"
+            title="دستیار هوشمند پیامک بانکی"
+            className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 text-xs font-bold text-sky-700 dark:text-sky-300 bg-sky-50/80 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900/60 rounded-xl border border-sky-200/50 dark:border-sky-800/50 transition shadow-xs"
           >
-            <MessageSquareText className="w-4 h-4 text-sky-500" />
-            <span className="hidden sm:inline">پیامک بانک</span>
+            <MessageSquareText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-500" />
+            <span className="hidden md:inline">پیامک بانک</span>
           </button>
 
           {/* Transfer button */}
@@ -78,16 +78,17 @@ export const Header: React.FC<HeaderProps> = ({
           {/* New Transaction Button */}
           <button
             onClick={onOpenTransactionModal}
-            className="flex items-center gap-1.5 px-3.5 py-2 sm:px-4 sm:py-2.5 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 active:scale-95 rounded-2xl shadow-md shadow-indigo-600/30 transition duration-150"
+            className="flex items-center gap-1.5 px-2.5 sm:px-4 py-1.5 sm:py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 active:scale-95 rounded-xl sm:rounded-2xl shadow-md shadow-indigo-600/30 transition duration-150"
+            title="ثبت تراکنش جدید"
           >
-            <Plus className="w-4 h-4" />
-            <span className="hidden xs:inline">ثبت تراکنش</span>
+            <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">ثبت تراکنش</span>
           </button>
 
           {/* Currency Switcher */}
           <button
             onClick={() => setCurrency(currency === 'toman' ? 'rial' : 'toman')}
-            className="px-2.5 py-1.5 text-xs font-bold rounded-xl border border-slate-300/60 dark:border-slate-700 hover:bg-white/40 dark:hover:bg-slate-800 transition text-slate-700 dark:text-slate-300"
+            className="px-2 sm:px-2.5 py-1.5 text-xs font-bold rounded-xl border border-slate-300/60 dark:border-slate-700 hover:bg-white/40 dark:hover:bg-slate-800 transition text-slate-700 dark:text-slate-300"
             title="تغییر واحد پولی"
           >
             {currency === 'toman' ? 'تومان' : 'ریال'}
@@ -96,7 +97,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Theme Toggle */}
           <button
             onClick={toggleDarkMode}
-            className="p-2 rounded-xl border border-slate-300/60 dark:border-slate-700 hover:bg-white/40 dark:hover:bg-slate-800 transition text-slate-600 dark:text-slate-300"
+            className="p-1.5 sm:p-2 rounded-xl border border-slate-300/60 dark:border-slate-700 hover:bg-white/40 dark:hover:bg-slate-800 transition text-slate-600 dark:text-slate-300"
             title="تغییر تم تاریک / روشن"
           >
             {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-600" />}

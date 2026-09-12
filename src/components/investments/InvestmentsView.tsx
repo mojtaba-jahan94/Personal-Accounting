@@ -5,6 +5,8 @@ import { formatCurrency, toPersianDigits } from '../../utils/formatters';
 import { AssetModal } from './AssetModal';
 import { MarketSourceModal } from './MarketSourceModal';
 import { ManualRateModal } from './ManualRateModal';
+import { SellAssetModal } from './SellAssetModal';
+import { CollapsibleSection } from '../common/CollapsibleSection';
 import {
   Coins,
   TrendingUp,
@@ -19,14 +21,18 @@ import {
   Calendar,
   Radio,
   SlidersHorizontal,
+  Layers,
+  ArrowDownLeft,
 } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 
 export const InvestmentsView: React.FC = () => {
-  const { assets, marketRates, currency, deleteAsset, refreshMarketRates, setManualRate } = useFinance();
+  const { assets, marketRates, currency, deleteAsset, refreshMarketRates, setManualRate } =
+    useFinance();
 
   const [isAssetModalOpen, setIsAssetModalOpen] = useState(false);
   const [editingAsset, setEditingAsset] = useState<AssetHolding | null>(null);
+  const [sellingAsset, setSellingAsset] = useState<AssetHolding | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSourceModalOpen, setIsSourceModalOpen] = useState(false);
   const [editingRate, setEditingRate] = useState<MarketRate | null>(null);
@@ -72,7 +78,7 @@ export const InvestmentsView: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Top Banner */}
+      {/* Top Action & Title Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white flex items-center gap-2">
@@ -80,7 +86,7 @@ export const InvestmentsView: React.FC = () => {
             <span>سبد سرمایه‌گذاری و دارایی‌ها</span>
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
-            ردگیری طلای ۱۸ عیار، سکه، دلار، تتر، ارزهای دیجیتال و سود/زیان لحظه‌ای
+            ردگیری طلا، سکه، دلار، تتر، ارز دیجیتال، ثبت خرید و فروش دارایی
           </p>
         </div>
 
@@ -108,88 +114,93 @@ export const InvestmentsView: React.FC = () => {
               setEditingAsset(null);
               setIsAssetModalOpen(true);
             }}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-500 text-white text-xs font-bold shadow-md shadow-amber-500/25 transition"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-500 text-white text-xs font-bold shadow-md shadow-amber-500/25 transition active:scale-95"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
-            <span>ثبت دارایی جدید</span>
+            <span>ثبت خرید دارایی</span>
           </button>
         </div>
       </div>
 
-      {/* Portfolio Value KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="liquid-glass-card p-5">
-          <span className="text-xs font-bold text-slate-500 block mb-1">
-            ارزش کل روز دارایی‌ها (سبد سرمایه)
-          </span>
-          <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-            {formatCurrency(totalCurrentValue, currency)}
-          </h3>
-          <span className="text-[11px] text-slate-400 mt-1 block">
-            تعداد {toPersianDigits(assets.length)} قلم دارایی ثبت شده
-          </span>
-        </div>
-
-        <div className="liquid-glass-card p-5">
-          <span className="text-xs font-bold text-slate-500 block mb-1">
-            مجموع سرمایه‌گذاری اولیه (قیمت خرید)
-          </span>
-          <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-            {formatCurrency(totalCostValue, currency)}
-          </h3>
-          <span className="text-[11px] text-slate-400 mt-1 block">
-            میانگین هزینه خرید
-          </span>
-        </div>
-
-        <div className="liquid-glass-card p-5">
-          <span className="text-xs font-bold text-slate-500 block mb-1">
-            سود / زیان کل سبد
-          </span>
-          <h3
-            className={`text-xl sm:text-2xl font-black tracking-tight ${
-              totalProfitLoss >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
-            }`}
-          >
-            {totalProfitLoss >= 0 ? '+ ' : ''}
-            {formatCurrency(totalProfitLoss, currency)}
-          </h3>
-          <span
-            className={`text-[11px] font-bold mt-1 inline-block px-2 py-0.5 rounded-lg ${
-              totalProfitLoss >= 0
-                ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
-                : 'bg-rose-500/15 text-rose-700 dark:text-rose-300'
-            }`}
-          >
-            بازدهی کل: {totalProfitLoss >= 0 ? '+' : ''}
-            {toPersianDigits(overallRoiPercent.toFixed(1))}٪
-          </span>
-        </div>
-      </div>
-
-      {/* Live Market Rates Ticker Bar */}
-      <div className="liquid-glass-card p-5 space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-            <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">
-              تابلوی زنده قیمت‌های طلا، سکه و ارز در ایران
+      {/* 1. Portfolio KPI Summary (Collapsible) */}
+      <CollapsibleSection
+        storageKey="inv_kpi_summary"
+        title="خلاصه ارزش و بازدهی کل سبد سرمایه‌گذاری"
+        subtitle={`ارزش روز دارایی‌ها و سود/زیان کلی (${toPersianDigits(assets.length)} قلم دارایی)`}
+        icon={<TrendingUp className="w-5 h-5 text-amber-500" />}
+        defaultExpanded={true}
+      >
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+          <div className="p-4 rounded-2xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/30">
+            <span className="text-xs font-bold text-slate-500 block mb-1">
+              ارزش کل روز دارایی‌ها (سبد سرمایه)
+            </span>
+            <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight font-mono">
+              {formatCurrency(totalCurrentValue, currency)}
             </h3>
+            <span className="text-[11px] text-slate-400 mt-1 block">
+              تعداد {toPersianDigits(assets.length)} قلم دارایی ثبت شده
+            </span>
           </div>
-          <div className="flex items-center gap-2 text-[11px] text-slate-400">
-            <span>بروزرسانی: {marketRates[0]?.lastUpdated || 'لحظه‌ای'}</span>
-            <span>•</span>
-            <button
-              onClick={() => setIsSourceModalOpen(true)}
-              className="text-sky-500 hover:underline flex items-center gap-1 font-bold"
+
+          <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/50 dark:border-white/10">
+            <span className="text-xs font-bold text-slate-500 block mb-1">
+              مجموع بهای خرید اولیه (سرمایه پرداختی)
+            </span>
+            <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight font-mono">
+              {formatCurrency(totalCostValue, currency)}
+            </h3>
+            <span className="text-[11px] text-slate-400 mt-1 block">میانگین هزینه کل خرید</span>
+          </div>
+
+          <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/50 dark:border-white/10">
+            <span className="text-xs font-bold text-slate-500 block mb-1">
+              سود / زیان کل سبد
+            </span>
+            <h3
+              className={`text-xl sm:text-2xl font-black tracking-tight font-mono ${
+                totalProfitLoss >= 0
+                  ? 'text-emerald-600 dark:text-emerald-400'
+                  : 'text-rose-600 dark:text-rose-400'
+              }`}
             >
-              <Radio className="w-3 h-3" />
-              <span>تنظیم منبع</span>
-            </button>
+              {totalProfitLoss >= 0 ? '+ ' : ''}
+              {formatCurrency(totalProfitLoss, currency)}
+            </h3>
+            <span
+              className={`text-[11px] font-bold mt-1 inline-block px-2 py-0.5 rounded-lg ${
+                totalProfitLoss >= 0
+                  ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                  : 'bg-rose-500/15 text-rose-700 dark:text-rose-300'
+              }`}
+            >
+              بازدهی کل: {totalProfitLoss >= 0 ? '+' : ''}
+              {toPersianDigits(overallRoiPercent.toFixed(1))}٪
+            </span>
           </div>
         </div>
+      </CollapsibleSection>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+      {/* 2. Live Market Rates Ticker Bar (Collapsible) */}
+      <CollapsibleSection
+        storageKey="inv_market_rates_ticker"
+        title="تابلوی زنده قیمت‌های طلا، سکه و ارز در ایران"
+        subtitle={`منبع قیمت‌ها: بروزرسانی ${marketRates[0]?.lastUpdated || 'لحظه‌ای'}`}
+        icon={<Radio className="w-5 h-5 text-sky-500" />}
+        defaultExpanded={true}
+        headerAction={
+          <button
+            onClick={e => {
+              e.stopPropagation();
+              setIsSourceModalOpen(true);
+            }}
+            className="text-sky-500 hover:underline flex items-center gap-1 text-xs font-bold px-2 py-1"
+          >
+            <span>تنظیم منبع</span>
+          </button>
+        }
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 pt-1">
           {marketRates.map(rate => (
             <div
               key={rate.id}
@@ -227,199 +238,228 @@ export const InvestmentsView: React.FC = () => {
                   }`}
                   title={rate.source}
                 >
-                  {rate.isManual ? '✏️ قیمت دستی شما' : (rate.source || 'خودکار')}
+                  {rate.isManual ? '✏️ قیمت دستی' : rate.source || 'خودکار'}
                 </span>
                 <span className="text-[9px] text-slate-400 opacity-75">تنظیم</span>
               </div>
             </div>
           ))}
         </div>
-      </div>
+      </CollapsibleSection>
 
-      {/* Asset Holdings and Allocation Chart */}
+      {/* 3 & 4. Asset Holdings and Allocation Chart */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Holdings List (2 cols) */}
-        <div className="lg:col-span-2 liquid-glass-card p-5 sm:p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-base font-black text-slate-900 dark:text-white">
-                دارایی‌های ثبت‌شده در سبد شما
-              </h3>
-              <p className="text-xs text-slate-400">فهرست جزئیات خرید، مقدار و سود/زیان</p>
+        <div className="lg:col-span-2">
+          <CollapsibleSection
+            storageKey="inv_holdings_list"
+            title="دارایی‌های ثبت‌شده در سبد شما"
+            subtitle="خرید، فروش، مقدار و سود/زیان لحظه‌ای هر دارایی"
+            icon={<Layers className="w-5 h-5 text-amber-500" />}
+            defaultExpanded={true}
+            headerAction={
+              <button
+                onClick={e => {
+                  e.stopPropagation();
+                  setEditingAsset(null);
+                  setIsAssetModalOpen(true);
+                }}
+                className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 px-2 py-1"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>ثبت خرید</span>
+              </button>
+            }
+          >
+            <div className="divide-y divide-slate-200/40 dark:divide-white/10 pt-1">
+              {assets.length === 0 ? (
+                <div className="text-center py-12 text-slate-400 text-xs">
+                  هنوز هیچ دارایی (طلا، ارز، رمزارز و...) در سبد ثبت نشده است. با دکمه بالا دارایی جدید
+                  ثبت کنید.
+                </div>
+              ) : (
+                assets.map(asset => {
+                  const totalAssetValue = asset.amount * asset.currentPrice;
+                  const totalAssetCost = asset.amount * asset.buyPrice;
+                  const assetProfit = totalAssetValue - totalAssetCost;
+                  const roi = totalAssetCost > 0 ? (assetProfit / totalAssetCost) * 100 : 0;
+
+                  return (
+                    <div
+                      key={asset.id}
+                      className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-white/40 dark:hover:bg-slate-800/40 transition rounded-2xl px-2"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 font-bold text-xs">
+                          <Coins className="w-5 h-5" />
+                        </div>
+
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-sm font-black text-slate-900 dark:text-white">
+                              {asset.name}
+                            </h4>
+                            <span className="text-xs font-bold px-2 py-0.5 rounded-lg bg-slate-200/60 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                              {toPersianDigits(asset.amount)} {asset.unitName}
+                            </span>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mt-1">
+                            <span>خرید: {formatCurrency(asset.buyPrice, currency)}</span>
+                            <span>•</span>
+                            <span className="text-slate-600 dark:text-slate-300">
+                              قیمت روز: {formatCurrency(asset.currentPrice, currency)}
+                            </span>
+                            {asset.buyDate && (
+                              <>
+                                <span>•</span>
+                                <span>تاریخ: {toPersianDigits(asset.buyDate)}</span>
+                              </>
+                            )}
+                            {asset.notes && (
+                              <>
+                                <span>•</span>
+                                <span className="truncate max-w-[150px]">{asset.notes}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-0 border-slate-100 dark:border-slate-800">
+                        <div className="text-right sm:text-left">
+                          <div className="text-sm sm:text-base font-black text-slate-900 dark:text-white font-mono">
+                            {formatCurrency(totalAssetValue, currency)}
+                          </div>
+                          <div
+                            className={`text-xs font-bold font-mono ${
+                              assetProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'
+                            }`}
+                          >
+                            {assetProfit >= 0 ? '+ ' : ''}
+                            {formatCurrency(assetProfit, currency)} ({toPersianDigits(roi.toFixed(1))}
+                            ٪)
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          {/* Sell Asset Button */}
+                          <button
+                            onClick={() => setSellingAsset(asset)}
+                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500 text-amber-700 dark:text-amber-300 hover:text-white text-xs font-bold transition shadow-xs active:scale-95"
+                            title="فروش بخشی یا تمام این دارایی"
+                          >
+                            <ArrowDownLeft className="w-3.5 h-3.5" />
+                            <span>فروش</span>
+                          </button>
+
+                          {/* Edit Button */}
+                          <button
+                            onClick={() => {
+                              setEditingAsset(asset);
+                              setIsAssetModalOpen(true);
+                            }}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-white/40 dark:hover:bg-slate-800 transition"
+                            title="ویرایش دارایی"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+
+                          {/* Delete Button */}
+                          <button
+                            onClick={() => handleDelete(asset.id)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-white/40 dark:hover:bg-slate-800 transition"
+                            title="حذف"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
-            <button
-              onClick={() => {
-                setEditingAsset(null);
-                setIsAssetModalOpen(true);
-              }}
-              className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>افزودن دارایی</span>
-            </button>
-          </div>
-
-          <div className="divide-y divide-slate-200/40 dark:divide-white/10">
-            {assets.length === 0 ? (
-              <div className="text-center py-12 text-slate-400 text-xs">
-                هنوز هیچ دارایی (طلا، ارز، رمزارز و...) در سبد ثبت نشده است. با دکمه بالا اولین دارایی خود را ثبت کنید.
-              </div>
-            ) : (
-              assets.map(asset => {
-                const totalAssetValue = asset.amount * asset.currentPrice;
-                const totalAssetCost = asset.amount * asset.buyPrice;
-                const assetProfit = totalAssetValue - totalAssetCost;
-                const roi = totalAssetCost > 0 ? (assetProfit / totalAssetCost) * 100 : 0;
-
-                return (
-                  <div
-                    key={asset.id}
-                    className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-white/40 dark:hover:bg-slate-800/40 transition rounded-2xl px-2"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 font-bold text-xs">
-                        <Coins className="w-5 h-5" />
-                      </div>
-
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-sm font-black text-slate-900 dark:text-white">
-                            {asset.name}
-                          </h4>
-                          <span className="text-xs font-bold px-2 py-0.5 rounded-lg bg-slate-200/60 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                            {toPersianDigits(asset.amount)} {asset.unitName}
-                          </span>
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mt-1">
-                          <span>خرید: {formatCurrency(asset.buyPrice, currency)}</span>
-                          <span>•</span>
-                          <span className="text-slate-600 dark:text-slate-300">
-                            قیمت روز: {formatCurrency(asset.currentPrice, currency)}
-                          </span>
-                          {asset.buyDate && (
-                            <>
-                              <span>•</span>
-                              <span>تاریخ: {toPersianDigits(asset.buyDate)}</span>
-                            </>
-                          )}
-                          {asset.notes && (
-                            <>
-                              <span>•</span>
-                              <span className="truncate max-w-[150px]">{asset.notes}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 sm:pt-0 border-t sm:border-0 border-slate-100 dark:border-slate-800">
-                      <div className="text-right sm:text-left">
-                        <div className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
-                          {formatCurrency(totalAssetValue, currency)}
-                        </div>
-                        <div
-                          className={`text-xs font-bold ${
-                            assetProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'
-                          }`}
-                        >
-                          {assetProfit >= 0 ? '+ ' : ''}
-                          {formatCurrency(assetProfit, currency)} ({roi.toFixed(1)}٪)
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-1">
-                        <button
-                          onClick={() => {
-                            setEditingAsset(asset);
-                            setIsAssetModalOpen(true);
-                          }}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-white/40 dark:hover:bg-slate-800"
-                          title="ویرایش دارایی"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(asset.id)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-white/40 dark:hover:bg-slate-800"
-                          title="حذف"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
+          </CollapsibleSection>
         </div>
 
         {/* Portfolio Distribution Donut (1 col) */}
-        <div className="liquid-glass-card p-5 sm:p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-black text-slate-900 dark:text-white">
-              توزیع سبد سرمایه‌گذاری
-            </h3>
-            <span className="text-xs text-slate-400">سهم دارایی‌ها</span>
-          </div>
-
-          {pieData.length === 0 ? (
-            <div className="h-48 flex items-center justify-center text-slate-400 text-xs text-center">
-              دارایی برای رسم نمودار ثبت نشده است
-            </div>
-          ) : (
-            <div>
-              <div className="h-52 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={50}
-                      outerRadius={75}
-                      paddingAngle={4}
-                      dataKey="value"
-                    >
-                      {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} stroke="transparent" />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      formatter={(val: any) => [formatCurrency(Number(val) || 0, currency), 'ارزش']}
-                      contentStyle={{
-                        borderRadius: '1rem',
-                        fontFamily: 'Vazirmatn',
-                        direction: 'rtl',
-                        textAlign: 'right',
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+        <div>
+          <CollapsibleSection
+            storageKey="inv_distribution_donut"
+            title="توزیع سبد سرمایه‌گذاری"
+            subtitle="سهم هر نوع دارایی از کل ارزش"
+            icon={<PieIcon className="w-5 h-5 text-amber-500" />}
+            defaultExpanded={true}
+          >
+            {pieData.length === 0 ? (
+              <div className="h-48 flex items-center justify-center text-slate-400 text-xs text-center">
+                دارایی برای رسم نمودار ثبت نشده است
               </div>
+            ) : (
+              <div className="space-y-4 pt-1">
+                <div className="h-52 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={50}
+                        outerRadius={80}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {pieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(val: any) => [formatCurrency(Number(val), currency), 'ارزش روز']}
+                        contentStyle={{
+                          borderRadius: '16px',
+                          direction: 'rtl',
+                          backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                          borderColor: 'rgba(255,255,255,0.1)',
+                          color: '#fff',
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
 
-              <div className="space-y-2 pt-2 border-t border-slate-200/50 dark:border-white/10">
-                {pieData.map(item => {
-                  const percent = totalCurrentValue > 0 ? ((item.value / totalCurrentValue) * 100).toFixed(1) : '0';
-                  return (
-                    <div key={item.name} className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                        <span className="font-bold text-slate-700 dark:text-slate-300">{item.name}</span>
+                <div className="space-y-2 text-xs">
+                  {pieData.map(d => {
+                    const pct =
+                      totalCurrentValue > 0
+                        ? Math.round((d.value / totalCurrentValue) * 100)
+                        : 0;
+                    return (
+                      <div key={d.name} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="w-2.5 h-2.5 rounded-full"
+                            style={{ backgroundColor: d.color }}
+                          />
+                          <span className="font-bold text-slate-700 dark:text-slate-300">
+                            {d.name}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2 font-mono">
+                          <span>{formatCurrency(d.value, currency)}</span>
+                          <span className="text-slate-400">({toPersianDigits(pct)}٪)</span>
+                        </div>
                       </div>
-                      <span className="font-mono text-slate-500 dark:text-slate-400">
-                        {toPersianDigits(percent)}٪
-                      </span>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </CollapsibleSection>
         </div>
       </div>
 
+      {/* Modals */}
       <AssetModal
         isOpen={isAssetModalOpen}
         onClose={() => {
@@ -429,19 +469,27 @@ export const InvestmentsView: React.FC = () => {
         initialAsset={editingAsset}
       />
 
+      <SellAssetModal
+        isOpen={!!sellingAsset}
+        onClose={() => setSellingAsset(null)}
+        asset={sellingAsset}
+      />
+
       <MarketSourceModal
         isOpen={isSourceModalOpen}
         onClose={() => setIsSourceModalOpen(false)}
-        onRefresh={refreshMarketRates}
+        onRefresh={handleRefresh}
       />
 
-      <ManualRateModal
-        rate={editingRate}
-        currency={currency}
-        isOpen={!!editingRate}
-        onClose={() => setEditingRate(null)}
-        onSave={setManualRate}
-      />
+      {editingRate && (
+        <ManualRateModal
+          isOpen={true}
+          onClose={() => setEditingRate(null)}
+          rate={editingRate}
+          currency={currency}
+          onSave={setManualRate}
+        />
+      )}
     </div>
   );
 };

@@ -15,6 +15,7 @@ import {
 } from '../types';
 import { DEFAULT_ACCOUNTS, DEFAULT_CATEGORIES, getDemoData } from '../utils/sampleData';
 import { getCachedMarketRates, fetchLiveMarketRates, setManualMarketRate, INITIAL_MARKET_RATES } from '../services/marketRates';
+import { getTodayJalali } from '../utils/jalali';
 
 interface FinanceContextType {
   accounts: Account[];
@@ -65,6 +66,14 @@ interface FinanceContextType {
   addAsset: (asset: Omit<AssetHolding, 'id'>) => void;
   updateAsset: (asset: AssetHolding) => void;
   deleteAsset: (id: string) => void;
+  sellAsset: (params: {
+    assetId: string;
+    amountToSell: number;
+    pricePerUnit: number;
+    depositToAccountId?: string;
+    description?: string;
+    date?: string;
+  }) => void;
   refreshMarketRates: () => Promise<void>;
   setManualRate: (id: string, priceToman: number | null) => void;
 
@@ -413,6 +422,52 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setAssets(prev => prev.filter(a => a.id !== id));
   };
 
+  const sellAsset = (params: {
+    assetId: string;
+    amountToSell: number;
+    pricePerUnit: number;
+    depositToAccountId?: string;
+    description?: string;
+    date?: string;
+  }) => {
+    const asset = assets.find(a => a.id === params.assetId);
+    if (!asset) return;
+
+    const remainingAmount = Math.max(0, asset.amount - params.amountToSell);
+    if (remainingAmount <= 0.00001) {
+      setAssets(prev => prev.filter(a => a.id !== params.assetId));
+    } else {
+      setAssets(prev =>
+        prev.map(a => (a.id === params.assetId ? { ...a, amount: remainingAmount } : a))
+      );
+    }
+
+    const totalProceeds = Math.round(params.amountToSell * params.pricePerUnit);
+    if (params.depositToAccountId && totalProceeds > 0) {
+      const txId = 'tx-' + Date.now();
+      const newTx: Transaction = {
+        id: txId,
+        type: 'income',
+        amount: totalProceeds,
+        date: params.date || getTodayJalali(),
+        description:
+          params.description ||
+          `فروش ${params.amountToSell} ${asset.unitName} ${asset.name}`,
+        categoryId: 'cat-invest',
+        accountId: params.depositToAccountId,
+        tags: ['فروش دارایی', asset.name],
+      };
+      setTransactions(prev => [newTx, ...prev]);
+      setAccounts(prev =>
+        prev.map(acc =>
+          acc.id === params.depositToAccountId
+            ? { ...acc, balance: acc.balance + totalProceeds }
+            : acc
+        )
+      );
+    }
+  };
+
   // Transaction Actions
   const addTransaction = (tx: Omit<Transaction, 'id'>) => {
     const id = 'tx-' + Date.now();
@@ -745,6 +800,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         addAsset,
         updateAsset,
         deleteAsset,
+        sellAsset,
         refreshMarketRates,
         setManualRate,
         setCurrency,

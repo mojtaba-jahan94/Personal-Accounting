@@ -90,3 +90,72 @@ export function getDaysInJalaliMonth(year: number, month: number): number {
   const isLeap = (((year - (year > 0 ? 474 : 473)) % 2820 + 474 + 38) * 682) % 2816 < 682;
   return isLeap ? 30 : 29;
 }
+
+export function normalizeJalaliDate(dateStr: string): string {
+  if (!dateStr) return '';
+  const parts = dateStr.replace(/-/g, '/').split('/');
+  if (parts.length !== 3) return dateStr;
+  const y = parts[0].padStart(4, '0');
+  const m = parts[1].padStart(2, '0');
+  const d = parts[2].padStart(2, '0');
+  return `${y}/${m}/${d}`;
+}
+
+export function getJalaliDaysAgo(days: number): string {
+  const now = new Date();
+  now.setDate(now.getDate() - days);
+  const [jy, jm, jd] = gregorianToJalali(now.getFullYear(), now.getMonth() + 1, now.getDate());
+  return `${jy}/${String(jm).padStart(2, '0')}/${String(jd).padStart(2, '0')}`;
+}
+
+export function getJalaliThisMonthRange(): { start: string; end: string } {
+  const now = new Date();
+  const [jy, jm] = gregorianToJalali(now.getFullYear(), now.getMonth() + 1, now.getDate());
+  const daysInMonth = getDaysInJalaliMonth(jy, jm);
+  const start = `${jy}/${String(jm).padStart(2, '0')}/01`;
+  const end = `${jy}/${String(jm).padStart(2, '0')}/${String(daysInMonth).padStart(2, '0')}`;
+  return { start, end };
+}
+
+export function getJalaliLastMonthRange(): { start: string; end: string } {
+  const now = new Date();
+  let [jy, jm] = gregorianToJalali(now.getFullYear(), now.getMonth() + 1, now.getDate());
+  jm -= 1;
+  if (jm < 1) {
+    jm = 12;
+    jy -= 1;
+  }
+  const daysInMonth = getDaysInJalaliMonth(jy, jm);
+  const start = `${jy}/${String(jm).padStart(2, '0')}/01`;
+  const end = `${jy}/${String(jm).padStart(2, '0')}/${String(daysInMonth).padStart(2, '0')}`;
+  return { start, end };
+}
+
+export function getJalaliThreeMonthsRange(): { start: string; end: string } {
+  const today = getTodayJalali();
+  const daysAgo = getJalaliDaysAgo(90);
+  return { start: daysAgo, end: today };
+}
+
+export function getJalaliThisYearRange(): { start: string; end: string } {
+  const now = new Date();
+  const [jy] = gregorianToJalali(now.getFullYear(), now.getMonth() + 1, now.getDate());
+  const start = `${jy}/01/01`;
+  const daysInLastMonth = getDaysInJalaliMonth(jy, 12);
+  const end = `${jy}/12/${String(daysInLastMonth).padStart(2, '0')}`;
+  return { start, end };
+}
+
+export function isDateInJalaliRange(dateStr: string, startDate?: string, endDate?: string): boolean {
+  if (!dateStr) return false;
+  const norm = normalizeJalaliDate(dateStr);
+  if (startDate) {
+    const normStart = normalizeJalaliDate(startDate);
+    if (norm < normStart) return false;
+  }
+  if (endDate) {
+    const normEnd = normalizeJalaliDate(endDate);
+    if (norm > normEnd) return false;
+  }
+  return true;
+}

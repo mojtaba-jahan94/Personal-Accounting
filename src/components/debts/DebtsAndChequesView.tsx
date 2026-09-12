@@ -5,6 +5,7 @@ import { formatCurrency, toPersianDigits } from '../../utils/formatters';
 import { formatJalaliLong } from '../../utils/jalali';
 import { DebtModal } from './DebtModal';
 import { ChequeModal } from './ChequeModal';
+import { CollapsibleSection } from '../common/CollapsibleSection';
 import {
   FileCheck2,
   Users,
@@ -19,6 +20,8 @@ import {
   ArrowDownLeft,
   X,
   Check,
+  Scale,
+  Calendar,
 } from 'lucide-react';
 
 export const DebtsAndChequesView: React.FC = () => {
@@ -92,7 +95,7 @@ export const DebtsAndChequesView: React.FC = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
             مدیریت بدهی، طلب، اقساط و چک‌ها
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -107,9 +110,9 @@ export const DebtsAndChequesView: React.FC = () => {
                 setEditingDebt(null);
                 setIsDebtModalOpen(true);
               }}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm transition"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white text-xs font-black shadow-md shadow-indigo-500/20 transition active:scale-95"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-4 h-4 stroke-[3]" />
               <span>ثبت بدهی / طلب جدید</span>
             </button>
           ) : (
@@ -118,9 +121,9 @@ export const DebtsAndChequesView: React.FC = () => {
                 setEditingCheque(null);
                 setIsChequeModalOpen(true);
               }}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold shadow-sm transition"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white text-xs font-black shadow-md shadow-indigo-500/20 transition active:scale-95"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-4 h-4 stroke-[3]" />
               <span>ثبت چک صیادی</span>
             </button>
           )}
@@ -128,18 +131,22 @@ export const DebtsAndChequesView: React.FC = () => {
       </div>
 
       {/* Tab Switcher */}
-      <div className="flex gap-2 p-1.5 bg-slate-200/70 dark:bg-slate-800 rounded-2xl w-fit">
+      <div className="flex gap-2 p-1.5 liquid-glass rounded-2xl w-fit border border-slate-200/50 dark:border-white/10">
         <button
           onClick={() => setActiveTab('debts')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
             activeTab === 'debts'
-              ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
           <Users className="w-4 h-4" />
           <span>بدهی‌ها، طلب‌ها و اقساط</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800">
+          <span
+            className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+              activeTab === 'debts' ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-800'
+            }`}
+          >
             {toPersianDigits(debts.length)}
           </span>
         </button>
@@ -148,13 +155,17 @@ export const DebtsAndChequesView: React.FC = () => {
           onClick={() => setActiveTab('cheques')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
             activeTab === 'cheques'
-              ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
           }`}
         >
           <FileCheck2 className="w-4 h-4" />
           <span>چک‌های صیادی</span>
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800">
+          <span
+            className={`text-[10px] px-1.5 py-0.5 rounded-full ${
+              activeTab === 'cheques' ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-800'
+            }`}
+          >
             {toPersianDigits(cheques.length)}
           </span>
         </button>
@@ -162,351 +173,339 @@ export const DebtsAndChequesView: React.FC = () => {
 
       {/* Tab 1: Debts and Credits */}
       {activeTab === 'debts' && (
-        <div className="space-y-5">
-          {/* Summary stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="glass-card p-4 border-l-4 border-l-emerald-500 flex items-center justify-between">
-              <div>
-                <span className="text-xs text-slate-500">مجموع طلب‌های وصول نشده (دارایی شما)</span>
-                <h4 className="text-lg font-black text-emerald-600 mt-1">
-                  {formatCurrency(totalCredits, currency)}
-                </h4>
+        <div className="space-y-6">
+          {/* Summary stats (Collapsible) */}
+          <CollapsibleSection
+            storageKey="debts_summary_kpi"
+            title="خلاصه طلب‌ها و بدهی‌های جاری"
+            subtitle="مجموع تعهدات تسویه‌نشده مالی شما"
+            icon={<Scale className="w-5 h-5 text-indigo-500" />}
+            defaultExpanded={true}
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+              <div className="p-4 rounded-2xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-800/30 flex items-center justify-between">
+                <div>
+                  <span className="text-xs text-slate-500">
+                    مجموع طلب‌های وصول‌نشده (دارایی شما)
+                  </span>
+                  <h4 className="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-1 font-mono">
+                    {formatCurrency(totalCredits, currency)}
+                  </h4>
+                </div>
+                <ArrowDownLeft className="w-8 h-8 text-emerald-500/30" />
               </div>
-              <ArrowDownLeft className="w-8 h-8 text-emerald-500/30" />
+
+              <div className="p-4 rounded-2xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200/50 dark:border-rose-800/30 flex items-center justify-between">
+                <div>
+                  <span className="text-xs text-slate-500">
+                    مجموع بدهی‌های پرداخت‌نشده (تعهد شما)
+                  </span>
+                  <h4 className="text-lg font-black text-rose-600 dark:text-rose-400 mt-1 font-mono">
+                    {formatCurrency(totalDebts, currency)}
+                  </h4>
+                </div>
+                <ArrowUpRight className="w-8 h-8 text-rose-500/30" />
+              </div>
             </div>
+          </CollapsibleSection>
 
-            <div className="glass-card p-4 border-l-4 border-l-rose-500 flex items-center justify-between">
-              <div>
-                <span className="text-xs text-slate-500">مجموع بدهی‌های پرداخت نشده (تعهد شما)</span>
-                <h4 className="text-lg font-black text-rose-600 mt-1">
-                  {formatCurrency(totalDebts, currency)}
-                </h4>
-              </div>
-              <ArrowUpRight className="w-8 h-8 text-rose-500/30" />
+          {/* List of Debts (Collapsible) */}
+          <CollapsibleSection
+            storageKey="debts_list_items"
+            title="فهرست بدهی‌ها و طلب‌ها"
+            subtitle={`${toPersianDigits(debts.length)} پرونده ثبت‌شده`}
+            icon={<Users className="w-5 h-5 text-indigo-500" />}
+            defaultExpanded={true}
+          >
+            <div className="space-y-3 pt-1">
+              {debts.length === 0 ? (
+                <div className="text-center py-12 text-slate-400 text-xs">
+                  هیچ بدهی یا طلبی ثبت نشده است.
+                </div>
+              ) : (
+                debts.map(item => {
+                  const remaining = item.amount - item.paidAmount;
+                  const percent = Math.min(
+                    100,
+                    Math.round((item.paidAmount / item.amount) * 100)
+                  );
+
+                  return (
+                    <div
+                      key={item.id}
+                      className={`p-4 sm:p-5 rounded-2xl liquid-glass border border-slate-200/50 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition ${
+                        item.isSettled ? 'opacity-65 bg-slate-50/50 dark:bg-slate-900/40' : ''
+                      }`}
+                    >
+                      <div className="flex items-start gap-3.5">
+                        <div
+                          className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 text-white ${
+                            item.type === 'credit' ? 'bg-emerald-600' : 'bg-rose-600'
+                          }`}
+                        >
+                          {item.type === 'credit' ? (
+                            <ArrowDownLeft className="w-5 h-5" />
+                          ) : (
+                            <ArrowUpRight className="w-5 h-5" />
+                          )}
+                        </div>
+
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                              {item.personName}
+                            </h4>
+                            <span
+                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                item.isSettled
+                                  ? 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
+                                  : item.type === 'credit'
+                                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40'
+                                  : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40'
+                              }`}
+                            >
+                              {item.isSettled
+                                ? 'تسویه شده'
+                                : item.type === 'credit'
+                                ? 'طلب من'
+                                : 'بدهی من'}
+                            </span>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mt-1">
+                            <span>سررسید: {toPersianDigits(item.dueDate)}</span>
+                            {item.phoneNumber && (
+                              <>
+                                <span>•</span>
+                                <span className="flex items-center gap-1 dir-ltr">
+                                  <Phone className="w-3 h-3 text-slate-400" />
+                                  {toPersianDigits(item.phoneNumber)}
+                                </span>
+                              </>
+                            )}
+                            {item.description && (
+                              <>
+                                <span>•</span>
+                                <span className="truncate max-w-[150px]">{item.description}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 sm:pt-0 border-t sm:border-0 border-slate-100 dark:border-slate-800">
+                        <div className="text-right sm:text-left">
+                          <div className="text-xs text-slate-400">
+                            مبلغ کل: {formatCurrency(item.amount, currency)}
+                          </div>
+                          <div
+                            className={`text-sm font-black font-mono ${
+                              item.isSettled
+                                ? 'text-slate-400 line-through'
+                                : item.type === 'credit'
+                                ? 'text-emerald-600'
+                                : 'text-rose-600'
+                            }`}
+                          >
+                            مانده: {formatCurrency(remaining, currency)}
+                          </div>
+                          <div className="text-[10px] text-slate-400">
+                            پرداخت شده: {toPersianDigits(percent)}٪
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          {!item.isSettled && (
+                            <button
+                              onClick={() => {
+                                setPayingDebt(item);
+                                setPayAmount(remaining.toString());
+                              }}
+                              className="px-2.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/80 text-indigo-700 dark:text-indigo-300 text-xs font-bold transition"
+                            >
+                              ثبت تسویه
+                            </button>
+                          )}
+                          <button
+                            onClick={() => {
+                              setEditingDebt(item);
+                              setIsDebtModalOpen(true);
+                            }}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 transition"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteDebt(item.id)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 transition"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
-          </div>
+          </CollapsibleSection>
+        </div>
+      )}
 
-          {/* List of Debts */}
-          <div className="space-y-3">
-            {debts.length === 0 ? (
-              <div className="glass-card p-12 text-center text-slate-400 text-xs">
-                هیچ بدهی یا طلبی ثبت نشده است.
+      {/* Tab 2: Cheques */}
+      {activeTab === 'cheques' && (
+        <div className="space-y-6">
+          {/* Summary stats (Collapsible) */}
+          <CollapsibleSection
+            storageKey="cheques_summary_kpi"
+            title="خلاصه چک‌های صیادی در جریان"
+            subtitle="مجموع مبالغ چک‌های دریافتی و پرداختی پاس‌نشده"
+            icon={<Clock className="w-5 h-5 text-indigo-500" />}
+            defaultExpanded={true}
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+              <div className="p-4 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-200/50 dark:border-indigo-800/30 flex items-center justify-between">
+                <div>
+                  <span className="text-xs text-slate-500">مجموع چک‌های در جریان دریافتی</span>
+                  <h4 className="text-lg font-black text-indigo-600 dark:text-indigo-400 mt-1 font-mono">
+                    {formatCurrency(totalPendingChequesReceivable, currency)}
+                  </h4>
+                </div>
+                <Clock className="w-8 h-8 text-indigo-500/30" />
               </div>
-            ) : (
-              debts.map(item => {
-                const remaining = item.amount - item.paidAmount;
-                const percent = Math.min(100, Math.round((item.paidAmount / item.amount) * 100));
 
-                return (
+              <div className="p-4 rounded-2xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/30 flex items-center justify-between">
+                <div>
+                  <span className="text-xs text-slate-500">مجموع چک‌های در جریان پرداختی</span>
+                  <h4 className="text-lg font-black text-amber-600 dark:text-amber-400 mt-1 font-mono">
+                    {formatCurrency(totalPendingChequesPayable, currency)}
+                  </h4>
+                </div>
+                <FileCheck2 className="w-8 h-8 text-amber-500/30" />
+              </div>
+            </div>
+          </CollapsibleSection>
+
+          {/* Cheque List (Collapsible) */}
+          <CollapsibleSection
+            storageKey="cheques_list_items"
+            title="فهرست چک‌های صیادی"
+            subtitle={`${toPersianDigits(cheques.length)} فقره چک ثبت‌شده`}
+            icon={<FileCheck2 className="w-5 h-5 text-indigo-500" />}
+            defaultExpanded={true}
+          >
+            <div className="space-y-3 pt-1">
+              {cheques.length === 0 ? (
+                <div className="text-center py-12 text-slate-400 text-xs">
+                  هیچ چکی ثبت نشده است.
+                </div>
+              ) : (
+                cheques.map(cheque => (
                   <div
-                    key={item.id}
-                    className={`glass-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition ${
-                      item.isSettled ? 'opacity-65 bg-slate-50/50 dark:bg-slate-900/40' : ''
-                    }`}
+                    key={cheque.id}
+                    className="p-4 sm:p-5 rounded-2xl liquid-glass border border-slate-200/50 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                   >
                     <div className="flex items-start gap-3.5">
                       <div
                         className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 text-white ${
-                          item.type === 'credit' ? 'bg-emerald-600' : 'bg-rose-600'
+                          cheque.status === 'passed'
+                            ? 'bg-emerald-600'
+                            : cheque.status === 'bounced'
+                            ? 'bg-rose-600'
+                            : 'bg-indigo-600'
                         }`}
                       >
-                        {item.type === 'credit' ? (
-                          <ArrowDownLeft className="w-5 h-5" />
-                        ) : (
-                          <ArrowUpRight className="w-5 h-5" />
-                        )}
+                        <FileCheck2 className="w-5 h-5" />
                       </div>
 
                       <div>
                         <div className="flex items-center gap-2">
                           <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                            {item.personName}
+                            {cheque.partyName}
                           </h4>
                           <span
                             className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                              item.isSettled
-                                ? 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
-                                : item.type === 'credit'
+                              cheque.type === 'receivable'
                                 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40'
                                 : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40'
                             }`}
                           >
-                            {item.isSettled
-                              ? 'تسویه شده'
-                              : item.type === 'credit'
-                              ? 'طلب من'
-                              : 'بدهی من'}
+                            {cheque.type === 'receivable' ? 'چک دریافتی' : 'چک پرداختی'}
+                          </span>
+                          <span
+                            className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                              cheque.status === 'passed'
+                                ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                                : cheque.status === 'bounced'
+                                ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
+                                : 'bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300'
+                            }`}
+                          >
+                            {cheque.status === 'passed'
+                              ? 'پاس شده'
+                              : cheque.status === 'bounced'
+                              ? 'برگشت خورده'
+                              : 'در جریان'}
                           </span>
                         </div>
 
                         <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mt-1">
-                          <span>سررسید: {toPersianDigits(item.dueDate)}</span>
-                          {item.phoneNumber && (
+                          <span>سررسید: {toPersianDigits(cheque.dueDate)}</span>
+                          <span>•</span>
+                          <span>بانک: {cheque.bankName}</span>
+                          <span>•</span>
+                          <span>سریال: {toPersianDigits(cheque.chequeNumber)}</span>
+                          {cheque.sayadNumber && (
                             <>
                               <span>•</span>
-                              <span className="flex items-center gap-1 dir-ltr">
-                                <Phone className="w-3 h-3 text-slate-400" />
-                                {toPersianDigits(item.phoneNumber)}
+                              <span className="font-mono text-[11px] dir-ltr text-indigo-500">
+                                صیاد: {toPersianDigits(cheque.sayadNumber)}
                               </span>
                             </>
                           )}
-                          {item.description && (
-                            <>
-                              <span>•</span>
-                              <span>{item.description}</span>
-                            </>
-                          )}
                         </div>
-
-                        {/* Partial Progress */}
-                        {item.paidAmount > 0 && !item.isSettled && (
-                          <div className="mt-2 flex items-center gap-2 text-[11px] text-slate-500">
-                            <span>پرداخت شده: {formatCurrency(item.paidAmount, currency)} ({toPersianDigits(percent)}٪)</span>
-                          </div>
-                        )}
                       </div>
                     </div>
 
                     <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 sm:pt-0 border-t sm:border-0 border-slate-100 dark:border-slate-800">
                       <div className="text-right sm:text-left">
-                        <div
-                          className={`text-sm sm:text-base font-black ${
-                            item.type === 'credit' ? 'text-emerald-600' : 'text-rose-600'
-                          }`}
-                        >
-                          {formatCurrency(item.amount, currency)}
+                        <div className="text-sm sm:text-base font-black text-slate-900 dark:text-white font-mono">
+                          {formatCurrency(cheque.amount, currency)}
                         </div>
-                        {!item.isSettled && item.paidAmount > 0 && (
-                          <span className="text-[11px] text-slate-400 block">
-                            مانده: {formatCurrency(remaining, currency)}
-                          </span>
-                        )}
                       </div>
 
                       <div className="flex items-center gap-1.5">
-                        {!item.isSettled && (
+                        {cheque.status === 'pending' && (
                           <button
-                            onClick={() => {
-                              setPayingDebt(item);
-                              setPayAmount(remaining.toString());
-                            }}
-                            className="px-2.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/80 text-indigo-700 dark:text-indigo-300 text-xs font-bold transition"
+                            onClick={() => changeChequeStatus(cheque.id, 'passed')}
+                            className="px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/80 text-emerald-700 dark:text-emerald-300 text-xs font-bold transition flex items-center gap-1"
                           >
-                            ثبت تسویه
+                            <Check className="w-3.5 h-3.5" />
+                            <span>پاس شد</span>
                           </button>
                         )}
                         <button
                           onClick={() => {
-                            setEditingDebt(item);
-                            setIsDebtModalOpen(true);
+                            setEditingCheque(cheque);
+                            setIsChequeModalOpen(true);
                           }}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 transition"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDeleteDebt(item.id)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600"
+                          onClick={() => handleDeleteCheque(cheque.id)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 transition"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
                   </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Tab 2: Cheques */}
-      {activeTab === 'cheques' && (
-        <div className="space-y-5">
-          {/* Summary stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="glass-card p-4 border-l-4 border-l-indigo-500 flex items-center justify-between">
-              <div>
-                <span className="text-xs text-slate-500">مجموع چک‌های در جریان دریافتی</span>
-                <h4 className="text-lg font-black text-indigo-600 mt-1">
-                  {formatCurrency(totalPendingChequesReceivable, currency)}
-                </h4>
-              </div>
-              <Clock className="w-8 h-8 text-indigo-500/30" />
+                ))
+              )}
             </div>
-
-            <div className="glass-card p-4 border-l-4 border-l-amber-500 flex items-center justify-between">
-              <div>
-                <span className="text-xs text-slate-500">مجموع چک‌های در جریان پرداختی</span>
-                <h4 className="text-lg font-black text-amber-600 mt-1">
-                  {formatCurrency(totalPendingChequesPayable, currency)}
-                </h4>
-              </div>
-              <FileCheck2 className="w-8 h-8 text-amber-500/30" />
-            </div>
-          </div>
-
-          {/* Cheque List */}
-          <div className="space-y-3">
-            {cheques.length === 0 ? (
-              <div className="glass-card p-12 text-center text-slate-400 text-xs">
-                هیچ چکی ثبت نشده است.
-              </div>
-            ) : (
-              cheques.map(cheque => (
-                <div
-                  key={cheque.id}
-                  className="glass-card p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                >
-                  <div className="flex items-start gap-3.5">
-                    <div
-                      className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 text-white ${
-                        cheque.status === 'passed'
-                          ? 'bg-emerald-600'
-                          : cheque.status === 'bounced'
-                          ? 'bg-rose-600'
-                          : 'bg-indigo-600'
-                      }`}
-                    >
-                      <FileCheck2 className="w-5 h-5" />
-                    </div>
-
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                          {cheque.partyName}
-                        </h4>
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            cheque.type === 'receivable'
-                              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40'
-                              : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40'
-                          }`}
-                        >
-                          {cheque.type === 'receivable' ? 'چک دریافتی' : 'چک پرداختی'}
-                        </span>
-                        <span
-                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                            cheque.status === 'passed'
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : cheque.status === 'bounced'
-                              ? 'bg-rose-100 text-rose-800'
-                              : 'bg-amber-100 text-amber-800'
-                          }`}
-                        >
-                          {cheque.status === 'passed'
-                            ? 'پاس شده'
-                            : cheque.status === 'bounced'
-                            ? 'برگشت خورده'
-                            : 'در جریان'}
-                        </span>
-                      </div>
-
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mt-1">
-                        <span>سررسید: {toPersianDigits(cheque.dueDate)}</span>
-                        <span>•</span>
-                        <span>بانک: {cheque.bankName}</span>
-                        <span>•</span>
-                        <span>سریال: {toPersianDigits(cheque.chequeNumber)}</span>
-                        {cheque.sayadNumber && (
-                          <>
-                            <span>•</span>
-                            <span className="font-mono text-[11px] dir-ltr text-indigo-500">
-                              صیاد: {toPersianDigits(cheque.sayadNumber)}
-                            </span>
-                          </>
-                        )}
-                        {cheque.notes && (
-                          <>
-                            <span>•</span>
-                            <span>{cheque.notes}</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 sm:pt-0 border-t sm:border-0 border-slate-100 dark:border-slate-800">
-                    <div className="text-right sm:text-left">
-                      <div className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
-                        {formatCurrency(cheque.amount, currency)}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-1.5">
-                      {cheque.status === 'pending' && (
-                        <button
-                          onClick={() => changeChequeStatus(cheque.id, 'passed')}
-                          className="px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold transition"
-                          title="تغییر وضعیت به پاس شده"
-                        >
-                          پاس شد
-                        </button>
-                      )}
-                      <button
-                        onClick={() => {
-                          setEditingCheque(cheque);
-                          setIsChequeModalOpen(true);
-                        }}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteCheque(cheque.id)}
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Pay Debt Modal */}
-      {payingDebt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="relative w-full max-w-sm bg-white dark:bg-slate-900 rounded-3xl p-5 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                ثبت تسویه / پرداخت برای {payingDebt.personName}
-              </h4>
-              <button
-                onClick={() => setPayingDebt(null)}
-                className="p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handlePaySubmit} className="space-y-3">
-              <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                  مبلغ پرداختی ({currency === 'toman' ? 'تومان' : 'ریال'})
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  required
-                  value={payAmount}
-                  onChange={(e) => setPayAmount(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-bold outline-none"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-1.5"
-              >
-                <Check className="w-4 h-4" />
-                <span>ثبت پرداخت</span>
-              </button>
-            </form>
-          </div>
+          </CollapsibleSection>
         </div>
       )}
 
@@ -528,6 +527,45 @@ export const DebtsAndChequesView: React.FC = () => {
         }}
         initialCheque={editingCheque}
       />
+
+      {/* Pay Debt Modal */}
+      {payingDebt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="relative w-full max-w-sm liquid-glass-card p-5 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                ثبت تسویه یا قسط برای {payingDebt.personName}
+              </h4>
+              <button onClick={() => setPayingDebt(null)}>
+                <X className="w-4 h-4 text-slate-400" />
+              </button>
+            </div>
+
+            <form onSubmit={handlePaySubmit} className="space-y-3">
+              <div>
+                <label className="text-xs text-slate-500 block mb-1">
+                  مبلغ پرداختی / دریافتی ({currency === 'toman' ? 'تومان' : 'ریال'})
+                </label>
+                <input
+                  type="number"
+                  required
+                  min="1"
+                  value={payAmount}
+                  onChange={e => setPayAmount(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-bold outline-none font-mono"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition"
+              >
+                ثبت تسویه
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
