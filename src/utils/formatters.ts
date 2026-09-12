@@ -13,7 +13,8 @@ export function formatNumber(amount: number): string {
 }
 
 export function formatCurrency(amount: number, currency: Currency = 'toman', persianDigits = true): string {
-  const formatted = formatNumber(amount);
+  const actualAmount = currency === 'rial' ? amount * 10 : amount;
+  const formatted = formatNumber(actualAmount);
   const text = `${formatted} ${currency === 'toman' ? 'تومان' : 'ریال'}`;
   return persianDigits ? toPersianDigits(text) : text;
 }
@@ -62,11 +63,12 @@ function chunkToWords(num: number): string {
 }
 
 export function numberToWordsPersian(num: number, currency: Currency = 'toman'): string {
-  if (num === 0) return `صفر ${currency === 'toman' ? 'تومان' : 'ریال'}`;
-  if (num < 0) return 'منفی ' + numberToWordsPersian(Math.abs(num), currency);
+  const actualNum = currency === 'rial' ? num * 10 : num;
+  if (actualNum === 0) return `صفر ${currency === 'toman' ? 'تومان' : 'ریال'}`;
+  if (actualNum < 0) return 'منفی ' + numberToWordsPersian(Math.abs(num), currency);
 
   const chunks: number[] = [];
-  let temp = Math.floor(num);
+  let temp = Math.floor(actualNum);
   while (temp > 0) {
     chunks.push(temp % 1000);
     temp = Math.floor(temp / 1000);

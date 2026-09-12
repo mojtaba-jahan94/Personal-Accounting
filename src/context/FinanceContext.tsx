@@ -17,7 +17,7 @@ import {
   TransactionType,
 } from '../types';
 import { DEFAULT_ACCOUNTS, DEFAULT_CATEGORIES, DEFAULT_PERSONS, getDemoData } from '../utils/sampleData';
-import { getCachedMarketRates, fetchLiveMarketRates, setManualMarketRate, INITIAL_MARKET_RATES } from '../services/marketRates';
+import { getCachedMarketRates, fetchLiveMarketRates, setManualMarketRate, normalizePriceToToman, INITIAL_MARKET_RATES } from '../services/marketRates';
 import { getTodayJalali } from '../utils/jalali';
 
 interface FinanceContextType {
@@ -36,9 +36,13 @@ interface FinanceContextType {
   themeConfig: ThemeConfig;
 
   // Actions
-  addTransaction: (tx: Omit<Transaction, 'id'>) => void;
+  addTransaction: (tx: Omit<Transaction, 'id' | 'createdAt'>) => void;
   updateTransaction: (tx: Transaction) => void;
   deleteTransaction: (id: string) => void;
+  divideTransactionBy10: (txId: string) => void;
+  multiplyTransactionBy10: (txId: string) => void;
+  batchFixRialTransactions: () => number;
+  convertAllDataCurrency: (factor: 0.1 | 10) => void;
 
   addAccount: (acc: Omit<Account, 'id'>) => void;
   updateAccount: (acc: Account) => void;
@@ -399,6 +403,76 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     localStorage.setItem(STORAGE_KEYS.CURRENCY, currency);
   }, [currency]);
 
+  // One-time sanitization: fix previously recorded Rial-scale assets and their corresponding transactions
+  useEffect(() => {
+    const isSanitized = localStorage.getItem('pf_sanitized_rial_v2');
+    if (isSanitized) return;
+
+    let hasChanges = false;
+    const fixedAssetMap = new Map<string, { oldPrice: number; newPrice: number; name: string }>();
+
+    // 1. Check & Sanitize assets
+    const sanitizedAssets = assets.map(asset => {
+      const normBuy = normalizePriceToToman(asset.buyPrice, asset.marketSymbol);
+      const normCur = normalizePriceToToman(asset.currentPrice, asset.marketSymbol);
+      if (normBuy !== asset.buyPrice || normCur !== asset.currentPrice) {
+        hasChanges = true;
+        fixedAssetMap.set(asset.name, {
+          oldPrice: asset.buyPrice,
+          newPrice: normBuy,
+          name: asset.name,
+        });
+        return {
+          ...asset,
+          buyPrice: normBuy,
+          currentPrice: normCur,
+          buyFee: asset.buyFee && asset.buyFee > 1000000 ? Math.round(asset.buyFee / 10) : asset.buyFee,
+        };
+      }
+      return asset;
+    });
+
+    if (hasChanges) {
+      setAssets(sanitizedAssets);
+
+      // 2. Adjust matching purchase transactions and refund over-deducted accounts
+      const accountsToRefund = new Map<string, number>();
+
+      const sanitizedTransactions = transactions.map(tx => {
+        const matchedEntry = Array.from(fixedAssetMap.values()).find(
+          entry => tx.description.includes(entry.name) || tx.tags?.includes(entry.name)
+        );
+
+        if (matchedEntry && tx.type === 'expense' && tx.amount > 10000000) {
+          const newAmount = Math.round(tx.amount / 10);
+          const refundDiff = tx.amount - newAmount;
+          const currentRefund = accountsToRefund.get(tx.accountId) || 0;
+          accountsToRefund.set(tx.accountId, currentRefund + refundDiff);
+
+          return {
+            ...tx,
+            amount: newAmount,
+            fee: tx.fee ? Math.round(tx.fee / 10) : undefined,
+          };
+        }
+        return tx;
+      });
+
+      setTransactions(sanitizedTransactions);
+
+      if (accountsToRefund.size > 0) {
+        setAccounts(prev =>
+          prev.map(acc => {
+            const refund = accountsToRefund.get(acc.id);
+            return refund ? { ...acc, balance: acc.balance + refund } : acc;
+          })
+        );
+      }
+    }
+
+    localStorage.setItem('pf_sanitized_rial_v2', 'true');
+  }, []);
+
   // Refresh live market rates
   const refreshMarketRates = async () => {
     const latest = await fetchLiveMarketRates();
@@ -436,12 +510,19 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Assets CRUD
   const addAsset = (asset: Omit<AssetHolding, 'id'>, deductFromAccountId?: string) => {
-    const newAsset: AssetHolding = { ...asset, id: 'ast-' + Date.now() };
+    const normalizedBuyPrice = normalizePriceToToman(asset.buyPrice, asset.marketSymbol);
+    const normalizedCurrentPrice = normalizePriceToToman(asset.currentPrice, asset.marketSymbol);
+    const assetToSave = {
+      ...asset,
+      buyPrice: normalizedBuyPrice,
+      currentPrice: normalizedCurrentPrice,
+    };
+    const newAsset: AssetHolding = { ...assetToSave, id: 'ast-' + Date.now() };
     setAssets(prev => [newAsset, ...prev]);
 
     if (deductFromAccountId) {
       const buyFee = asset.buyFee || 0;
-      const totalCost = Math.round(asset.amount * asset.buyPrice) + buyFee;
+      const totalCost = Math.round(asset.amount * normalizedBuyPrice) + buyFee;
       if (totalCost > 0) {
         const txId = 'tx-' + Date.now();
         const newTx: Transaction = {
@@ -656,6 +737,203 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       );
     }
     setTransactions(prev => prev.filter(t => t.id !== id));
+  };
+
+  const divideTransactionBy10 = (txId: string) => {
+    const tx = transactions.find(t => t.id === txId);
+    if (!tx) return;
+    const oldAmount = tx.amount;
+    const newAmount = Math.round(oldAmount / 10);
+    const diff = oldAmount - newAmount;
+
+    const oldFee = tx.fee || 0;
+    const newFee = tx.fee ? Math.round(tx.fee / 10) : undefined;
+    const feeDiff = oldFee - (newFee || 0);
+
+    setAccounts(prev =>
+      prev.map(acc => {
+        if (tx.type === 'expense' && acc.id === tx.accountId) {
+          return { ...acc, balance: acc.balance + diff };
+        }
+        if (tx.type === 'income' && acc.id === tx.accountId) {
+          return { ...acc, balance: acc.balance - diff };
+        }
+        if (tx.type === 'transfer') {
+          if (acc.id === tx.accountId) {
+            return { ...acc, balance: acc.balance + diff + feeDiff };
+          }
+          if (acc.id === tx.toAccountId) {
+            return { ...acc, balance: acc.balance - diff };
+          }
+        }
+        return acc;
+      })
+    );
+
+    if (tx.debtId) {
+      setDebts(prev =>
+        prev.map(d => {
+          if (d.id === tx.debtId) {
+            const updatedPaid = Math.max(0, d.paidAmount - diff);
+            return {
+              ...d,
+              paidAmount: updatedPaid,
+              isSettled: updatedPaid >= d.amount,
+            };
+          }
+          return d;
+        })
+      );
+    }
+
+    setTransactions(prev =>
+      prev.map(t => (t.id === txId ? { ...t, amount: newAmount, fee: newFee } : t))
+    );
+  };
+
+  const multiplyTransactionBy10 = (txId: string) => {
+    const tx = transactions.find(t => t.id === txId);
+    if (!tx) return;
+    const oldAmount = tx.amount;
+    const newAmount = Math.round(oldAmount * 10);
+    const diff = newAmount - oldAmount;
+
+    const oldFee = tx.fee || 0;
+    const newFee = tx.fee ? Math.round(tx.fee * 10) : undefined;
+    const feeDiff = (newFee || 0) - oldFee;
+
+    setAccounts(prev =>
+      prev.map(acc => {
+        if (tx.type === 'expense' && acc.id === tx.accountId) {
+          return { ...acc, balance: acc.balance - diff };
+        }
+        if (tx.type === 'income' && acc.id === tx.accountId) {
+          return { ...acc, balance: acc.balance + diff };
+        }
+        if (tx.type === 'transfer') {
+          if (acc.id === tx.accountId) {
+            return { ...acc, balance: acc.balance - (diff + feeDiff) };
+          }
+          if (acc.id === tx.toAccountId) {
+            return { ...acc, balance: acc.balance + diff };
+          }
+        }
+        return acc;
+      })
+    );
+
+    if (tx.debtId) {
+      setDebts(prev =>
+        prev.map(d => {
+          if (d.id === tx.debtId) {
+            const updatedPaid = d.paidAmount + diff;
+            return {
+              ...d,
+              paidAmount: updatedPaid,
+              isSettled: updatedPaid >= d.amount,
+            };
+          }
+          return d;
+        })
+      );
+    }
+
+    setTransactions(prev =>
+      prev.map(t => (t.id === txId ? { ...t, amount: newAmount, fee: newFee } : t))
+    );
+  };
+
+  const batchFixRialTransactions = (): number => {
+    let fixedCount = 0;
+    const fixedAssetNames: string[] = [];
+
+    // 1. Sanitize inflated assets
+    setAssets(prev =>
+      prev.map(asset => {
+        const normBuy = normalizePriceToToman(asset.buyPrice, asset.marketSymbol);
+        const normCur = normalizePriceToToman(asset.currentPrice, asset.marketSymbol);
+        if (normBuy !== asset.buyPrice || normCur !== asset.currentPrice) {
+          fixedAssetNames.push(asset.name);
+          return {
+            ...asset,
+            buyPrice: normBuy,
+            currentPrice: normCur,
+            buyFee: asset.buyFee && asset.buyFee > 1000000 ? Math.round(asset.buyFee / 10) : asset.buyFee,
+          };
+        }
+        return asset;
+      })
+    );
+
+    // 2. Fix suspect inflated transactions
+    setTransactions(prev =>
+      prev.map(tx => {
+        const isAssetTx =
+          tx.categoryId === 'cat-invest' ||
+          tx.tags?.some(t => t === 'خرید دارایی' || t === 'فروش دارایی' || fixedAssetNames.includes(t)) ||
+          fixedAssetNames.some(name => tx.description.includes(name));
+
+        if ((isAssetTx && tx.amount >= 15000000) || tx.amount >= 100000000) {
+          fixedCount++;
+          const newAmount = Math.round(tx.amount / 10);
+          const diff = tx.amount - newAmount;
+          const newFee = tx.fee ? Math.round(tx.fee / 10) : undefined;
+
+          setAccounts(accPrev =>
+            accPrev.map(acc => {
+              if (acc.id === tx.accountId) {
+                return {
+                  ...acc,
+                  balance: tx.type === 'expense' ? acc.balance + diff : acc.balance - diff,
+                };
+              }
+              return acc;
+            })
+          );
+
+          return { ...tx, amount: newAmount, fee: newFee };
+        }
+        return tx;
+      })
+    );
+
+    return fixedCount;
+  };
+
+  const convertAllDataCurrency = (factor: 0.1 | 10) => {
+    setAccounts(prev => prev.map(a => ({ ...a, balance: Math.round(a.balance * factor) })));
+    setTransactions(prev =>
+      prev.map(t => ({
+        ...t,
+        amount: Math.round(t.amount * factor),
+        fee: t.fee ? Math.round(t.fee * factor) : undefined,
+      }))
+    );
+    setBudgets(prev => prev.map(b => ({ ...b, amount: Math.round(b.amount * factor) })));
+    setGoals(prev =>
+      prev.map(g => ({
+        ...g,
+        targetAmount: Math.round(g.targetAmount * factor),
+        currentAmount: Math.round(g.currentAmount * factor),
+      }))
+    );
+    setDebts(prev =>
+      prev.map(d => ({
+        ...d,
+        amount: Math.round(d.amount * factor),
+        paidAmount: Math.round(d.paidAmount * factor),
+        payments: d.payments?.map(p => ({ ...p, amount: Math.round(p.amount * factor) })),
+      }))
+    );
+    setCheques(prev => prev.map(c => ({ ...c, amount: Math.round(c.amount * factor) })));
+    setAssets(prev =>
+      prev.map(a => ({
+        ...a,
+        buyPrice: Math.round(a.buyPrice * factor),
+        currentPrice: Math.round(a.currentPrice * factor),
+        buyFee: a.buyFee ? Math.round(a.buyFee * factor) : undefined,
+      }))
+    );
   };
 
   // Account Actions
@@ -961,6 +1239,10 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         addTransaction,
         updateTransaction,
         deleteTransaction,
+        divideTransactionBy10,
+        multiplyTransactionBy10,
+        batchFixRialTransactions,
+        convertAllDataCurrency,
         addAccount,
         updateAccount,
         deleteAccount,

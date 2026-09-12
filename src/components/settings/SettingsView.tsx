@@ -52,6 +52,8 @@ export const SettingsView: React.FC = () => {
     exportDataJSON,
     importDataJSON,
     clearAllData,
+    batchFixRialTransactions,
+    convertAllDataCurrency,
   } = useFinance();
 
   const [message, setMessage] = useState<string | null>(null);
@@ -440,6 +442,66 @@ export const SettingsView: React.FC = () => {
               }`}
             >
               ریال
+            </button>
+          </div>
+        </div>
+
+        {/* Currency Batch Tools */}
+        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/25 space-y-3">
+          <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200">
+            <Sparkles className="w-4 h-4 text-amber-500" />
+            <h4 className="text-xs font-black">ابزارهای اصلاح و تبدیل مقیاس مبالغ (تومان / ریال)</h4>
+          </div>
+          <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+            اگر تراکنش‌ها یا دارایی‌هایی در گذشته با ارقام ریالی (۱۰ برابر) ثبت شده‌اند، یا مبالغ کل برنامه را بر حسب ریال وارد کرده‌اید و قصد تبدیل کامل به تومان را دارید:
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+            <button
+              onClick={() => {
+                if (
+                  window.confirm(
+                    'آیا می‌خواهید تراکنش‌ها و دارایی‌های ثبت‌شده با ارقام ریالی در سبد شناسایی شده و به تومان تصحیح شوند؟ حساب‌های بانکی متناظر نیز اصلاح خواهند شد.'
+                  )
+                ) {
+                  const count = batchFixRialTransactions();
+                  showNotification(`${count.toLocaleString('fa-IR')} تراکنش و دارایی ریالی با موفقیت به تومان اصلاح شد.`);
+                }
+              }}
+              className="p-2.5 rounded-xl bg-white dark:bg-slate-800 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-xs font-bold hover:bg-amber-50 dark:hover:bg-amber-950/40 transition flex items-center justify-center gap-2"
+            >
+              <span>اصلاح خودکار تراکنش‌های ریالی دارایی‌ها</span>
+            </button>
+
+            <button
+              onClick={() => {
+                if (
+                  window.confirm(
+                    '⚠️ توجه: آیا مطمئنید که می‌خواهید تمام داده‌های مالی برنامه (موجودی حساب‌ها، تراکنش‌ها، دارایی‌ها، بدهی‌ها، بودجه‌ها) را بر ۱۰ تقسیم کنید (تبدیل سراسری ریال به تومان)؟'
+                  )
+                ) {
+                  convertAllDataCurrency(0.1);
+                  showNotification('تمام مبالغ برنامه با موفقیت بر ۱۰ تقسیم شدند (تبدیل به تومان).');
+                }
+              }}
+              className="p-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-xs font-bold hover:border-indigo-400 transition flex items-center justify-center gap-2"
+            >
+              <span>تبدیل کل داده‌ها: تقسیم بر ۱۰ (ریال ← تومان)</span>
+            </button>
+
+            <button
+              onClick={() => {
+                if (
+                  window.confirm(
+                    '⚠️ توجه: آیا مطمئنید که می‌خواهید تمام داده‌های مالی برنامه را در ۱۰ ضرب کنید (تومان ← ریال)؟'
+                  )
+                ) {
+                  convertAllDataCurrency(10);
+                  showNotification('تمام مبالغ برنامه با موفقیت در ۱۰ ضرب شدند.');
+                }
+              }}
+              className="p-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 text-xs font-bold hover:border-indigo-400 transition flex items-center justify-center gap-2 sm:col-span-2"
+            >
+              <span>تبدیل کل داده‌ها: ضرب در ۱۰ (تومان ← ریال)</span>
             </button>
           </div>
         </div>

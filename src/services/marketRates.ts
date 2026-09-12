@@ -152,7 +152,7 @@ export function getManualOverrides(): Record<string, number> {
  */
 export function normalizePriceToToman(
   rawPrice: number,
-  symbolId: string,
+  symbolId?: string,
   unitPreference: MarketPriceUnit = 'auto'
 ): number {
   if (isNaN(rawPrice) || rawPrice <= 0) return 0;

@@ -51,17 +51,21 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const [personId, setPersonId] = useState<string>('');
   const [linkToDebt, setLinkToDebt] = useState<boolean>(false);
   const [selectedDebtId, setSelectedDebtId] = useState<string>('');
+  const [inputUnit, setInputUnit] = useState<'toman' | 'rial'>(currency);
 
   useEffect(() => {
     if (initialTransaction) {
       setType(initialTransaction.type);
-      setAmount(initialTransaction.amount.toString());
+      const isRial = currency === 'rial';
+      setInputUnit(currency);
+      setAmount(isRial ? (initialTransaction.amount * 10).toString() : initialTransaction.amount.toString());
       setDate(initialTransaction.date);
       setDescription(initialTransaction.description);
       setCategoryId(initialTransaction.categoryId);
       setAccountId(initialTransaction.accountId);
       setToAccountId(initialTransaction.toAccountId || '');
-      setFee(initialTransaction.fee ? initialTransaction.fee.toString() : '0');
+      const txFee = initialTransaction.fee || 0;
+      setFee(txFee ? (isRial ? (txFee * 10).toString() : txFee.toString()) : '0');
       setTags(initialTransaction.tags || []);
       setReceiptUrl(initialTransaction.receiptUrl);
       setPersonId(initialTransaction.personId || '');
@@ -69,6 +73,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       setSelectedDebtId(initialTransaction.debtId || '');
     } else {
       setType('expense');
+      setInputUnit(currency);
       setAmount('');
       setDate(getTodayJalali());
       setDescription('');
@@ -84,7 +89,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       setLinkToDebt(false);
       setSelectedDebtId('');
     }
-  }, [initialTransaction, isOpen, categories, accounts]);
+  }, [initialTransaction, isOpen, categories, accounts, currency]);
 
   if (!isOpen) return null;
 
@@ -121,6 +126,29 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     }
   };
 
+  const handleUnitToggle = (newUnit: 'toman' | 'rial') => {
+    if (newUnit === inputUnit) return;
+    setInputUnit(newUnit);
+    const val = parseFloat(amount);
+    if (!isNaN(val) && val > 0) {
+      if (newUnit === 'rial') {
+        setAmount(Math.round(val * 10).toString());
+      } else {
+        setAmount(Math.round(val / 10).toString());
+      }
+    }
+    if (type === 'transfer') {
+      const feeVal = parseFloat(fee);
+      if (!isNaN(feeVal) && feeVal > 0) {
+        if (newUnit === 'rial') {
+          setFee(Math.round(feeVal * 10).toString());
+        } else {
+          setFee(Math.round(feeVal / 10).toString());
+        }
+      }
+    }
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const numAmount = parseFloat(amount);
@@ -137,15 +165,19 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       return;
     }
 
+    const canonicalAmount = inputUnit === 'rial' ? Math.round(numAmount / 10) : numAmount;
+    const rawFee = parseFloat(fee) || 0;
+    const canonicalFee = (type === 'transfer' && inputUnit === 'rial') ? Math.round(rawFee / 10) : rawFee;
+
     const txData = {
       type,
-      amount: numAmount,
+      amount: canonicalAmount,
       date,
       description: description.trim() || (type === 'transfer' ? 'انتقال بین حسابی' : 'بدون شرح'),
       categoryId: type === 'transfer' ? 'cat-other-exp' : categoryId,
       accountId,
       toAccountId: type === 'transfer' ? toAccountId : undefined,
-      fee: type === 'transfer' ? parseFloat(fee) || 0 : undefined,
+      fee: type === 'transfer' ? canonicalFee : undefined,
       receiptUrl,
       tags,
       personId: personId || undefined,
@@ -224,11 +256,37 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               </button>
             </div>
 
-            {/* Amount input + Persian Word Conversion */}
+            {/* Amount input + Persian Word Conversion + Unit Toggle */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                مبلغ ({currency === 'toman' ? 'تومان' : 'ریال'})
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  مبلغ تراکنش
+                </label>
+                <div className="flex items-center gap-1 bg-slate-200/70 dark:bg-slate-800 p-0.5 rounded-xl text-[11px] font-bold">
+                  <button
+                    type="button"
+                    onClick={() => handleUnitToggle('toman')}
+                    className={`px-2.5 py-0.5 rounded-lg transition ${
+                      inputUnit === 'toman'
+                        ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                    }`}
+                  >
+                    تومان
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleUnitToggle('rial')}
+                    className={`px-2.5 py-0.5 rounded-lg transition ${
+                      inputUnit === 'rial'
+                        ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                    }`}
+                  >
+                    ریال
+                  </button>
+                </div>
+              </div>
               <div className="relative">
                 <input
                   type="number"
@@ -237,17 +295,27 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   required
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  placeholder="مثلاً: 250000"
+                  placeholder={inputUnit === 'toman' ? 'مثلاً: 250000 تومان' : 'مثلاً: 2500000 ریال'}
                   className="w-full px-4 py-3 rounded-2xl bg-white/70 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-lg font-black text-slate-900 dark:text-white outline-none font-mono"
                 />
                 <span className="absolute left-3.5 top-3.5 text-xs text-slate-400 font-bold">
-                  {currency === 'toman' ? 'تومان' : 'ریال'}
+                  {inputUnit === 'toman' ? 'تومان' : 'ریال'}
                 </span>
               </div>
               {numAmount > 0 && (
-                <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium mt-1.5 px-1 leading-relaxed">
-                  معادل: {numberToWordsPersian(numAmount, currency)}
-                </p>
+                <div className="mt-1.5 px-1 space-y-0.5">
+                  <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium leading-relaxed">
+                    به حروف: {numberToWordsPersian(
+                      inputUnit === 'rial' ? Math.round(numAmount / 10) : numAmount,
+                      inputUnit
+                    )}
+                  </p>
+                  <p className="text-[11px] text-slate-400 font-mono">
+                    {inputUnit === 'rial'
+                      ? `معادل ذخیره در سیستم: ${(Math.round(numAmount / 10)).toLocaleString('fa-IR')} تومان`
+                      : `معادل ریالی: ${(Math.round(numAmount * 10)).toLocaleString('fa-IR')} ریال`}
+                  </p>
+                </div>
               )}
             </div>
 

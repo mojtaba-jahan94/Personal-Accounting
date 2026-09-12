@@ -34,7 +34,16 @@ interface TransactionListProps {
 }
 
 export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransactionModal }) => {
-  const { transactions, categories, accounts, currency, deleteTransaction } = useFinance();
+  const {
+    transactions,
+    categories,
+    accounts,
+    currency,
+    deleteTransaction,
+    divideTransactionBy10,
+    multiplyTransactionBy10,
+    batchFixRialTransactions,
+  } = useFinance();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState<TransactionType | 'all'>('all');
@@ -84,6 +93,14 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
     .reduce((sum, t) => sum + t.amount, 0);
 
   const filteredNet = filteredIncome - filteredExpense;
+
+  const suspectTransactions = transactions.filter(
+    tx =>
+      (tx.categoryId === 'cat-invest' ||
+        tx.tags?.includes('خرید دارایی') ||
+        tx.tags?.includes('فروش دارایی')) &&
+      tx.amount >= 15000000
+  );
 
   const handleResetFilters = () => {
     setSearchTerm('');
@@ -337,6 +354,37 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
         icon={<ListOrdered className="w-5 h-5 text-indigo-500" />}
         defaultExpanded={true}
       >
+        {suspectTransactions.length > 0 && (
+          <div className="mb-4 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-800 dark:text-amber-300 text-xs">
+            <div className="flex items-center gap-2.5">
+              <span className="text-lg">⚠️</span>
+              <div>
+                <span className="font-black block text-xs sm:text-sm">
+                  {toPersianDigits(suspectTransactions.length)} تراکنش مشکوک به ثبت با رقم ریالی (۱۰ برابر) یافت شد!
+                </span>
+                <span className="text-[11px] opacity-85">
+                  می‌توانید با یک کلیک مبالغ این تراکنش‌ها را اصلاح و به تومان تبدیل کنید (موجودی حساب‌ها نیز متناسباً اصلاح می‌شود).
+                </span>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                if (
+                  window.confirm(
+                    'آیا می‌خواهید تراکنش‌های با مبالغ بالای ریالی در سبد دارایی‌ها تصحیح شده و به تومان تبدیل شوند؟ موجودی حساب‌ها نیز اصلاح خواهد شد.'
+                  )
+                ) {
+                  const count = batchFixRialTransactions();
+                  alert(`${toPersianDigits(count)} تراکنش با موفقیت به تومان تبدیل و حساب‌ها اصلاح شدند.`);
+                }
+              }}
+              className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-xs transition shadow-xs shrink-0 self-end sm:self-auto"
+            >
+              اصلاح هوشمند مبالغ (تبدیل به تومان)
+            </button>
+          </div>
+        )}
+
         {filtered.length === 0 ? (
           <div className="text-center py-16 px-4">
             <Filter className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
@@ -368,35 +416,29 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
                   key={tx.id}
                   className="p-3.5 sm:px-4 sm:py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-white/40 dark:hover:bg-slate-800/40 transition rounded-2xl"
                 >
-                  <div className="flex items-start sm:items-center gap-3.5 min-w-0">
+                  <div className="flex items-center gap-3">
                     <div
-                      className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 text-white shadow-xs"
+                      className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm"
                       style={{
-                        backgroundColor:
-                          tx.type === 'transfer' ? '#6366f1' : cat ? cat.color : '#64748b',
+                        backgroundColor: (cat?.color || '#6366f1') + '15',
+                        color: cat?.color || '#6366f1',
                       }}
                     >
-                      {tx.type === 'transfer' ? (
-                        <ArrowLeftRight className="w-5 h-5" />
-                      ) : cat ? (
-                        getCategoryIcon(cat.icon)
-                      ) : (
-                        <Tag className="w-5 h-5" />
-                      )}
+                      {getCategoryIcon(cat?.icon || 'Folder', 'w-5 h-5')}
                     </div>
 
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">
+                        <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
                           {tx.description}
-                        </h4>
+                        </span>
                         <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-md shrink-0 ${
+                          className={`text-[10px] px-2 py-0.5 rounded-full font-bold shrink-0 ${
                             tx.type === 'income'
-                              ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
+                              ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
                               : tx.type === 'expense'
-                              ? 'bg-rose-500/15 text-rose-700 dark:text-rose-300'
-                              : 'bg-indigo-500/15 text-indigo-700 dark:text-indigo-300'
+                              ? 'bg-rose-500/15 text-rose-600 dark:text-rose-400'
+                              : 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400'
                           }`}
                         >
                           {tx.type === 'income' ? 'درآمد' : tx.type === 'expense' ? 'هزینه' : 'انتقال'}
@@ -451,6 +493,36 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
                     </div>
 
                     <div className="flex items-center gap-1 text-slate-400">
+                      <button
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              `آیا می‌خواهید مبلغ این تراکنش (${tx.amount.toLocaleString('fa-IR')}) بر ۱۰ تقسیم شود (اصلاح ریال به تومان)؟ تفاوت به حساب مربوطه برگردانده خواهد شد.`
+                            )
+                          ) {
+                            divideTransactionBy10(tx.id);
+                          }
+                        }}
+                        title="تقسیم بر ۱۰ (اصلاح ثبت اشتباه ریالی به تومان)"
+                        className="px-2 py-1 rounded-lg hover:bg-amber-500/15 hover:text-amber-600 text-[11px] font-mono font-black border border-slate-200/80 dark:border-slate-700 transition"
+                      >
+                        ÷۱۰
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (
+                            window.confirm(
+                              `آیا می‌خواهید مبلغ این تراکنش (${tx.amount.toLocaleString('fa-IR')}) در ۱۰ ضرب شود؟`
+                            )
+                          ) {
+                            multiplyTransactionBy10(tx.id);
+                          }
+                        }}
+                        title="ضرب در ۱۰"
+                        className="px-2 py-1 rounded-lg hover:bg-indigo-500/15 hover:text-indigo-600 text-[11px] font-mono font-black border border-slate-200/80 dark:border-slate-700 transition"
+                      >
+                        ×۱۰
+                      </button>
                       {tx.receiptUrl && (
                         <button
                           onClick={() => setViewingReceipt(tx.receiptUrl!)}

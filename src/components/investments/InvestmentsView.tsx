@@ -294,7 +294,7 @@ export const InvestmentsView: React.FC = () => {
               </div>
 
               <div className="text-xs sm:text-sm font-black text-slate-900 dark:text-white font-mono">
-                {formatCurrency(currency === 'rial' ? rate.priceToman * 10 : rate.priceToman, currency)}
+                {formatCurrency(rate.priceToman, currency)}
               </div>
 
               <div className="flex items-center justify-between text-[10px] pt-1.5 border-t border-slate-200/30 dark:border-white/5">
