@@ -146,12 +146,17 @@ export interface MarketRate {
   isManual?: boolean;
 }
 
+export type MarketPriceUnit = 'auto' | 'toman' | 'rial';
+
 export interface MarketSourceConfig {
   sourceType: 'auto' | 'telegram' | 'tgju';
   telegramGoldChannel: string; // default: 'Narkuab'
   telegramUsdChannel: string; // default: 'tahran_sabza'
   lastTelegramMessageGold?: string;
   lastTelegramMessageUsd?: string;
+  goldSourceUnit?: MarketPriceUnit;
+  usdSourceUnit?: MarketPriceUnit;
+  tgjuSourceUnit?: MarketPriceUnit;
 }
 
 export type Currency = 'toman' | 'rial';

@@ -192,7 +192,7 @@ export const MarketRatesCustomizeModal: React.FC<MarketRatesCustomizeModalProps>
                       </span>
                     </div>
                     <div className="text-[11px] font-mono text-slate-500 dark:text-slate-400 mt-0.5">
-                      {formatCurrency(rate.priceToman, currency)}
+                      {formatCurrency(currency === 'rial' ? rate.priceToman * 10 : rate.priceToman, currency)}
                     </div>
                   </div>
                 </div>

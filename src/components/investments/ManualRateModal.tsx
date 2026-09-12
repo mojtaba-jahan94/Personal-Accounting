@@ -20,13 +20,28 @@ export const ManualRateModal: React.FC<ManualRateModalProps> = ({
 }) => {
   if (!isOpen || !rate) return null;
 
+  const [inputUnit, setInputUnit] = useState<'toman' | 'rial'>('toman');
   const [customPrice, setCustomPrice] = useState<string>(rate.priceToman.toString());
+
+  const handleUnitChange = (newUnit: 'toman' | 'rial') => {
+    if (newUnit === inputUnit) return;
+    const parsed = parseInt(customPrice.replace(/[^0-9]/g, ''), 10);
+    if (!isNaN(parsed) && parsed > 0) {
+      if (newUnit === 'rial') {
+        setCustomPrice((parsed * 10).toString());
+      } else {
+        setCustomPrice(Math.round(parsed / 10).toString());
+      }
+    }
+    setInputUnit(newUnit);
+  };
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = parseInt(customPrice.replace(/[^0-9]/g, ''), 10);
     if (!isNaN(parsed) && parsed > 0) {
-      onSave(rate.id, parsed);
+      const finalToman = inputUnit === 'rial' ? Math.round(parsed / 10) : parsed;
+      onSave(rate.id, finalToman);
       onClose();
     }
   };
@@ -35,6 +50,9 @@ export const ManualRateModal: React.FC<ManualRateModalProps> = ({
     onSave(rate.id, null);
     onClose();
   };
+
+  const rawParsed = parseInt(customPrice.replace(/[^0-9]/g, ''), 10) || 0;
+  const calculatedToman = inputUnit === 'rial' ? Math.round(rawParsed / 10) : rawParsed;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
@@ -62,10 +80,37 @@ export const ManualRateModal: React.FC<ManualRateModalProps> = ({
         </div>
 
         <form onSubmit={handleSave} className="space-y-4">
-          <div>
-            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1.5">
-              قیمت مد نظر شما (به تومان):
-            </label>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                قیمت مد نظر شما:
+              </label>
+              <div className="flex items-center p-0.5 bg-slate-200/60 dark:bg-slate-800 rounded-lg text-xs font-bold">
+                <button
+                  type="button"
+                  onClick={() => handleUnitChange('toman')}
+                  className={`px-2.5 py-0.5 rounded-md transition ${
+                    inputUnit === 'toman'
+                      ? 'bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-xs'
+                      : 'text-slate-500'
+                  }`}
+                >
+                  تومان
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleUnitChange('rial')}
+                  className={`px-2.5 py-0.5 rounded-md transition ${
+                    inputUnit === 'rial'
+                      ? 'bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow-xs'
+                      : 'text-slate-500'
+                  }`}
+                >
+                  ریال
+                </button>
+              </div>
+            </div>
+
             <div className="relative">
               <input
                 type="number"
@@ -76,12 +121,24 @@ export const ManualRateModal: React.FC<ManualRateModalProps> = ({
                 onChange={e => setCustomPrice(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-xl text-sm font-bold font-mono liquid-glass border border-slate-300/60 dark:border-white/10 focus:outline-none focus:border-amber-500 text-slate-900 dark:text-white"
               />
-              <span className="absolute left-3 top-2.5 text-xs text-slate-400">تومان</span>
-            </div>
-            {customPrice && !isNaN(parseInt(customPrice, 10)) && (
-              <span className="text-[11px] text-amber-600 dark:text-amber-400 mt-1 block">
-                معادل: {formatCurrency(parseInt(customPrice, 10), currency)}
+              <span className="absolute left-3 top-2.5 text-xs text-slate-400 font-bold">
+                {inputUnit === 'toman' ? 'تومان' : 'ریال'}
               </span>
+            </div>
+
+            {rawParsed > 0 && (
+              <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] space-y-1">
+                <div className="flex items-center justify-between text-amber-800 dark:text-amber-200 font-bold">
+                  <span>معادل ذخیره در سبد دارایی:</span>
+                  <span className="font-mono text-xs">{formatCurrency(calculatedToman, 'toman')}</span>
+                </div>
+                {inputUnit === 'toman' && (
+                  <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 text-[10px]">
+                    <span>معادل به ریال:</span>
+                    <span className="font-mono">{formatCurrency(rawParsed * 10, 'rial')}</span>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 

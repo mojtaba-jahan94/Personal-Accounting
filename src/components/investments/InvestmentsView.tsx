@@ -263,7 +263,7 @@ export const InvestmentsView: React.FC = () => {
               }}
               className="text-sky-500 hover:underline flex items-center gap-1 text-xs font-bold px-2 py-1"
             >
-              <span className="whitespace-nowrap">تنظیم منبع</span>
+              <span className="whitespace-nowrap">تنظیم منبع و واحد</span>
             </button>
           </div>
         }
@@ -294,7 +294,7 @@ export const InvestmentsView: React.FC = () => {
               </div>
 
               <div className="text-xs sm:text-sm font-black text-slate-900 dark:text-white font-mono">
-                {formatCurrency(rate.priceToman, currency)}
+                {formatCurrency(currency === 'rial' ? rate.priceToman * 10 : rate.priceToman, currency)}
               </div>
 
               <div className="flex items-center justify-between text-[10px] pt-1.5 border-t border-slate-200/30 dark:border-white/5">

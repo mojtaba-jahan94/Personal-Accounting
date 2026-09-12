@@ -233,6 +233,145 @@ export const MarketSourceModal: React.FC<MarketSourceModalProps> = ({
           </div>
         </div>
 
+        {/* Source Currency Units Configuration */}
+        <div className="p-4 rounded-2xl liquid-glass border border-slate-200/60 dark:border-white/10 space-y-3.5">
+          <div>
+            <div className="flex items-center gap-1.5 text-xs font-black text-slate-800 dark:text-slate-200">
+              <Sparkles className="w-4 h-4 text-amber-500" />
+              <span>واحد پولی سورس‌ها (تومان یا ریال)</span>
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
+              سورس‌ها ممکن است نرخ‌ها را به تومان یا ریال بنویسند. سیستم با هوش مصنوعی اعداد ریالی (۱۰ برابر) را تشخیص داده و یکپارچه به تومان تبدیل می‌کند.
+            </p>
+          </div>
+
+          <div className="space-y-2.5 pt-1">
+            {/* Gold channel unit */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-100/60 dark:bg-slate-800/50">
+              <div>
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                  واحد کانال طلای تلگرام:
+                </span>
+                <span className="text-[10px] text-slate-400">مثال: اگر پیام ۴۵,۰۰۰,۰۰۰ ریال است، خودکار تبدیل به ۴,۵۰۰,۰۰۰ تومان شود</span>
+              </div>
+              <div className="flex items-center gap-1 p-1 bg-slate-200/60 dark:bg-slate-900 rounded-xl text-[11px] shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setConfig(prev => ({ ...prev, goldSourceUnit: 'auto' }))}
+                  className={`px-2.5 py-1 rounded-lg font-bold transition ${
+                    (config.goldSourceUnit || 'auto') === 'auto'
+                      ? 'bg-amber-500 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                  }`}
+                >
+                  هوشمند (پیشنهادی)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfig(prev => ({ ...prev, goldSourceUnit: 'toman' }))}
+                  className={`px-2.5 py-1 rounded-lg font-bold transition ${
+                    config.goldSourceUnit === 'toman'
+                      ? 'bg-amber-500 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                  }`}
+                >
+                  تومان
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfig(prev => ({ ...prev, goldSourceUnit: 'rial' }))}
+                  className={`px-2.5 py-1 rounded-lg font-bold transition ${
+                    config.goldSourceUnit === 'rial'
+                      ? 'bg-amber-500 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                  }`}
+                >
+                  ریال (تقسیم بر ۱۰)
+                </button>
+              </div>
+            </div>
+
+            {/* USD channel unit */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-100/60 dark:bg-slate-800/50">
+              <div>
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                  واحد کانال دلار تلگرام:
+                </span>
+                <span className="text-[10px] text-slate-400">مثال: اعلام ۸۹,۵۰۰ تومان یا ۸۹۵,۰۰۰ ریال</span>
+              </div>
+              <div className="flex items-center gap-1 p-1 bg-slate-200/60 dark:bg-slate-900 rounded-xl text-[11px] shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setConfig(prev => ({ ...prev, usdSourceUnit: 'auto' }))}
+                  className={`px-2.5 py-1 rounded-lg font-bold transition ${
+                    (config.usdSourceUnit || 'auto') === 'auto'
+                      ? 'bg-sky-500 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                  }`}
+                >
+                  هوشمند (پیشنهادی)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfig(prev => ({ ...prev, usdSourceUnit: 'toman' }))}
+                  className={`px-2.5 py-1 rounded-lg font-bold transition ${
+                    config.usdSourceUnit === 'toman'
+                      ? 'bg-sky-500 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                  }`}
+                >
+                  تومان
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfig(prev => ({ ...prev, usdSourceUnit: 'rial' }))}
+                  className={`px-2.5 py-1 rounded-lg font-bold transition ${
+                    config.usdSourceUnit === 'rial'
+                      ? 'bg-sky-500 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                  }`}
+                >
+                  ریال (تقسیم بر ۱۰)
+                </button>
+              </div>
+            </div>
+
+            {/* TGJU site unit */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-xl bg-slate-100/60 dark:bg-slate-800/50">
+              <div>
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                  واحد ارقام سایت TGJU:
+                </span>
+                <span className="text-[10px] text-slate-400">شبکه اطلاع‌رسانی TGJU نرخ‌ها را رسمی به ریال درج می‌کند</span>
+              </div>
+              <div className="flex items-center gap-1 p-1 bg-slate-200/60 dark:bg-slate-900 rounded-xl text-[11px] shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setConfig(prev => ({ ...prev, tgjuSourceUnit: 'rial' }))}
+                  className={`px-2.5 py-1 rounded-lg font-bold transition ${
+                    (config.tgjuSourceUnit || 'rial') === 'rial'
+                      ? 'bg-emerald-600 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                  }`}
+                >
+                  ریال (تبدیل به تومان)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfig(prev => ({ ...prev, tgjuSourceUnit: 'toman' }))}
+                  className={`px-2.5 py-1 rounded-lg font-bold transition ${
+                    config.tgjuSourceUnit === 'toman'
+                      ? 'bg-emerald-600 text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                  }`}
+                >
+                  تومان
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Telegram Messages Preview */}
         {(config.lastTelegramMessageGold || config.lastTelegramMessageUsd) && (
           <div className="p-3.5 rounded-2xl bg-slate-100/70 dark:bg-slate-900/50 border border-slate-200/50 dark:border-white/5 space-y-2">
