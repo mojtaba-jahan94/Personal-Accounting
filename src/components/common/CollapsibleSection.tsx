@@ -53,14 +53,14 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
         } ${headerClassName}`}
         onClick={toggle}
       >
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1 pl-2">
           {icon && <div className="shrink-0">{icon}</div>}
-          <div>
-            <div className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <div className="min-w-0">
+            <div className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2 truncate">
               {title}
             </div>
             {subtitle && (
-              <div className="text-xs text-slate-500 dark:text-slate-400">
+              <div className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
                 {subtitle}
               </div>
             )}

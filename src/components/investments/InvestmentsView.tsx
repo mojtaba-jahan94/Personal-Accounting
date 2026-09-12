@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { AssetHolding, MarketRate } from '../../types';
 import { formatCurrency, toPersianDigits } from '../../utils/formatters';
@@ -6,25 +6,25 @@ import { AssetModal } from './AssetModal';
 import { MarketSourceModal } from './MarketSourceModal';
 import { ManualRateModal } from './ManualRateModal';
 import { SellAssetModal } from './SellAssetModal';
+import { MarketRatesCustomizeModal } from './MarketRatesCustomizeModal';
 import { CollapsibleSection } from '../common/CollapsibleSection';
 import {
   Coins,
   TrendingUp,
-  TrendingDown,
   RefreshCw,
   Plus,
   Edit2,
   Trash2,
-  DollarSign,
   PieChart as PieIcon,
-  Sparkles,
-  Calendar,
   Radio,
   SlidersHorizontal,
   Layers,
   ArrowDownLeft,
 } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
+
+const RATES_ORDER_KEY = 'pf_market_rates_custom_order_v1';
+const RATES_HIDDEN_KEY = 'pf_market_rates_hidden_v1';
 
 export const InvestmentsView: React.FC = () => {
   const { assets, marketRates, currency, deleteAsset, refreshMarketRates, setManualRate } =
@@ -35,7 +35,61 @@ export const InvestmentsView: React.FC = () => {
   const [sellingAsset, setSellingAsset] = useState<AssetHolding | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSourceModalOpen, setIsSourceModalOpen] = useState(false);
+  const [isCustomizeRatesOpen, setIsCustomizeRatesOpen] = useState(false);
   const [editingRate, setEditingRate] = useState<MarketRate | null>(null);
+
+  // Custom order and hidden rates preferences
+  const [rateOrder, setRateOrder] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(RATES_ORDER_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [hiddenRateIds, setHiddenRateIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem(RATES_HIDDEN_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Calculate visible & ordered market rates
+  const visibleMarketRates = useMemo(() => {
+    const rateMap = new Map(marketRates.map(r => [r.id, r]));
+    const hiddenSet = new Set(hiddenRateIds);
+
+    // 1. Arrange rates according to rateOrder
+    const ordered: MarketRate[] = [];
+    const addedIds = new Set<string>();
+
+    for (const id of rateOrder) {
+      const r = rateMap.get(id);
+      if (r && !hiddenSet.has(id)) {
+        ordered.push(r);
+        addedIds.add(id);
+      }
+    }
+
+    // 2. Add any remaining rates that weren't in rateOrder
+    for (const r of marketRates) {
+      if (!addedIds.has(r.id) && !hiddenSet.has(r.id)) {
+        ordered.push(r);
+      }
+    }
+
+    return ordered.length > 0 ? ordered : marketRates;
+  }, [marketRates, rateOrder, hiddenRateIds]);
+
+  const handleSaveRateCustomization = (newOrder: string[], newHiddenIds: string[]) => {
+    setRateOrder(newOrder);
+    setHiddenRateIds(newHiddenIds);
+    localStorage.setItem(RATES_ORDER_KEY, JSON.stringify(newOrder));
+    localStorage.setItem(RATES_HIDDEN_KEY, JSON.stringify(newHiddenIds));
+  };
 
   // Totals
   const totalCurrentValue = assets.reduce((sum, a) => sum + a.amount * a.currentPrice, 0);
@@ -97,7 +151,7 @@ export const InvestmentsView: React.FC = () => {
             title="پیکربندی کانال‌های تلگرام و سایت منبع قیمت‌ها"
           >
             <Radio className="w-4 h-4 text-sky-500 animate-pulse" />
-            <span>منبع قیمت‌ها (تلگرام / سایت)</span>
+            <span className="whitespace-nowrap">منبع قیمت‌ها</span>
           </button>
 
           <button
@@ -106,7 +160,7 @@ export const InvestmentsView: React.FC = () => {
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl liquid-glass text-slate-700 dark:text-slate-200 text-xs font-bold hover:border-amber-400 transition"
           >
             <RefreshCw className={`w-4 h-4 text-amber-500 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>به‌روزرسانی قیمت‌ها</span>
+            <span className="whitespace-nowrap">به‌روزرسانی قیمت‌ها</span>
           </button>
 
           <button
@@ -117,7 +171,7 @@ export const InvestmentsView: React.FC = () => {
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-500 text-white text-xs font-bold shadow-md shadow-amber-500/25 transition active:scale-95"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
-            <span>ثبت خرید دارایی</span>
+            <span className="whitespace-nowrap">ثبت خرید دارایی</span>
           </button>
         </div>
       </div>
@@ -131,7 +185,7 @@ export const InvestmentsView: React.FC = () => {
         defaultExpanded={true}
       >
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
-          <div className="p-4 rounded-2xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/30">
+          <div className="p-4 sm:p-5 rounded-2xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/30">
             <span className="text-xs font-bold text-slate-500 block mb-1">
               ارزش کل روز دارایی‌ها (سبد سرمایه)
             </span>
@@ -143,7 +197,7 @@ export const InvestmentsView: React.FC = () => {
             </span>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/50 dark:border-white/10">
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/50 dark:border-white/10">
             <span className="text-xs font-bold text-slate-500 block mb-1">
               مجموع بهای خرید اولیه (سرمایه پرداختی)
             </span>
@@ -153,7 +207,7 @@ export const InvestmentsView: React.FC = () => {
             <span className="text-[11px] text-slate-400 mt-1 block">میانگین هزینه کل خرید</span>
           </div>
 
-          <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/50 dark:border-white/10">
+          <div className="p-4 sm:p-5 rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/50 dark:border-white/10">
             <span className="text-xs font-bold text-slate-500 block mb-1">
               سود / زیان کل سبد
             </span>
@@ -181,34 +235,48 @@ export const InvestmentsView: React.FC = () => {
         </div>
       </CollapsibleSection>
 
-      {/* 2. Live Market Rates Ticker Bar (Collapsible) */}
+      {/* 2. Live Market Rates Ticker Bar (Collapsible with Customization) */}
       <CollapsibleSection
         storageKey="inv_market_rates_ticker"
         title="تابلوی زنده قیمت‌های طلا، سکه و ارز در ایران"
-        subtitle={`منبع قیمت‌ها: بروزرسانی ${marketRates[0]?.lastUpdated || 'لحظه‌ای'}`}
+        subtitle={`منبع قیمت‌ها: بروزرسانی ${marketRates[0]?.lastUpdated || 'لحظه‌ای'} • ${toPersianDigits(visibleMarketRates.length)} نماد فعال`}
         icon={<Radio className="w-5 h-5 text-sky-500" />}
         defaultExpanded={true}
         headerAction={
-          <button
-            onClick={e => {
-              e.stopPropagation();
-              setIsSourceModalOpen(true);
-            }}
-            className="text-sky-500 hover:underline flex items-center gap-1 text-xs font-bold px-2 py-1"
-          >
-            <span>تنظیم منبع</span>
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={e => {
+                e.stopPropagation();
+                setIsCustomizeRatesOpen(true);
+              }}
+              className="px-2.5 py-1 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-700 dark:text-amber-300 text-xs font-bold flex items-center gap-1 transition"
+              title="شخصی‌سازی نمادها و چیدمان تابلوی قیمت‌ها"
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5 text-amber-500" />
+              <span className="whitespace-nowrap">شخصی‌سازی تابلو</span>
+            </button>
+
+            <button
+              onClick={e => {
+                e.stopPropagation();
+                setIsSourceModalOpen(true);
+              }}
+              className="text-sky-500 hover:underline flex items-center gap-1 text-xs font-bold px-2 py-1"
+            >
+              <span className="whitespace-nowrap">تنظیم منبع</span>
+            </button>
+          </div>
         }
       >
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 pt-1">
-          {marketRates.map(rate => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 pt-1">
+          {visibleMarketRates.map(rate => (
             <div
               key={rate.id}
               onClick={() => setEditingRate(rate)}
-              className="p-3 rounded-2xl liquid-glass border border-slate-200/50 dark:border-white/10 space-y-1.5 hover:border-amber-400/60 hover:shadow-lg transition cursor-pointer group relative"
+              className="p-3.5 sm:p-4 rounded-2xl liquid-glass border border-slate-200/50 dark:border-white/10 space-y-2 hover:border-amber-400/60 hover:shadow-lg transition cursor-pointer group relative"
             >
-              <div className="flex items-center justify-between text-[11px]">
-                <span className="font-bold text-slate-700 dark:text-slate-300 truncate">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-slate-800 dark:text-slate-200 truncate">
                   {rate.name}
                 </span>
                 <div className="flex items-center gap-1">
@@ -229,7 +297,7 @@ export const InvestmentsView: React.FC = () => {
                 {formatCurrency(rate.priceToman, currency)}
               </div>
 
-              <div className="flex items-center justify-between text-[10px] pt-1 border-t border-slate-200/30 dark:border-white/5">
+              <div className="flex items-center justify-between text-[10px] pt-1.5 border-t border-slate-200/30 dark:border-white/5">
                 <span
                   className={`truncate max-w-[120px] ${
                     rate.isManual
@@ -267,11 +335,11 @@ export const InvestmentsView: React.FC = () => {
                 className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1 px-2 py-1"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>ثبت خرید</span>
+                <span className="whitespace-nowrap">ثبت خرید</span>
               </button>
             }
           >
-            <div className="divide-y divide-slate-200/40 dark:divide-white/10 pt-1">
+            <div className="space-y-3.5 pt-1">
               {assets.length === 0 ? (
                 <div className="text-center py-12 text-slate-400 text-xs">
                   هنوز هیچ دارایی (طلا، ارز، رمزارز و...) در سبد ثبت نشده است. با دکمه بالا دارایی جدید
@@ -287,93 +355,119 @@ export const InvestmentsView: React.FC = () => {
                   return (
                     <div
                       key={asset.id}
-                      className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-white/40 dark:hover:bg-slate-800/40 transition rounded-2xl px-2"
+                      className="p-4 sm:p-5 rounded-2xl bg-white/60 dark:bg-slate-800/40 border border-slate-200/60 dark:border-white/10 hover:border-amber-400/50 hover:shadow-md transition space-y-3"
                     >
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 font-bold text-xs">
-                          <Coins className="w-5 h-5" />
+                      {/* Card Header: Name + Badge + Total Value & ROI */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                            <Coins className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
+                                {asset.name}
+                              </h4>
+                              <span className="text-[11px] font-bold px-2 py-0.5 rounded-lg bg-amber-500/15 text-amber-700 dark:text-amber-300">
+                                {toPersianDigits(asset.amount)} {asset.unitName}
+                              </span>
+                            </div>
+                            <div className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-2">
+                              <span>{assetTypeLabels[asset.type]?.label || 'سرمایه‌گذاری'}</span>
+                              {asset.buyDate && (
+                                <>
+                                  <span>•</span>
+                                  <span>خرید: {toPersianDigits(asset.buyDate)}</span>
+                                </>
+                              )}
+                            </div>
+                          </div>
                         </div>
 
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="text-sm font-black text-slate-900 dark:text-white">
-                              {asset.name}
-                            </h4>
-                            <span className="text-xs font-bold px-2 py-0.5 rounded-lg bg-slate-200/60 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                              {toPersianDigits(asset.amount)} {asset.unitName}
-                            </span>
+                        {/* Total Value & Profit Badge */}
+                        <div className="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-0 border-slate-100 dark:border-slate-700/50">
+                          <div className="text-right sm:text-left">
+                            <div className="text-[10px] text-slate-400">ارزش کل روز:</div>
+                            <div className="text-sm sm:text-base font-black text-slate-900 dark:text-white font-mono">
+                              {formatCurrency(totalAssetValue, currency)}
+                            </div>
                           </div>
-
-                          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mt-1">
-                            <span>خرید: {formatCurrency(asset.buyPrice, currency)}</span>
-                            <span>•</span>
-                            <span className="text-slate-600 dark:text-slate-300">
-                              قیمت روز: {formatCurrency(asset.currentPrice, currency)}
+                          <div
+                            className={`px-2.5 py-1 rounded-xl text-xs font-mono font-black shrink-0 ${
+                              assetProfit >= 0
+                                ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30'
+                                : 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30'
+                            }`}
+                          >
+                            {assetProfit >= 0 ? '+' : ''}
+                            {toPersianDigits(roi.toFixed(1))}٪
+                            <span className="text-[10px] mr-1 opacity-85 font-mono">
+                              ({formatCurrency(assetProfit, currency)})
                             </span>
-                            {asset.buyDate && (
-                              <>
-                                <span>•</span>
-                                <span>تاریخ: {toPersianDigits(asset.buyDate)}</span>
-                              </>
-                            )}
-                            {asset.notes && (
-                              <>
-                                <span>•</span>
-                                <span className="truncate max-w-[150px]">{asset.notes}</span>
-                              </>
-                            )}
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-0 border-slate-100 dark:border-slate-800">
-                        <div className="text-right sm:text-left">
-                          <div className="text-sm sm:text-base font-black text-slate-900 dark:text-white font-mono">
-                            {formatCurrency(totalAssetValue, currency)}
-                          </div>
-                          <div
-                            className={`text-xs font-bold font-mono ${
-                              assetProfit >= 0 ? 'text-emerald-600' : 'text-rose-600'
-                            }`}
-                          >
-                            {assetProfit >= 0 ? '+ ' : ''}
-                            {formatCurrency(assetProfit, currency)} ({toPersianDigits(roi.toFixed(1))}
-                            ٪)
-                          </div>
+                      {/* Clean 3-Column Numbers Grid */}
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 p-3 rounded-xl bg-slate-50/70 dark:bg-slate-900/40 border border-slate-200/40 dark:border-white/5 text-xs">
+                        <div>
+                          <span className="text-slate-400 block text-[11px] mb-0.5">قیمت خرید هر واحد:</span>
+                          <span className="font-mono font-bold text-slate-700 dark:text-slate-200">
+                            {formatCurrency(asset.buyPrice, currency)}
+                          </span>
                         </div>
 
-                        <div className="flex items-center gap-1.5">
-                          {/* Sell Asset Button */}
-                          <button
-                            onClick={() => setSellingAsset(asset)}
-                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500 text-amber-700 dark:text-amber-300 hover:text-white text-xs font-bold transition shadow-xs active:scale-95"
-                            title="فروش بخشی یا تمام این دارایی"
-                          >
-                            <ArrowDownLeft className="w-3.5 h-3.5" />
-                            <span>فروش</span>
-                          </button>
-
-                          {/* Edit Button */}
-                          <button
-                            onClick={() => {
-                              setEditingAsset(asset);
-                              setIsAssetModalOpen(true);
-                            }}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-white/40 dark:hover:bg-slate-800 transition"
-                            title="ویرایش دارایی"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-
-                          {/* Delete Button */}
-                          <button
-                            onClick={() => handleDelete(asset.id)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-white/40 dark:hover:bg-slate-800 transition"
-                            title="حذف"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                        <div>
+                          <span className="text-slate-400 block text-[11px] mb-0.5">قیمت لحظه‌ای روز:</span>
+                          <span className="font-mono font-bold text-amber-600 dark:text-amber-400">
+                            {formatCurrency(asset.currentPrice, currency)}
+                          </span>
                         </div>
+
+                        <div className="col-span-2 sm:col-span-1">
+                          <span className="text-slate-400 block text-[11px] mb-0.5">بهای کل خرید (سرمایه):</span>
+                          <span className="font-mono font-bold text-slate-700 dark:text-slate-200">
+                            {formatCurrency(totalAssetCost, currency)}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Notes if any */}
+                      {asset.notes && (
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 bg-slate-100/60 dark:bg-slate-800/30 px-3 py-1.5 rounded-lg border border-slate-200/30 dark:border-white/5">
+                          <span className="font-bold text-slate-600 dark:text-slate-300">یادداشت: </span>
+                          {asset.notes}
+                        </div>
+                      )}
+
+                      {/* Action Buttons Toolbar */}
+                      <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-100 dark:border-white/5">
+                        <button
+                          onClick={() => setSellingAsset(asset)}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500 text-amber-700 dark:text-amber-300 hover:text-white text-xs font-bold transition shadow-xs active:scale-95"
+                          title="فروش بخشی یا تمام این دارایی"
+                        >
+                          <ArrowDownLeft className="w-3.5 h-3.5" />
+                          <span>ثبت فروش دارایی</span>
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditingAsset(asset);
+                            setIsAssetModalOpen(true);
+                          }}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-bold transition"
+                          title="ویرایش اطلاعات"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                          <span>ویرایش</span>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(asset.id)}
+                          className="p-1.5 rounded-xl hover:bg-rose-500/15 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 transition"
+                          title="حذف از سبد"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
                   );
@@ -479,6 +573,16 @@ export const InvestmentsView: React.FC = () => {
         isOpen={isSourceModalOpen}
         onClose={() => setIsSourceModalOpen(false)}
         onRefresh={handleRefresh}
+      />
+
+      <MarketRatesCustomizeModal
+        isOpen={isCustomizeRatesOpen}
+        onClose={() => setIsCustomizeRatesOpen(false)}
+        allRates={marketRates}
+        visibleRateIds={visibleMarketRates.map(r => r.id)}
+        rateOrder={rateOrder}
+        onSave={handleSaveRateCustomization}
+        currency={currency}
       />
 
       {editingRate && (

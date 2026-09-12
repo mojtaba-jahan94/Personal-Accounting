@@ -366,9 +366,9 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
               return (
                 <div
                   key={tx.id}
-                  className="py-3 sm:px-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-white/40 dark:hover:bg-slate-800/40 transition rounded-2xl"
+                  className="p-3.5 sm:px-4 sm:py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-white/40 dark:hover:bg-slate-800/40 transition rounded-2xl"
                 >
-                  <div className="flex items-start sm:items-center gap-3.5">
+                  <div className="flex items-start sm:items-center gap-3.5 min-w-0">
                     <div
                       className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 text-white shadow-xs"
                       style={{
@@ -385,13 +385,13 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
                       )}
                     </div>
 
-                    <div>
+                    <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white truncate">
                           {tx.description}
                         </h4>
                         <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-md shrink-0 ${
                             tx.type === 'income'
                               ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300'
                               : tx.type === 'expense'

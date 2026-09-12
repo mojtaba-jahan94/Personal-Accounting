@@ -276,29 +276,29 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     const cat = categories.find(c => c.id === tx.categoryId);
                     const acc = accounts.find(a => a.id === tx.accountId);
                     return (
-                      <div key={tx.id} className="py-3 flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-3">
+                      <div key={tx.id} className="py-3 px-1 sm:px-2 flex items-center justify-between gap-3 hover:bg-white/40 dark:hover:bg-slate-800/40 rounded-xl transition">
+                        <div className="flex items-center gap-3 min-w-0 flex-1 pl-2">
                           <div
                             className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 text-white shadow-xs"
                             style={{ backgroundColor: cat ? cat.color : '#64748b' }}
                           >
                             {cat ? getCategoryIcon(cat.icon) : <Wallet className="w-5 h-5" />}
                           </div>
-                          <div>
-                            <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                          <div className="min-w-0">
+                            <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
                               {tx.description || (cat ? cat.name : 'تراکنش')}
                             </div>
-                            <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
-                              <span>{formatJalaliLong(tx.date)}</span>
+                            <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5 truncate">
+                              <span className="whitespace-nowrap">{formatJalaliLong(tx.date)}</span>
                               <span>•</span>
-                              <span>{acc ? acc.name : ''}</span>
+                              <span className="truncate">{acc ? acc.name : ''}</span>
                             </div>
                           </div>
                         </div>
 
                         <div className="text-left shrink-0">
                           <div
-                            className={`text-xs sm:text-sm font-black ${
+                            className={`text-xs sm:text-sm font-black font-mono whitespace-nowrap ${
                               tx.type === 'income'
                                 ? 'text-emerald-600 dark:text-emerald-400'
                                 : tx.type === 'expense'
@@ -309,7 +309,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             {tx.type === 'income' ? '+ ' : tx.type === 'expense' ? '- ' : '↔ '}
                             {formatCurrency(tx.amount, currency)}
                           </div>
-                          <span className="text-[10px] text-slate-400">
+                          <span className="text-[10px] text-slate-400 block whitespace-nowrap">
                             {tx.type === 'income' ? 'درآمد' : tx.type === 'expense' ? 'هزینه' : 'انتقال'}
                           </span>
                         </div>

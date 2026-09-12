@@ -27,15 +27,15 @@ export const StatCard: React.FC<StatCardProps> = ({
       <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-transparent via-white/50 dark:via-white/20 to-transparent" />
 
       <div className="flex items-start justify-between">
-        <div>
-          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">
+        <div className="min-w-0 flex-1 pl-2">
+          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1 whitespace-nowrap truncate">
             {title}
           </p>
-          <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+          <h3 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight whitespace-nowrap truncate font-mono">
             {amount}
           </h3>
           {subtext && (
-            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 whitespace-nowrap truncate">
               {subtext}
             </p>
           )}
