@@ -9,6 +9,7 @@ import { TransactionList } from './components/transactions/TransactionList';
 import { TransactionModal } from './components/transactions/TransactionModal';
 import { AccountsView } from './components/accounts/AccountsView';
 import { TransferModal } from './components/accounts/TransferModal';
+import { InvestmentsView } from './components/investments/InvestmentsView';
 import { BudgetView } from './components/budget/BudgetView';
 import { GoalsView } from './components/goals/GoalsView';
 import { DebtsAndChequesView } from './components/debts/DebtsAndChequesView';
@@ -46,6 +47,8 @@ const MainApp: React.FC = () => {
         );
       case 'accounts':
         return <AccountsView />;
+      case 'investments':
+        return <InvestmentsView />;
       case 'budgets':
         return <BudgetView />;
       case 'goals':
@@ -69,7 +72,7 @@ const MainApp: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col transition-colors relative">
-      {/* Ambient Lighting Orbs (Controlled by Theme Settings) */}
+      {/* Ambient Lighting Orbs */}
       {themeConfig.ambientOrbs && (
         <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
           <div className="absolute -top-32 -left-32 w-80 sm:w-96 h-80 sm:h-96 bg-indigo-500/15 dark:bg-indigo-600/20 rounded-full blur-3xl animate-float-optimized" />

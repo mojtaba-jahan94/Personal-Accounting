@@ -9,11 +9,11 @@ import {
   Cheque,
   Currency,
   ThemeConfig,
-  AccentColor,
-  GlassIntensity,
-  AnimationSpeed,
+  AssetHolding,
+  MarketRate,
 } from '../types';
 import { DEFAULT_ACCOUNTS, DEFAULT_CATEGORIES, getDemoData } from '../utils/sampleData';
+import { getCachedMarketRates, fetchLiveMarketRates, INITIAL_MARKET_RATES } from '../services/marketRates';
 
 interface FinanceContextType {
   accounts: Account[];
@@ -23,6 +23,8 @@ interface FinanceContextType {
   goals: Goal[];
   debts: Debt[];
   cheques: Cheque[];
+  assets: AssetHolding[];
+  marketRates: MarketRate[];
   currency: Currency;
   darkMode: boolean;
   themeConfig: ThemeConfig;
@@ -37,6 +39,7 @@ interface FinanceContextType {
   deleteAccount: (id: string) => void;
 
   addCategory: (cat: Omit<Category, 'id'>) => void;
+  updateCategory: (cat: Category) => void;
   deleteCategory: (id: string) => void;
 
   addBudget: (b: Omit<Budget, 'id'>) => void;
@@ -58,6 +61,11 @@ interface FinanceContextType {
   deleteCheque: (id: string) => void;
   changeChequeStatus: (id: string, status: Cheque['status']) => void;
 
+  addAsset: (asset: Omit<AssetHolding, 'id'>) => void;
+  updateAsset: (asset: AssetHolding) => void;
+  deleteAsset: (id: string) => void;
+  refreshMarketRates: () => Promise<void>;
+
   setCurrency: (c: Currency) => void;
   toggleDarkMode: () => void;
   updateThemeConfig: (config: Partial<ThemeConfig>) => void;
@@ -77,11 +85,12 @@ const FinanceContext = createContext<FinanceContextType | undefined>(undefined);
 const STORAGE_KEYS = {
   ACCOUNTS: 'pf_accounts_v1',
   TRANSACTIONS: 'pf_transactions_v1',
-  CATEGORIES: 'pf_categories_v1',
+  CATEGORIES: 'pf_categories_v2',
   BUDGETS: 'pf_budgets_v1',
   GOALS: 'pf_goals_v1',
   DEBTS: 'pf_debts_v1',
   CHEQUES: 'pf_cheques_v1',
+  ASSETS: 'pf_assets_v1',
   CURRENCY: 'pf_currency_v1',
   THEME_CONFIG: 'pf_theme_config_v2',
 };
@@ -93,6 +102,45 @@ const DEFAULT_THEME_CONFIG: ThemeConfig = {
   ambientOrbs: true,
   animationSpeed: 'fast',
 };
+
+const DEFAULT_ASSETS: AssetHolding[] = [
+  {
+    id: 'ast-1',
+    name: 'طلای ۱۸ عیار',
+    type: 'gold_18k',
+    marketSymbol: 'gold_18k',
+    amount: 15.2,
+    unitName: 'گرم',
+    buyPrice: 3450000,
+    currentPrice: 3740000,
+    buyDate: '1403/04/10',
+    notes: 'پس‌انداز طلا',
+  },
+  {
+    id: 'ast-2',
+    name: 'سکه تمام طرح جدید (امامی)',
+    type: 'gold_coin',
+    marketSymbol: 'coin_emami',
+    amount: 2,
+    unitName: 'عدد',
+    buyPrice: 41000000,
+    currentPrice: 44200000,
+    buyDate: '1403/03/15',
+    notes: 'خرید از صرافی ملت',
+  },
+  {
+    id: 'ast-3',
+    name: 'دلار آمریکا',
+    type: 'currency',
+    marketSymbol: 'usd',
+    amount: 1500,
+    unitName: 'دلار',
+    buyPrice: 58500,
+    currentPrice: 61500,
+    buyDate: '1403/05/20',
+    notes: 'ارز مسافرتی',
+  }
+];
 
 export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [accounts, setAccounts] = useState<Account[]>(() => {
@@ -138,6 +186,15 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (saved) return JSON.parse(saved);
     const demo = getDemoData();
     return demo.cheques;
+  });
+
+  const [assets, setAssets] = useState<AssetHolding[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.ASSETS);
+    return saved ? JSON.parse(saved) : DEFAULT_ASSETS;
+  });
+
+  const [marketRates, setMarketRates] = useState<MarketRate[]>(() => {
+    return getCachedMarketRates();
   });
 
   const [currency, setCurrency] = useState<Currency>(() => {
@@ -217,8 +274,45 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [cheques]);
 
   useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.ASSETS, JSON.stringify(assets));
+  }, [assets]);
+
+  useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.CURRENCY, currency);
   }, [currency]);
+
+  // Refresh live market rates
+  const refreshMarketRates = async () => {
+    const latest = await fetchLiveMarketRates();
+    setMarketRates(latest);
+
+    // Also automatically update currentPrice for assets tied to marketSymbol
+    setAssets(prev =>
+      prev.map(asset => {
+        if (asset.marketSymbol) {
+          const rate = latest.find(r => r.id === asset.marketSymbol);
+          if (rate) {
+            return { ...asset, currentPrice: rate.priceToman };
+          }
+        }
+        return asset;
+      })
+    );
+  };
+
+  // Assets CRUD
+  const addAsset = (asset: Omit<AssetHolding, 'id'>) => {
+    const newAsset: AssetHolding = { ...asset, id: 'ast-' + Date.now() };
+    setAssets(prev => [newAsset, ...prev]);
+  };
+
+  const updateAsset = (asset: AssetHolding) => {
+    setAssets(prev => prev.map(a => (a.id === asset.id ? asset : a)));
+  };
+
+  const deleteAsset = (id: string) => {
+    setAssets(prev => prev.filter(a => a.id !== id));
+  };
 
   // Transaction Actions
   const addTransaction = (tx: Omit<Transaction, 'id'>) => {
@@ -344,6 +438,10 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setCategories(prev => [...prev, newCat]);
   };
 
+  const updateCategory = (cat: Category) => {
+    setCategories(prev => prev.map(c => (c.id === cat.id ? cat : c)));
+  };
+
   const deleteCategory = (id: string) => {
     setCategories(prev => prev.filter(c => c.id !== id));
   };
@@ -444,11 +542,12 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setGoals(demo.goals);
     setDebts(demo.debts);
     setCheques(demo.cheques);
+    setAssets(DEFAULT_ASSETS);
   };
 
   const exportDataJSON = (): string => {
     const data = {
-      version: 2,
+      version: 3,
       exportDate: new Date().toISOString(),
       accounts,
       transactions,
@@ -457,6 +556,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       goals,
       debts,
       cheques,
+      assets,
       currency,
       themeConfig,
     };
@@ -473,6 +573,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (data.goals) setGoals(data.goals);
       if (data.debts) setDebts(data.debts);
       if (data.cheques) setCheques(data.cheques);
+      if (data.assets) setAssets(data.assets);
       if (data.currency) setCurrency(data.currency);
       if (data.themeConfig) setThemeConfig(data.themeConfig);
       return true;
@@ -488,6 +589,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setGoals([]);
     setDebts([]);
     setCheques([]);
+    setAssets([]);
     setAccounts(DEFAULT_ACCOUNTS.map(a => ({ ...a, balance: 0 })));
   };
 
@@ -512,6 +614,8 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         goals,
         debts,
         cheques,
+        assets,
+        marketRates,
         currency,
         darkMode,
         themeConfig,
@@ -522,6 +626,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updateAccount,
         deleteAccount,
         addCategory,
+        updateCategory,
         deleteCategory,
         addBudget,
         updateBudget,
@@ -538,6 +643,10 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updateCheque,
         deleteCheque,
         changeChequeStatus,
+        addAsset,
+        updateAsset,
+        deleteAsset,
+        refreshMarketRates,
         setCurrency,
         toggleDarkMode,
         updateThemeConfig,

@@ -12,6 +12,7 @@ import {
   FileCheck2,
   BarChart3,
   Settings,
+  Coins,
 } from 'lucide-react';
 
 interface BottomNavProps {
@@ -28,11 +29,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
 
   const moreItems: { id: TabType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+    { id: 'investments', label: 'سبد طلا و ارز', icon: Coins },
     { id: 'accounts', label: 'حساب‌ها و کارت‌ها', icon: CreditCard },
     { id: 'goals', label: 'اهداف و قلک', icon: Target },
     { id: 'debts', label: 'بدهی، طلب و چک', icon: FileCheck2 },
     { id: 'reports', label: 'گزارش و تحلیل', icon: BarChart3 },
-    { id: 'settings', label: 'تنظیمات و پشتیبان', icon: Settings },
+    { id: 'settings', label: 'تنظیمات و استودیو', icon: Settings },
   ];
 
   return (
@@ -138,7 +140,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <button
             onClick={() => setMoreMenuOpen(!moreMenuOpen)}
             className={`flex flex-col items-center gap-1 text-[11px] font-bold transition ${
-              moreMenuOpen || ['accounts', 'goals', 'debts', 'reports', 'settings'].includes(currentTab)
+              moreMenuOpen || ['investments', 'accounts', 'goals', 'debts', 'reports', 'settings'].includes(currentTab)
                 ? 'text-indigo-600 dark:text-indigo-400'
                 : 'text-slate-500 dark:text-slate-400'
             }`}

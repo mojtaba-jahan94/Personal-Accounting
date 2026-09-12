@@ -85,6 +85,38 @@ export interface Cheque {
   notes?: string;
 }
 
+// Investments & Portfolio Types
+export type AssetType =
+  | 'gold_18k'
+  | 'gold_coin'
+  | 'currency'
+  | 'crypto'
+  | 'stock_other';
+
+export interface AssetHolding {
+  id: string;
+  name: string;
+  type: AssetType;
+  marketSymbol?: string; // e.g. 'usd', 'gold_18k', 'coin_emami', 'tether'
+  amount: number; // e.g. 15 (grams), 2 (coins), 1000 (dollars)
+  unitName: string; // گرم، عدد، دلار، واحد
+  buyPrice: number; // average purchase price per unit in Toman
+  currentPrice: number; // current market price per unit in Toman
+  buyDate?: string; // Jalali date
+  notes?: string;
+}
+
+export interface MarketRate {
+  id: string;
+  symbol: string;
+  name: string;
+  category: 'gold' | 'currency' | 'crypto';
+  priceToman: number;
+  changePercent?: number;
+  unit: string;
+  lastUpdated: string;
+}
+
 export type Currency = 'toman' | 'rial';
 
 // Theme Studio Pro Types

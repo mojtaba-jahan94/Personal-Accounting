@@ -8,6 +8,7 @@ import {
   FileCheck2,
   BarChart3,
   Settings,
+  Coins,
   Sparkles,
 } from 'lucide-react';
 
@@ -15,6 +16,7 @@ export type TabType =
   | 'dashboard'
   | 'transactions'
   | 'accounts'
+  | 'investments'
   | 'budgets'
   | 'goals'
   | 'debts'
@@ -37,11 +39,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
     { id: 'dashboard', label: 'داشبورد اصلی', icon: LayoutDashboard },
     { id: 'transactions', label: 'تراکنش‌ها و اسناد', icon: ReceiptText },
     { id: 'accounts', label: 'حساب‌ها و کارت‌ها', icon: CreditCard },
+    { id: 'investments', label: 'سبد طلا، ارز و دارایی', icon: Coins },
     { id: 'budgets', label: 'بودجه‌بندی ماهانه', icon: PieChart },
     { id: 'goals', label: 'اهداف و قلک پس‌انداز', icon: Target },
     { id: 'debts', label: 'بدهی، طلب و چک', icon: FileCheck2 },
     { id: 'reports', label: 'گزارش‌ها و نمودارها', icon: BarChart3 },
-    { id: 'settings', label: 'تنظیمات و پشتیبان', icon: Settings },
+    { id: 'settings', label: 'تنظیمات و استودیو', icon: Settings },
   ];
 
   return (
@@ -72,12 +75,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
       </div>
 
       {/* Tip Card at bottom of sidebar */}
-      <div className="mt-auto p-4 rounded-2xl bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-transparent border border-indigo-200/40 dark:border-indigo-800/40">
-        <div className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 text-xs font-bold mb-1">
-          💡 نکته مالی هوشمند
+      <div className="mt-auto p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 via-purple-500/10 to-transparent border border-amber-200/40 dark:border-amber-800/40">
+        <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 text-xs font-bold mb-1">
+          💡 تنوع سبد سرمایه
         </div>
         <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
-          اول پس‌انداز کنید، بعد باقیمانده را خرج کنید؛ نه اینکه اول خرج کنید و آنچه ماند را پس‌انداز کنید.
+          تقسیم دارایی میان طلا، ارز و پس‌انداز نقد ریسک نوسانات بازار را به حداقل می‌رساند.
         </p>
       </div>
     </aside>
