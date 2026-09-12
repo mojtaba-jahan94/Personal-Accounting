@@ -11,12 +11,11 @@ import {
   TrendingDown,
   PiggyBank,
   Plus,
-  ArrowUpRight,
-  ArrowDownLeft,
   ArrowLeftRight,
   AlertTriangle,
-  Calendar,
   ChevronLeft,
+  Sparkles,
+  Smartphone,
 } from 'lucide-react';
 import { TabType } from '../layout/Sidebar';
 
@@ -39,50 +38,49 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     transactions,
     categories,
     budgets,
-    goals,
     cheques,
     currency,
   } = useFinance();
 
   const netSavings = totalIncome - totalExpense;
   const savingsRate = totalIncome > 0 ? Math.round((netSavings / totalIncome) * 100) : 0;
-
-  // Recent 5 transactions
   const recentTransactions = transactions.slice(0, 5);
-
-  // Pending cheques
   const pendingCheques = cheques.filter(c => c.status === 'pending');
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Welcome Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-indigo-600 via-indigo-700 to-indigo-900 p-6 sm:p-8 text-white shadow-xl shadow-indigo-500/15">
+      {/* Liquid Glass Hero Banner */}
+      <div className="relative overflow-hidden rounded-3xl liquid-glass border border-white/40 dark:border-white/10 p-6 sm:p-8 shadow-2xl">
+        <div className="absolute -right-20 -top-20 w-72 h-72 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -left-20 -bottom-20 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
+
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <span className="inline-block px-3 py-1 rounded-full bg-white/15 backdrop-blur-md text-xs font-medium mb-3">
-              ✨ پیشخوان هوشمند مدیریت مالی شخصی
-            </span>
-            <h2 className="text-xl sm:text-2xl lg:text-3xl font-black mb-2">
-              سلام! تراز مالی شما {netSavings >= 0 ? 'مثبت و مطلوب' : 'نیازمند مدیریت'} است
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-700 dark:text-indigo-300 text-xs font-bold mb-3">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>پیشخوان مالی هوشمند • تم لیکویید گلس</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white mb-2">
+              وضعیت تراز مالی شما {netSavings >= 0 ? 'مطلوب و رو به رشد' : 'نیازمند بهینه‌سازی'} است
             </h2>
-            <p className="text-xs sm:text-sm text-indigo-100 max-w-xl leading-relaxed">
-              کنترل هزینه‌ها، پس‌انداز برای اهداف و برنامه‌ریزی چک‌ها و اقساط در یک نگاه.
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed">
+              مدیریت هوشمند دارایی‌ها، کنترل سقف بودجه ماهانه و یادآور چک‌های صیادی به صورت کاملاً آفلاین و امن.
             </p>
           </div>
 
           <div className="flex flex-wrap gap-2.5">
             <button
               onClick={onOpenTransactionModal}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white text-indigo-700 font-bold text-xs sm:text-sm shadow-md hover:bg-indigo-50 active:scale-95 transition"
+              className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white font-black text-xs sm:text-sm shadow-lg shadow-indigo-600/30 active:scale-95 transition"
             >
-              <Plus className="w-4 h-4" />
-              <span>ثبت تراکنش</span>
+              <Plus className="w-4 h-4 stroke-[3]" />
+              <span>ثبت تراکنش جدید</span>
             </button>
             <button
               onClick={onOpenTransferModal}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-indigo-500/40 hover:bg-indigo-500/60 backdrop-blur-md text-white font-medium text-xs sm:text-sm border border-white/20 transition"
+              className="flex items-center gap-2 px-4 py-3 rounded-2xl liquid-glass hover:bg-white/80 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs sm:text-sm transition"
             >
-              <ArrowLeftRight className="w-4 h-4" />
+              <ArrowLeftRight className="w-4 h-4 text-indigo-500" />
               <span>انتقال وجه</span>
             </button>
           </div>
@@ -94,7 +92,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         <StatCard
           title="مجموع موجودی و دارایی"
           amount={formatCurrency(totalBalance, currency)}
-          subtext={`${toPersianDigits(accounts.length)} حساب فعال`}
+          subtext={`${toPersianDigits(accounts.length)} حساب و کارت فعال`}
           icon={Wallet}
           colorClass="bg-indigo-600"
         />
@@ -130,48 +128,51 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         />
       </div>
 
-      {/* Accounts & Cards Preview Carousel */}
-      <div className="glass-card p-5">
+      {/* Accounts & Cards Liquid Glass Carousel */}
+      <div className="liquid-glass-card p-5 sm:p-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">کیف‌پول‌ها و کارت‌های بانکی</h3>
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">کارت‌های بانکی و کیف‌پول‌ها</h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">موجودی لحظه‌ای حساب‌های شما</p>
           </div>
           <button
             onClick={() => onSelectTab('accounts')}
-            className="flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+            className="flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
           >
             <span>مدیریت همه</span>
             <ChevronLeft className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {accounts.map(acc => (
             <div
               key={acc.id}
-              className="rounded-2xl p-4 text-white relative overflow-hidden shadow-sm flex flex-col justify-between h-36"
-              style={{ backgroundColor: acc.color || '#4f46e5' }}
+              className="rounded-3xl p-5 text-white relative overflow-hidden shadow-lg flex flex-col justify-between h-40 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl"
+              style={{
+                backgroundColor: acc.color || '#4f46e5',
+                backgroundImage: 'radial-gradient(circle at 100% 0%, rgba(255,255,255,0.25) 0%, transparent 70%)',
+              }}
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <span className="text-[11px] font-medium opacity-80">{acc.bankName || 'حساب من'}</span>
-                  <h4 className="text-sm font-bold truncate mt-0.5">{acc.name}</h4>
+                  <span className="text-[11px] font-medium opacity-85">{acc.bankName || 'حساب من'}</span>
+                  <h4 className="text-sm font-black truncate mt-0.5">{acc.name}</h4>
                 </div>
-                <span className="p-1.5 rounded-xl bg-white/20 backdrop-blur-sm">
+                <span className="p-2 rounded-2xl bg-white/20 backdrop-blur-md">
                   <Wallet className="w-4 h-4" />
                 </span>
               </div>
 
               {acc.cardNumber && (
-                <div className="font-mono text-xs tracking-wider opacity-90 dir-ltr text-center">
+                <div className="font-mono text-xs tracking-widest opacity-95 dir-ltr text-center font-bold">
                   {formatCardNumber(acc.cardNumber)}
                 </div>
               )}
 
-              <div className="pt-2 border-t border-white/20 flex items-center justify-between">
+              <div className="pt-2.5 border-t border-white/25 flex items-center justify-between">
                 <span className="text-[11px] opacity-80">موجودی:</span>
-                <span className="font-bold text-sm">{formatCurrency(acc.balance, currency)}</span>
+                <span className="font-black text-sm">{formatCurrency(acc.balance, currency)}</span>
               </div>
             </div>
           ))}
@@ -180,18 +181,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
       {/* Analytics Grid: Donut + Bar */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <div className="glass-card p-5">
-          <div className="flex items-center justify-between mb-2">
+        <div className="liquid-glass-card p-5 sm:p-6">
+          <div className="flex items-center justify-between mb-3">
             <div>
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">تفکیک مخارج بر اساس دسته‌بندی</h3>
-              <p className="text-xs text-slate-500">پرتکرارترین هزینه‌های شما</p>
+              <p className="text-xs text-slate-500">پرتکرارترین هزینه‌های ثبت شده</p>
             </div>
           </div>
           <ExpenseChart type="pie" />
         </div>
 
-        <div className="glass-card p-5">
-          <div className="flex items-center justify-between mb-2">
+        <div className="liquid-glass-card p-5 sm:p-6">
+          <div className="flex items-center justify-between mb-3">
             <div>
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">روند درآمد و هزینه</h3>
               <p className="text-xs text-slate-500">مقایسه دوره‌ای دخل و خرج</p>
@@ -204,22 +205,22 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {/* Budgets & Recent Transactions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Recent Transactions (2 cols) */}
-        <div className="lg:col-span-2 glass-card p-5">
+        <div className="lg:col-span-2 liquid-glass-card p-5 sm:p-6">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-base font-bold text-slate-900 dark:text-white">آخرین تراکنش‌ها</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">فهرست ۵ فعالیت مالی اخیر</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">۵ فعالیت مالی اخیر</p>
             </div>
             <button
               onClick={() => onSelectTab('transactions')}
-              className="flex items-center gap-1 text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+              className="flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline"
             >
-              <span>مشاهده همه تراکنش‌ها</span>
+              <span>مشاهده همه</span>
               <ChevronLeft className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          <div className="divide-y divide-slate-200/40 dark:divide-white/5">
             {recentTransactions.length === 0 ? (
               <p className="text-center py-8 text-xs text-slate-400">تراکنشی ثبت نشده است</p>
             ) : (
@@ -230,7 +231,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   <div key={tx.id} className="py-3 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <div
-                        className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 text-white"
+                        className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 text-white shadow-xs"
                         style={{ backgroundColor: cat ? cat.color : '#64748b' }}
                       >
                         {cat ? getCategoryIcon(cat.icon) : <Wallet className="w-5 h-5" />}
@@ -274,21 +275,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         {/* Budgets & Alerts (1 col) */}
         <div className="space-y-5">
           {/* Active Budgets */}
-          <div className="glass-card p-5">
+          <div className="liquid-glass-card p-5 sm:p-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-bold text-slate-900 dark:text-white">وضعیت بودجه این ماه</h3>
               <button
                 onClick={() => onSelectTab('budgets')}
-                className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-bold"
               >
                 جزئیات
               </button>
             </div>
 
-            <div className="space-y-3.5">
+            <div className="space-y-4">
               {budgets.slice(0, 3).map(b => {
                 const cat = categories.find(c => c.id === b.categoryId);
-                // Calculate spent in this category
                 const spent = transactions
                   .filter(t => t.type === 'expense' && t.categoryId === b.categoryId)
                   .reduce((sum, t) => sum + t.amount, 0);
@@ -298,13 +298,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                 return (
                   <div key={b.id} className="space-y-1.5">
-                    <div className="flex justify-between text-xs font-medium">
+                    <div className="flex justify-between text-xs font-semibold">
                       <span className="text-slate-700 dark:text-slate-300">{cat ? cat.name : 'بودجه'}</span>
                       <span className={isDanger ? 'text-rose-600 font-bold' : 'text-slate-500'}>
                         {toPersianDigits(percent)}٪
                       </span>
                     </div>
-                    <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                    <div className="w-full bg-slate-200/50 dark:bg-slate-800/80 rounded-full h-2.5 overflow-hidden p-0.5">
                       <div
                         className={`h-full rounded-full transition-all duration-300 ${
                           isDanger ? 'bg-rose-500' : percent > 70 ? 'bg-amber-500' : 'bg-indigo-600'
@@ -313,7 +313,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       />
                     </div>
                     <div className="flex justify-between text-[10px] text-slate-400">
-                      <span>مصرف شده: {formatCurrency(spent, currency)}</span>
+                      <span>مصرف: {formatCurrency(spent, currency)}</span>
                       <span>سقف: {formatCurrency(b.amount, currency)}</span>
                     </div>
                   </div>
@@ -324,12 +324,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           {/* Pending Cheques Alert */}
           {pendingCheques.length > 0 && (
-            <div className="glass-card p-4 border-amber-200 dark:border-amber-900/40 bg-amber-50/50 dark:bg-amber-950/20">
-              <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-bold text-xs mb-2">
+            <div className="liquid-glass-card p-5 border-amber-300/50 dark:border-amber-500/30 bg-amber-500/10">
+              <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-black text-xs mb-2">
                 <AlertTriangle className="w-4 h-4" />
                 <span>یادآور چک‌های سررسید نزدیک</span>
               </div>
-              <p className="text-xs text-slate-600 dark:text-slate-300 mb-2">
+              <p className="text-xs text-slate-600 dark:text-slate-300 mb-2 leading-relaxed">
                 تعداد {toPersianDigits(pendingCheques.length)} فقره چک در جریان با مجموع مبلغ{' '}
                 {formatCurrency(pendingCheques.reduce((s, c) => s + c.amount, 0), currency)} دارید.
               </p>

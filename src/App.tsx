@@ -3,6 +3,7 @@ import { FinanceProvider } from './context/FinanceContext';
 import { Header } from './components/layout/Header';
 import { Sidebar, TabType } from './components/layout/Sidebar';
 import { BottomNav } from './components/layout/BottomNav';
+import { InstallPrompt } from './components/layout/InstallPrompt';
 import { DashboardView } from './components/dashboard/DashboardView';
 import { TransactionList } from './components/transactions/TransactionList';
 import { TransactionModal } from './components/transactions/TransactionModal';
@@ -66,14 +67,14 @@ const MainApp: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 transition-colors">
+    <div className="min-h-screen flex flex-col transition-colors relative z-10">
       <Header
         onOpenTransactionModal={() => handleOpenTransactionModal()}
         onOpenTransferModal={() => setIsTransferModalOpen(true)}
       />
 
       <div className="flex-1 flex max-w-7xl w-full mx-auto">
-        {/* Desktop Sidebar */}
+        {/* Desktop Liquid Glass Sidebar */}
         <Sidebar currentTab={currentTab} onSelectTab={setCurrentTab} />
 
         {/* Main Content Area */}
@@ -88,6 +89,9 @@ const MainApp: React.FC = () => {
         onSelectTab={setCurrentTab}
         onOpenTransactionModal={() => handleOpenTransactionModal()}
       />
+
+      {/* PWA Mobile Install Banner */}
+      <InstallPrompt />
 
       {/* Modals */}
       <TransactionModal

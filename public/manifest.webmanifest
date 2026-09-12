@@ -1,20 +1,39 @@
 {
-  "name": "حسابیار — دفتر مالی شخصی",
-  "short_name": "حسابیار",
-  "description": "مدیریت مالی شخصی، حساب‌ها، اقساط و تراکنش‌ها",
-  "lang": "fa",
-  "dir": "rtl",
-  "start_url": "./index.html",
+  "name": "حسابداری شخصی هوشمند",
+  "short_name": "مدیر مالی",
+  "description": "سامانه مدیریت مالی شخصی، بودجه‌بندی، چک‌های صیادی و اقساط",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "background_color": "#0c0f1d",
+  "theme_color": "#4f46e5",
   "orientation": "portrait-primary",
-  "background_color": "#1a1a2e",
-  "theme_color": "#6c63ff",
-  "categories": ["finance", "productivity"],
+  "dir": "rtl",
+  "lang": "fa",
   "icons": [
-    { "src": "./icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "./icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
-    { "src": "./icons/icon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }
-  ],
-  "screenshots": []
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
 }
