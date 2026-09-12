@@ -115,6 +115,16 @@ export interface MarketRate {
   changePercent?: number;
   unit: string;
   lastUpdated: string;
+  source?: string;
+  isManual?: boolean;
+}
+
+export interface MarketSourceConfig {
+  sourceType: 'auto' | 'telegram' | 'tgju';
+  telegramGoldChannel: string; // default: 'Narkuab'
+  telegramUsdChannel: string; // default: 'tahran_sabza'
+  lastTelegramMessageGold?: string;
+  lastTelegramMessageUsd?: string;
 }
 
 export type Currency = 'toman' | 'rial';

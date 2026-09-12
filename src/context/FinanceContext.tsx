@@ -13,7 +13,7 @@ import {
   MarketRate,
 } from '../types';
 import { DEFAULT_ACCOUNTS, DEFAULT_CATEGORIES, getDemoData } from '../utils/sampleData';
-import { getCachedMarketRates, fetchLiveMarketRates, INITIAL_MARKET_RATES } from '../services/marketRates';
+import { getCachedMarketRates, fetchLiveMarketRates, setManualMarketRate, INITIAL_MARKET_RATES } from '../services/marketRates';
 
 interface FinanceContextType {
   accounts: Account[];
@@ -65,6 +65,7 @@ interface FinanceContextType {
   updateAsset: (asset: AssetHolding) => void;
   deleteAsset: (id: string) => void;
   refreshMarketRates: () => Promise<void>;
+  setManualRate: (id: string, priceToman: number | null) => void;
 
   setCurrency: (c: Currency) => void;
   toggleDarkMode: () => void;
@@ -294,6 +295,22 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
           if (rate) {
             return { ...asset, currentPrice: rate.priceToman };
           }
+        }
+        return asset;
+      })
+    );
+  };
+
+  const setManualRate = (id: string, priceToman: number | null) => {
+    setManualMarketRate(id, priceToman);
+    const latest = getCachedMarketRates();
+    setMarketRates(latest);
+
+    // Sync assets immediately if needed
+    setAssets(prev =>
+      prev.map(asset => {
+        if (asset.marketSymbol === id && priceToman !== null) {
+          return { ...asset, currentPrice: priceToman };
         }
         return asset;
       })
@@ -647,6 +664,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updateAsset,
         deleteAsset,
         refreshMarketRates,
+        setManualRate,
         setCurrency,
         toggleDarkMode,
         updateThemeConfig,

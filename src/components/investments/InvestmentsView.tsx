@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useFinance } from '../../context/FinanceContext';
-import { AssetHolding } from '../../types';
+import { AssetHolding, MarketRate } from '../../types';
 import { formatCurrency, toPersianDigits } from '../../utils/formatters';
 import { AssetModal } from './AssetModal';
+import { MarketSourceModal } from './MarketSourceModal';
+import { ManualRateModal } from './ManualRateModal';
 import {
   Coins,
   TrendingUp,
@@ -15,15 +17,19 @@ import {
   PieChart as PieIcon,
   Sparkles,
   Calendar,
+  Radio,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 
 export const InvestmentsView: React.FC = () => {
-  const { assets, marketRates, currency, deleteAsset, refreshMarketRates } = useFinance();
+  const { assets, marketRates, currency, deleteAsset, refreshMarketRates, setManualRate } = useFinance();
 
   const [isAssetModalOpen, setIsAssetModalOpen] = useState(false);
   const [editingAsset, setEditingAsset] = useState<AssetHolding | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSourceModalOpen, setIsSourceModalOpen] = useState(false);
+  const [editingRate, setEditingRate] = useState<MarketRate | null>(null);
 
   // Totals
   const totalCurrentValue = assets.reduce((sum, a) => sum + a.amount * a.currentPrice, 0);
@@ -78,14 +84,23 @@ export const InvestmentsView: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <button
+            onClick={() => setIsSourceModalOpen(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl liquid-glass text-slate-700 dark:text-slate-200 text-xs font-bold hover:border-sky-400 transition"
+            title="پیکربندی کانال‌های تلگرام و سایت منبع قیمت‌ها"
+          >
+            <Radio className="w-4 h-4 text-sky-500 animate-pulse" />
+            <span>منبع قیمت‌ها (تلگرام / سایت)</span>
+          </button>
+
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl liquid-glass text-slate-700 dark:text-slate-200 text-xs font-bold hover:border-amber-400 transition"
           >
             <RefreshCw className={`w-4 h-4 text-amber-500 ${isRefreshing ? 'animate-spin' : ''}`} />
-            <span>به‌روزرسانی قیمت‌های بازار</span>
+            <span>به‌روزرسانی قیمت‌ها</span>
           </button>
 
           <button
@@ -154,40 +169,67 @@ export const InvestmentsView: React.FC = () => {
 
       {/* Live Market Rates Ticker Bar */}
       <div className="liquid-glass-card p-5 space-y-3">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
             <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">
               تابلوی زنده قیمت‌های طلا، سکه و ارز در ایران
             </h3>
           </div>
-          <span className="text-[11px] text-slate-400">
-            بروزرسانی: {marketRates[0]?.lastUpdated || 'لحظه‌ای'}
-          </span>
+          <div className="flex items-center gap-2 text-[11px] text-slate-400">
+            <span>بروزرسانی: {marketRates[0]?.lastUpdated || 'لحظه‌ای'}</span>
+            <span>•</span>
+            <button
+              onClick={() => setIsSourceModalOpen(true)}
+              className="text-sky-500 hover:underline flex items-center gap-1 font-bold"
+            >
+              <Radio className="w-3 h-3" />
+              <span>تنظیم منبع</span>
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
           {marketRates.map(rate => (
             <div
               key={rate.id}
-              className="p-3 rounded-2xl liquid-glass border border-slate-200/50 dark:border-white/10 space-y-1 hover:border-amber-400/50 transition"
+              onClick={() => setEditingRate(rate)}
+              className="p-3 rounded-2xl liquid-glass border border-slate-200/50 dark:border-white/10 space-y-1.5 hover:border-amber-400/60 hover:shadow-lg transition cursor-pointer group relative"
             >
               <div className="flex items-center justify-between text-[11px]">
                 <span className="font-bold text-slate-700 dark:text-slate-300 truncate">
                   {rate.name}
                 </span>
-                {rate.changePercent !== undefined && (
-                  <span
-                    className={`font-mono text-[10px] font-bold ${
-                      rate.changePercent >= 0 ? 'text-emerald-600' : 'text-rose-600'
-                    }`}
-                  >
-                    {rate.changePercent >= 0 ? '▲' : '▼'} {Math.abs(rate.changePercent)}٪
-                  </span>
-                )}
+                <div className="flex items-center gap-1">
+                  {rate.changePercent !== undefined && (
+                    <span
+                      className={`font-mono text-[10px] font-bold ${
+                        rate.changePercent >= 0 ? 'text-emerald-600' : 'text-rose-600'
+                      }`}
+                    >
+                      {rate.changePercent >= 0 ? '▲' : '▼'} {Math.abs(rate.changePercent)}٪
+                    </span>
+                  )}
+                  <Edit2 className="w-3 h-3 text-slate-400 opacity-0 group-hover:opacity-100 transition hover:text-amber-500" />
+                </div>
               </div>
+
               <div className="text-xs sm:text-sm font-black text-slate-900 dark:text-white font-mono">
                 {formatCurrency(rate.priceToman, currency)}
+              </div>
+
+              <div className="flex items-center justify-between text-[10px] pt-1 border-t border-slate-200/30 dark:border-white/5">
+                <span
+                  className={`truncate max-w-[120px] ${
+                    rate.isManual
+                      ? 'text-amber-600 dark:text-amber-400 font-bold'
+                      : 'text-slate-400'
+                  }`}
+                  title={rate.source}
+                >
+                  {rate.isManual ? '✏️ قیمت دستی شما' : (rate.source || 'خودکار')}
+                </span>
+                <span className="text-[9px] text-slate-400 opacity-75">تنظیم</span>
               </div>
             </div>
           ))}
@@ -385,6 +427,20 @@ export const InvestmentsView: React.FC = () => {
           setEditingAsset(null);
         }}
         initialAsset={editingAsset}
+      />
+
+      <MarketSourceModal
+        isOpen={isSourceModalOpen}
+        onClose={() => setIsSourceModalOpen(false)}
+        onRefresh={refreshMarketRates}
+      />
+
+      <ManualRateModal
+        rate={editingRate}
+        currency={currency}
+        isOpen={!!editingRate}
+        onClose={() => setEditingRate(null)}
+        onSave={setManualRate}
       />
     </div>
   );
