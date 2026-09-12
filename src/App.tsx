@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FinanceProvider, useFinance } from './context/FinanceContext';
 import { Header } from './components/layout/Header';
 import { Sidebar, TabType } from './components/layout/Sidebar';
@@ -15,6 +15,7 @@ import { GoalsView } from './components/goals/GoalsView';
 import { DebtsAndChequesView } from './components/debts/DebtsAndChequesView';
 import { ReportsView } from './components/reports/ReportsView';
 import { SettingsView } from './components/settings/SettingsView';
+import { SMSAssistantModal } from './components/transactions/SMSAssistantModal';
 import { Transaction } from './types';
 
 const MainApp: React.FC = () => {
@@ -22,7 +23,17 @@ const MainApp: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<TabType>('dashboard');
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
+  const [isSmsModalOpen, setIsSmsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sharedText = params.get('text') || params.get('title');
+    if (sharedText) {
+      setIsSmsModalOpen(true);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
   const handleOpenTransactionModal = (tx?: Transaction) => {
     setEditingTransaction(tx || null);
@@ -90,6 +101,7 @@ const MainApp: React.FC = () => {
       <Header
         onOpenTransactionModal={() => handleOpenTransactionModal()}
         onOpenTransferModal={() => setIsTransferModalOpen(true)}
+        onOpenSmsModal={() => setIsSmsModalOpen(true)}
       />
 
       <div className="flex-1 flex max-w-7xl w-full mx-auto relative z-10">
@@ -120,6 +132,11 @@ const MainApp: React.FC = () => {
       <TransferModal
         isOpen={isTransferModalOpen}
         onClose={() => setIsTransferModalOpen(false)}
+      />
+
+      <SMSAssistantModal
+        isOpen={isSmsModalOpen}
+        onClose={() => setIsSmsModalOpen(false)}
       />
     </div>
   );

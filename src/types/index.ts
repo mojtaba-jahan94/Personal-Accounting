@@ -130,16 +130,37 @@ export interface MarketSourceConfig {
 export type Currency = 'toman' | 'rial';
 
 // Theme Studio Pro Types
-export type AccentColor = 'indigo' | 'emerald' | 'rose' | 'amber' | 'cyan' | 'purple';
+export type AccentColor = 'indigo' | 'emerald' | 'rose' | 'amber' | 'cyan' | 'purple' | 'custom';
 export type GlassIntensity = 'low' | 'medium' | 'high';
 export type AnimationSpeed = 'fast' | 'normal' | 'none';
+export type BorderRadius = 'sharp' | 'smooth' | 'round';
+export type AppFont = 'vazirmatn' | 'shabnam' | 'sahel';
+export type AmbientGlow = 'off' | 'subtle' | 'vibrant';
 
 export interface ThemeConfig {
   mode: 'dark' | 'light';
   accent: AccentColor;
+  customAccentHex?: string;
+  amoledMode?: boolean;
   glassIntensity: GlassIntensity;
   ambientOrbs: boolean;
+  ambientGlow?: AmbientGlow;
   animationSpeed: AnimationSpeed;
+  borderRadius?: BorderRadius;
+  fontFamily?: AppFont;
+}
+
+export interface ParsedBankSMS {
+  bankName: string;
+  type: TransactionType;
+  amountToman: number;
+  cardLast4?: string;
+  accountNumber?: string;
+  balanceToman?: number;
+  date?: string;
+  time?: string;
+  description: string;
+  rawText: string;
 }
 
 export interface FilterOptions {

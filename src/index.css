@@ -91,6 +91,67 @@
   animation: none !important;
 }
 
+/* AMOLED Pure Black Mode */
+html.amoled body {
+  background-color: #000000 !important;
+  background-image: none !important;
+}
+
+html.amoled .dark .liquid-glass,
+html.amoled .dark .liquid-glass-card {
+  background: rgba(10, 10, 10, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.95) !important;
+}
+
+/* Border Radius Presets */
+[data-radius="sharp"] .liquid-glass-card,
+[data-radius="sharp"] .rounded-2xl {
+  border-radius: 0.65rem !important;
+}
+[data-radius="sharp"] .rounded-3xl {
+  border-radius: 0.85rem !important;
+}
+
+[data-radius="smooth"] .liquid-glass-card,
+[data-radius="smooth"] .rounded-2xl {
+  border-radius: 1.25rem !important;
+}
+[data-radius="smooth"] .rounded-3xl {
+  border-radius: 1.5rem !important;
+}
+
+[data-radius="round"] .liquid-glass-card,
+[data-radius="round"] .rounded-2xl {
+  border-radius: 2rem !important;
+}
+[data-radius="round"] .rounded-3xl {
+  border-radius: 2.5rem !important;
+}
+
+/* Font Family Selection */
+[data-font="vazirmatn"] {
+  font-family: 'Vazirmatn', system-ui, sans-serif !important;
+}
+[data-font="shabnam"] {
+  font-family: 'Shabnam', 'Vazirmatn', system-ui, sans-serif !important;
+}
+[data-font="sahel"] {
+  font-family: 'Sahel', 'Vazirmatn', system-ui, sans-serif !important;
+}
+
+/* Ambient Glow Controls */
+[data-glow="off"] .ambient-orb {
+  display: none !important;
+}
+[data-glow="subtle"] .ambient-orb {
+  opacity: 0.3 !important;
+}
+[data-glow="vibrant"] .ambient-orb {
+  opacity: 0.75 !important;
+  filter: blur(55px) !important;
+}
+
 @layer base {
   body {
     @apply antialiased text-slate-800 dark:text-slate-100 font-sans min-h-screen relative selection:bg-indigo-500 selection:text-white;

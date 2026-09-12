@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { formatCurrency } from '../../utils/formatters';
-import { Sun, Moon, Plus, Wallet, ArrowLeftRight, Smartphone, Download } from 'lucide-react';
+import { Sun, Moon, Plus, Wallet, ArrowLeftRight, Smartphone, Download, MessageSquareText } from 'lucide-react';
 
 interface HeaderProps {
   onOpenTransactionModal: () => void;
   onOpenTransferModal: () => void;
+  onOpenSmsModal: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   onOpenTransactionModal,
   onOpenTransferModal,
+  onOpenSmsModal,
 }) => {
   const { totalBalance, currency, setCurrency, darkMode, toggleDarkMode } = useFinance();
   const [showPwaTip, setShowPwaTip] = useState(false);
@@ -51,6 +53,16 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <Smartphone className="w-4 h-4 text-indigo-500" />
             <span className="hidden sm:inline">نصب برنامه</span>
+          </button>
+
+          {/* SMS Assistant button */}
+          <button
+            onClick={onOpenSmsModal}
+            title="دستیار هوشمند پیامک بانکی (ثبت خودکار از پیامک)"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-2 text-xs font-bold text-sky-700 dark:text-sky-300 bg-sky-50/80 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900/60 rounded-xl border border-sky-200/50 dark:border-sky-800/50 transition shadow-xs"
+          >
+            <MessageSquareText className="w-4 h-4 text-sky-500" />
+            <span className="hidden sm:inline">پیامک بانک</span>
           </button>
 
           {/* Transfer button */}

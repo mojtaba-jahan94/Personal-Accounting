@@ -99,9 +99,14 @@ const STORAGE_KEYS = {
 const DEFAULT_THEME_CONFIG: ThemeConfig = {
   mode: 'dark',
   accent: 'indigo',
+  customAccentHex: '#6366f1',
+  amoledMode: false,
   glassIntensity: 'medium',
   ambientOrbs: true,
+  ambientGlow: 'subtle',
   animationSpeed: 'fast',
+  borderRadius: 'smooth',
+  fontFamily: 'vazirmatn',
 };
 
 const DEFAULT_ASSETS: AssetHolding[] = [
@@ -224,9 +229,36 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     } else {
       root.classList.remove('dark');
     }
+
+    if (themeConfig.amoledMode && themeConfig.mode === 'dark') {
+      root.classList.add('amoled');
+    } else {
+      root.classList.remove('amoled');
+    }
+
     root.setAttribute('data-accent', themeConfig.accent);
     root.setAttribute('data-glass', themeConfig.glassIntensity);
     root.setAttribute('data-anim', themeConfig.animationSpeed);
+    root.setAttribute('data-radius', themeConfig.borderRadius || 'smooth');
+    root.setAttribute('data-font', themeConfig.fontFamily || 'vazirmatn');
+    root.setAttribute('data-glow', themeConfig.ambientGlow || 'subtle');
+
+    // Dynamic Custom Accent Color if selected
+    if (themeConfig.accent === 'custom' && themeConfig.customAccentHex) {
+      const hex = themeConfig.customAccentHex;
+      const r = parseInt(hex.slice(1, 3), 16) || 99;
+      const g = parseInt(hex.slice(3, 5), 16) || 102;
+      const b = parseInt(hex.slice(5, 7), 16) || 241;
+      root.style.setProperty('--primary-color', hex);
+      root.style.setProperty('--primary-rgb', `${r}, ${g}, ${b}`);
+      root.style.setProperty('--primary-hover', hex);
+      root.style.setProperty('--primary-glow', `rgba(${r}, ${g}, ${b}, 0.28)`);
+    } else {
+      root.style.removeProperty('--primary-color');
+      root.style.removeProperty('--primary-rgb');
+      root.style.removeProperty('--primary-hover');
+      root.style.removeProperty('--primary-glow');
+    }
 
     localStorage.setItem(STORAGE_KEYS.THEME_CONFIG, JSON.stringify(themeConfig));
   }, [themeConfig]);

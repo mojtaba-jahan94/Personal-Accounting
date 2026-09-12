@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useFinance } from '../../context/FinanceContext';
-import { AccentColor, GlassIntensity, AnimationSpeed } from '../../types';
+import { AccentColor, GlassIntensity, AnimationSpeed, BorderRadius, AppFont, AmbientGlow } from '../../types';
 import {
   Settings,
   Download,
@@ -18,7 +18,14 @@ import {
   Zap,
   Eye,
   Check,
+  Pipette,
+  Type,
+  Maximize2,
+  SunMedium,
+  Smartphone,
+  MessageSquareText,
 } from 'lucide-react';
+import { SMSAssistantModal } from '../transactions/SMSAssistantModal';
 
 const ACCENT_COLORS: { id: AccentColor; name: string; hex: string; desc: string }[] = [
   { id: 'indigo', name: 'نیلی رویایی', hex: '#6366f1', desc: 'کلاسیک و متوازن' },
@@ -27,6 +34,24 @@ const ACCENT_COLORS: { id: AccentColor; name: string; hex: string; desc: string 
   { id: 'amber', name: 'کهربایی طلایی', hex: '#f59e0b', desc: 'طلایی و سلطنتی' },
   { id: 'cyan', name: 'اقیانوس نئونی', hex: '#06b6d4', desc: 'آینده‌نگر و شفاف' },
   { id: 'purple', name: 'بنفش امیتیست', hex: '#a855f7', desc: 'عمیق و رازآلود' },
+];
+
+const BORDER_RADII: { id: BorderRadius; name: string; desc: string }[] = [
+  { id: 'sharp', name: 'مدرن شارپ (۸px)', desc: 'گوشه‌های تیز و صنعتی مناسب داشبورد فشرده' },
+  { id: 'smooth', name: 'استاندارد نرم (۱۶px)', desc: 'گردی استاندارد و ارگونومیک (پیشنهادی)' },
+  { id: 'round', name: 'کپسولی ارگانیک (۲۴px)', desc: 'بسیار گرد و مدرن با حس نرمی و لطافت' },
+];
+
+const APP_FONTS: { id: AppFont; name: string; desc: string }[] = [
+  { id: 'vazirmatn', name: 'وزیرمتن (Vazirmatn)', desc: 'خواناترین و محبوب‌ترین قلم استاندارد وب فارسی' },
+  { id: 'shabnam', name: 'شبنم (Shabnam)', desc: 'قلم رسمی، شکیل با فاصله‌گذاری متناسب' },
+  { id: 'sahel', name: 'ساحل (Sahel)', desc: 'قلم ساده و تمیز مناسب گزارش‌های مالی' },
+];
+
+const GLOW_LEVELS: { id: AmbientGlow; name: string; desc: string }[] = [
+  { id: 'off', name: 'خاموش', desc: 'حداکثر بازدهی و صرفه‌جویی باتری' },
+  { id: 'subtle', name: 'ملایم (پیش‌فرض)', desc: 'نورپردازی نرم و چشم‌نواز' },
+  { id: 'vibrant', name: 'درخشان و پویا', desc: 'افکت‌های نوری عمیق و زنده' },
 ];
 
 const GLASS_INTENSITIES: { id: GlassIntensity; name: string; desc: string }[] = [
@@ -56,6 +81,7 @@ export const SettingsView: React.FC = () => {
   } = useFinance();
 
   const [message, setMessage] = useState<string | null>(null);
+  const [isSmsModalOpen, setIsSmsModalOpen] = useState(false);
 
   const showNotification = (msg: string) => {
     setMessage(msg);
@@ -155,7 +181,7 @@ export const SettingsView: React.FC = () => {
             <Sparkles className="w-4 h-4 text-indigo-500" />
             <span>پالت رنگی اصلی (Accent Color)</span>
           </label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             {ACCENT_COLORS.map(c => {
               const isSelected = themeConfig.accent === c.id;
               return (
@@ -185,10 +211,145 @@ export const SettingsView: React.FC = () => {
                 </button>
               );
             })}
+
+            {/* Custom Color Picker Card */}
+            <div
+              className={`p-3 rounded-2xl border text-right transition-all flex items-center justify-between relative overflow-hidden ${
+                themeConfig.accent === 'custom'
+                  ? 'border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/40 shadow-sm ring-2 ring-indigo-500/20'
+                  : 'border-slate-200/60 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <label className="w-5 h-5 rounded-full shadow-sm shrink-0 flex items-center justify-center text-white cursor-pointer relative" style={{ backgroundColor: themeConfig.customAccentHex || '#6366f1' }}>
+                  {themeConfig.accent === 'custom' && <Check className="w-3 h-3 stroke-[3]" />}
+                  <input
+                    type="color"
+                    value={themeConfig.customAccentHex || '#6366f1'}
+                    onChange={e => {
+                      updateThemeConfig({
+                        accent: 'custom',
+                        customAccentHex: e.target.value,
+                      });
+                    }}
+                    className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+                    title="انتخاب رنگ دلخواه"
+                  />
+                </label>
+                <div onClick={() => updateThemeConfig({ accent: 'custom' })} className="cursor-pointer">
+                  <span className="text-xs font-bold block text-slate-800 dark:text-slate-200 flex items-center gap-1">
+                    <Pipette className="w-3 h-3 text-indigo-500" />
+                    <span>رنگ دلخواه شما</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    {themeConfig.customAccentHex || '#6366f1'}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* 2. Glass Intensity Slider / Presets */}
+        {/* 2. AMOLED Pure Black Mode */}
+        <div className="pt-3 border-t border-slate-200/50 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-black border border-white/20 flex items-center justify-center text-white">
+              <Smartphone className="w-4 h-4 text-slate-300" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                حالت مشکی مطلق (AMOLED Pure Black)
+              </span>
+              <span className="text-[11px] text-slate-400">
+                مشکی عمیق ۱۰۰٪ جهت صرفه‌جویی شدید در باتری گوشی‌های با نمایشگر OLED
+              </span>
+            </div>
+          </div>
+
+          <button
+            onClick={() => updateThemeConfig({ amoledMode: !themeConfig.amoledMode })}
+            disabled={!darkMode}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+              !darkMode
+                ? 'opacity-40 cursor-not-allowed bg-slate-200 dark:bg-slate-800 text-slate-400'
+                : themeConfig.amoledMode
+                ? 'bg-gradient-to-r from-slate-900 to-black text-white border border-white/30 shadow-md ring-2 ring-indigo-500/30'
+                : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+            }`}
+          >
+            <span>{themeConfig.amoledMode && darkMode ? 'مشکی اولد (فعال)' : 'مشکی استاندارد'}</span>
+          </button>
+        </div>
+
+        {/* 3. Border Radius Selection */}
+        <div className="space-y-2.5 pt-3 border-t border-slate-200/50 dark:border-white/10">
+          <label className="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+            <Maximize2 className="w-4 h-4 text-indigo-500" />
+            <span>میزان گردی گوشه‌ها و کارت‌ها (Border Radius)</span>
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            {BORDER_RADII.map(r => {
+              const isSelected = (themeConfig.borderRadius || 'smooth') === r.id;
+              return (
+                <button
+                  key={r.id}
+                  onClick={() => updateThemeConfig({ borderRadius: r.id })}
+                  className={`p-3 rounded-2xl border text-right transition-all ${
+                    isSelected
+                      ? 'border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/40 shadow-sm ring-2 ring-indigo-500/20'
+                      : 'border-slate-200/60 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-bold text-slate-900 dark:text-white">
+                      {r.name}
+                    </span>
+                    {isSelected && <Check className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}
+                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                    {r.desc}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 4. Font Selection */}
+        <div className="space-y-2.5 pt-3 border-t border-slate-200/50 dark:border-white/10">
+          <label className="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+            <Type className="w-4 h-4 text-indigo-500" />
+            <span>قلم و تایپوگرافی فارسی (Font Family)</span>
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            {APP_FONTS.map(f => {
+              const isSelected = (themeConfig.fontFamily || 'vazirmatn') === f.id;
+              return (
+                <button
+                  key={f.id}
+                  onClick={() => updateThemeConfig({ fontFamily: f.id })}
+                  className={`p-3 rounded-2xl border text-right transition-all ${
+                    isSelected
+                      ? 'border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/40 shadow-sm ring-2 ring-indigo-500/20'
+                      : 'border-slate-200/60 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-bold text-slate-900 dark:text-white">
+                      {f.name}
+                    </span>
+                    {isSelected && <Check className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}
+                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                    {f.desc}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 5. Glass Intensity Slider / Presets */}
         <div className="space-y-2.5 pt-3 border-t border-slate-200/50 dark:border-white/10">
           <label className="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
             <Sliders className="w-4 h-4 text-indigo-500" />
@@ -222,7 +383,7 @@ export const SettingsView: React.FC = () => {
           </div>
         </div>
 
-        {/* 3. Animation Speed & Performance */}
+        {/* 6. Animation Speed & Performance */}
         <div className="space-y-2.5 pt-3 border-t border-slate-200/50 dark:border-white/10">
           <label className="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
             <Zap className="w-4 h-4 text-amber-500" />
@@ -256,27 +417,82 @@ export const SettingsView: React.FC = () => {
           </div>
         </div>
 
-        {/* 4. Ambient Orbs Toggle & Mode */}
-        <div className="pt-3 border-t border-slate-200/50 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
-              گوی‌های نوری شناور در پس‌زمینه (Ambient Glow)
-            </span>
-            <span className="text-[11px] text-slate-400">
-              خاموش کردن برای بهینه‌سازی حداکثری مصرف باتری و کارت گرافیک
-            </span>
+        {/* 7. Ambient Glow Presets */}
+        <div className="space-y-2.5 pt-3 border-t border-slate-200/50 dark:border-white/10">
+          <label className="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+            <SunMedium className="w-4 h-4 text-amber-500" />
+            <span>نورپردازی گوی‌های شناور پس‌زمینه (Ambient Glow)</span>
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+            {GLOW_LEVELS.map(gl => {
+              const isSelected = (themeConfig.ambientGlow || 'subtle') === gl.id;
+              return (
+                <button
+                  key={gl.id}
+                  onClick={() =>
+                    updateThemeConfig({
+                      ambientGlow: gl.id,
+                      ambientOrbs: gl.id !== 'off',
+                    })
+                  }
+                  className={`p-3 rounded-2xl border text-right transition-all ${
+                    isSelected
+                      ? 'border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/40 shadow-sm ring-2 ring-indigo-500/20'
+                      : 'border-slate-200/60 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-bold text-slate-900 dark:text-white">
+                      {gl.name}
+                    </span>
+                    {isSelected && <Check className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}
+                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                    {gl.desc}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Bank SMS Assistant Section in Settings */}
+      <div className="liquid-glass-card p-6 space-y-4 border border-sky-500/20">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-600 text-white shadow-md">
+              <MessageSquareText className="w-6 h-6" />
+            </div>
+            <div>
+              <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
+                <span>دستیار هوشمند پیامک بانکی</span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                  فعال
+                </span>
+              </h3>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                پارس خودکار پیامک‌های واریز/برداشت بانک‌های ایران (ملت، ملی، سامان، بلو، تجارت و...)
+              </p>
+            </div>
           </div>
 
           <button
-            onClick={() => updateThemeConfig({ ambientOrbs: !themeConfig.ambientOrbs })}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
-              themeConfig.ambientOrbs
-                ? 'bg-emerald-500 text-white shadow-md'
-                : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-            }`}
+            onClick={() => setIsSmsModalOpen(true)}
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-indigo-600 hover:from-sky-600 hover:to-indigo-700 text-white text-xs font-bold shadow-md shadow-sky-500/25 transition flex items-center justify-center gap-2"
           >
-            <span>{themeConfig.ambientOrbs ? 'روشن (فعال)' : 'خاموش (صرفه‌جویی)'}</span>
+            <MessageSquareText className="w-4 h-4" />
+            <span>باز کردن دستیار پیامک</span>
           </button>
+        </div>
+
+        <div className="p-3.5 rounded-2xl bg-slate-100/60 dark:bg-white/5 border border-slate-200/50 dark:border-white/5 text-xs text-slate-600 dark:text-slate-300 space-y-1">
+          <p className="font-bold text-slate-800 dark:text-slate-200">
+            💡 نحوه کارکرد در وب‌اپلیکیشن موبایل:
+          </p>
+          <p className="text-[11px] text-slate-400 leading-relaxed">
+            به دلیل پروتکل‌های امنیتی سیستم‌عامل اندروید و مرورگرها، خواندن خودکار پیامک در پس‌زمینه بدون اجازه کاربر ممکن نیست؛ اما با این دستیار، فقط با کپی کردن پیامک و زدن یک کلیک، تمام جزئیات تراکنش استخراج شده و به حساب مدنظر اضافه می‌شود.
+          </p>
         </div>
       </div>
 
@@ -408,6 +624,12 @@ export const SettingsView: React.FC = () => {
           </button>
         </div>
       </div>
+
+      <SMSAssistantModal
+        isOpen={isSmsModalOpen}
+        onClose={() => setIsSmsModalOpen(false)}
+        onSuccess={showNotification}
+      />
     </div>
   );
 };
