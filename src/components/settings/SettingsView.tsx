@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useFinance } from '../../context/FinanceContext';
-import { AccentColor, GlassIntensity, AnimationSpeed, BorderRadius, AppFont, AmbientGlow } from '../../types';
+import { AccentColor, GlassIntensity, AnimationSpeed, BorderRadius, AmbientGlow, LightStyle } from '../../types';
 import {
   Settings,
   Download,
@@ -19,11 +19,13 @@ import {
   Eye,
   Check,
   Pipette,
-  Type,
   Maximize2,
   SunMedium,
   Smartphone,
   MessageSquareText,
+  Gauge,
+  Sparkle,
+  Layers,
 } from 'lucide-react';
 import { SMSAssistantModal } from '../transactions/SMSAssistantModal';
 
@@ -42,10 +44,11 @@ const BORDER_RADII: { id: BorderRadius; name: string; desc: string }[] = [
   { id: 'round', name: 'کپسولی ارگانیک (۲۴px)', desc: 'بسیار گرد و مدرن با حس نرمی و لطافت' },
 ];
 
-const APP_FONTS: { id: AppFont; name: string; desc: string }[] = [
-  { id: 'vazirmatn', name: 'وزیرمتن (Vazirmatn)', desc: 'خواناترین و محبوب‌ترین قلم استاندارد وب فارسی' },
-  { id: 'shabnam', name: 'شبنم (Shabnam)', desc: 'قلم رسمی، شکیل با فاصله‌گذاری متناسب' },
-  { id: 'sahel', name: 'ساحل (Sahel)', desc: 'قلم ساده و تمیز مناسب گزارش‌های مالی' },
+const LIGHT_STYLES: { id: LightStyle; name: string; desc: string; previewBg: string }[] = [
+  { id: 'pure_white', name: 'سفید مینیمال خالص', desc: 'پس‌زمینه سفید یکدست و بسیار سبک', previewBg: '#ffffff' },
+  { id: 'frost', name: 'شیشه‌ای مات یخی', desc: 'استایل کریستالی استاندارد و جذاب', previewBg: '#f8fafc' },
+  { id: 'warm_cream', name: 'کرم کاغذی گرم', desc: 'بسیار ملایم برای مطالعه در نور روز', previewBg: '#fbf9f4' },
+  { id: 'soft_slate', name: 'خاکستری فین‌تک', desc: 'استایل مدرن برنامه‌های مالی بین‌المللی', previewBg: '#f1f5f9' },
 ];
 
 const GLOW_LEVELS: { id: AmbientGlow; name: string; desc: string }[] = [
@@ -315,33 +318,101 @@ export const SettingsView: React.FC = () => {
           </div>
         </div>
 
-        {/* 4. Font Selection */}
+        {/* 4. Liquid Glass Toggle (On/Off) */}
+        <div className="pt-3 border-t border-slate-200/50 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+              <Layers className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                افکت شیشه‌ای لیکویید گلس (Liquid Glass)
+              </span>
+              <span className="text-[11px] text-slate-400">
+                خاموش کردن برای تبدیل ظاهر برنامه به حالت فلت مات مدرن و سبک
+              </span>
+            </div>
+          </div>
+
+          <button
+            onClick={() => updateThemeConfig({ liquidGlass: !themeConfig.liquidGlass })}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+              themeConfig.liquidGlass !== false
+                ? 'bg-indigo-600 text-white shadow-md'
+                : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+            }`}
+          >
+            <span>{themeConfig.liquidGlass !== false ? 'شیشه‌ای (روشن)' : 'فلت مات (خاموش)'}</span>
+          </button>
+        </div>
+
+        {/* 5. Performance Mode for Mid-range Phones */}
+        <div className="pt-3 border-t border-slate-200/50 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+              <Gauge className="w-4 h-4" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                <span>حالت پرسرعت برای گوشی‌های میان‌رده (Lite Performance)</span>
+                <span className="text-[9px] px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 font-black">
+                  افزایش فریم‌ریت
+                </span>
+              </span>
+              <span className="text-[11px] text-slate-400">
+                غیرفعال‌سازی پردازش سنگین بلور و نورپردازی جهت روانی کامل و رفع کندی در گوشی‌های اقتصادی
+              </span>
+            </div>
+          </div>
+
+          <button
+            onClick={() =>
+              updateThemeConfig({
+                performanceMode: !themeConfig.performanceMode,
+                liquidGlass: themeConfig.performanceMode ? true : false,
+              })
+            }
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
+              themeConfig.performanceMode
+                ? 'bg-amber-500 text-white shadow-md ring-2 ring-amber-500/30'
+                : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+            }`}
+          >
+            <span>{themeConfig.performanceMode ? 'حالت پرسرعت (فعال)' : 'استاندارد گرافیکی'}</span>
+          </button>
+        </div>
+
+        {/* 6. Light Mode Style Customization */}
         <div className="space-y-2.5 pt-3 border-t border-slate-200/50 dark:border-white/10">
-          <label className="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
-            <Type className="w-4 h-4 text-indigo-500" />
-            <span>قلم و تایپوگرافی فارسی (Font Family)</span>
-          </label>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-            {APP_FONTS.map(f => {
-              const isSelected = (themeConfig.fontFamily || 'vazirmatn') === f.id;
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5">
+              <Sun className="w-4 h-4 text-amber-500" />
+              <span>شخصی‌سازی استایل تم روشن (Light Mode Theme)</span>
+            </label>
+            <span className="text-[10px] text-slate-400">مخصوص زمان استفاده در حالت روز</span>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            {LIGHT_STYLES.map(ls => {
+              const isSelected = (themeConfig.lightStyle || 'frost') === ls.id;
               return (
                 <button
-                  key={f.id}
-                  onClick={() => updateThemeConfig({ fontFamily: f.id })}
+                  key={ls.id}
+                  onClick={() => updateThemeConfig({ lightStyle: ls.id })}
                   className={`p-3 rounded-2xl border text-right transition-all ${
                     isSelected
-                      ? 'border-indigo-500 bg-indigo-50/60 dark:bg-indigo-950/40 shadow-sm ring-2 ring-indigo-500/20'
+                      ? 'border-amber-500 bg-amber-50/60 dark:bg-amber-950/40 shadow-sm ring-2 ring-amber-500/20'
                       : 'border-slate-200/60 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-bold text-slate-900 dark:text-white">
-                      {f.name}
+                      {ls.name}
                     </span>
-                    {isSelected && <Check className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}
+                    {isSelected && <Check className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />}
                   </div>
                   <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                    {f.desc}
+                    {ls.desc}
                   </p>
                 </button>
               );

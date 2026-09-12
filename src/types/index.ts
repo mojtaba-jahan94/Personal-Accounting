@@ -134,20 +134,32 @@ export type AccentColor = 'indigo' | 'emerald' | 'rose' | 'amber' | 'cyan' | 'pu
 export type GlassIntensity = 'low' | 'medium' | 'high';
 export type AnimationSpeed = 'fast' | 'normal' | 'none';
 export type BorderRadius = 'sharp' | 'smooth' | 'round';
-export type AppFont = 'vazirmatn' | 'shabnam' | 'sahel';
 export type AmbientGlow = 'off' | 'subtle' | 'vibrant';
+export type LightStyle = 'pure_white' | 'frost' | 'warm_cream' | 'soft_slate';
+
+export interface DashboardSectionConfig {
+  showHero: boolean;
+  showKpiCards: boolean;
+  showAccounts: boolean;
+  showExpenseChart: boolean;
+  showRecentTransactions: boolean;
+  showBudgetProgress: boolean;
+  showCheques: boolean;
+}
 
 export interface ThemeConfig {
   mode: 'dark' | 'light';
   accent: AccentColor;
   customAccentHex?: string;
   amoledMode?: boolean;
+  liquidGlass: boolean; // Toggle Liquid Glass on/off
+  performanceMode: boolean; // Ultra-light mode for mid-range phones
+  lightStyle: LightStyle; // Light Mode Customization
   glassIntensity: GlassIntensity;
   ambientOrbs: boolean;
   ambientGlow?: AmbientGlow;
   animationSpeed: AnimationSpeed;
   borderRadius?: BorderRadius;
-  fontFamily?: AppFont;
 }
 
 export interface ParsedBankSMS {

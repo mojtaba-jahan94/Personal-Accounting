@@ -129,15 +129,75 @@ html.amoled .dark .liquid-glass-card {
   border-radius: 2.5rem !important;
 }
 
-/* Font Family Selection */
-[data-font="vazirmatn"] {
-  font-family: 'Vazirmatn', system-ui, sans-serif !important;
+/* Liquid Glass OFF (Clean Solid Minimalist Mode - High Performance) */
+.no-glass .liquid-glass,
+.no-glass .liquid-glass-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.06) !important;
 }
-[data-font="shabnam"] {
-  font-family: 'Shabnam', 'Vazirmatn', system-ui, sans-serif !important;
+
+html:not(.dark).no-glass .liquid-glass,
+html:not(.dark).no-glass .liquid-glass-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
 }
-[data-font="sahel"] {
-  font-family: 'Sahel', 'Vazirmatn', system-ui, sans-serif !important;
+
+.dark.no-glass .liquid-glass,
+.dark.no-glass .liquid-glass-card {
+  background: #141a29 !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 2px 10px 0 rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Ultra-Performance Mode for Mid-range Phones */
+.perf-mode * {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+.perf-mode .ambient-orb {
+  display: none !important;
+}
+.perf-mode body {
+  background-image: none !important;
+}
+.perf-mode .liquid-glass-card {
+  contain: content;
+}
+
+/* Light Mode Customization Styles */
+html:not(.dark)[data-light-style="pure_white"] body {
+  background-color: #ffffff !important;
+  background-image: none !important;
+}
+html:not(.dark)[data-light-style="pure_white"] .liquid-glass,
+html:not(.dark)[data-light-style="pure_white"] .liquid-glass-card {
+  background: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+html:not(.dark)[data-light-style="frost"] body {
+  background-color: #f8fafc !important;
+}
+
+html:not(.dark)[data-light-style="warm_cream"] body {
+  background-color: #fbf9f4 !important;
+  background-image: radial-gradient(at 0% 0%, rgba(245, 158, 11, 0.06) 0px, transparent 50%) !important;
+}
+html:not(.dark)[data-light-style="warm_cream"] .liquid-glass,
+html:not(.dark)[data-light-style="warm_cream"] .liquid-glass-card {
+  background: rgba(255, 253, 248, 0.88) !important;
+  border-color: rgba(232, 222, 203, 0.8) !important;
+}
+
+html:not(.dark)[data-light-style="soft_slate"] body {
+  background-color: #f1f5f9 !important;
+  background-image: radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.06) 0px, transparent 50%) !important;
+}
+html:not(.dark)[data-light-style="soft_slate"] .liquid-glass,
+html:not(.dark)[data-light-style="soft_slate"] .liquid-glass-card {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(203, 213, 225, 0.8) !important;
 }
 
 /* Ambient Glow Controls */

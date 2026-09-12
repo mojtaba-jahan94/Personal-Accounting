@@ -11,6 +11,7 @@ import {
   ThemeConfig,
   AssetHolding,
   MarketRate,
+  DashboardSectionConfig,
 } from '../types';
 import { DEFAULT_ACCOUNTS, DEFAULT_CATEGORIES, getDemoData } from '../utils/sampleData';
 import { getCachedMarketRates, fetchLiveMarketRates, setManualMarketRate, INITIAL_MARKET_RATES } from '../services/marketRates';
@@ -70,6 +71,8 @@ interface FinanceContextType {
   setCurrency: (c: Currency) => void;
   toggleDarkMode: () => void;
   updateThemeConfig: (config: Partial<ThemeConfig>) => void;
+  dashboardConfig: DashboardSectionConfig;
+  updateDashboardConfig: (config: Partial<DashboardSectionConfig>) => void;
   loadDemoData: () => void;
   exportDataJSON: () => string;
   importDataJSON: (jsonStr: string) => boolean;
@@ -94,6 +97,17 @@ const STORAGE_KEYS = {
   ASSETS: 'pf_assets_v1',
   CURRENCY: 'pf_currency_v1',
   THEME_CONFIG: 'pf_theme_config_v2',
+  DASHBOARD_CONFIG: 'pf_dashboard_config_v1',
+};
+
+export const DEFAULT_DASHBOARD_CONFIG: DashboardSectionConfig = {
+  showHero: true,
+  showKpiCards: true,
+  showAccounts: true,
+  showExpenseChart: true,
+  showRecentTransactions: true,
+  showBudgetProgress: true,
+  showCheques: true,
 };
 
 const DEFAULT_THEME_CONFIG: ThemeConfig = {
@@ -101,12 +115,14 @@ const DEFAULT_THEME_CONFIG: ThemeConfig = {
   accent: 'indigo',
   customAccentHex: '#6366f1',
   amoledMode: false,
+  liquidGlass: true,
+  performanceMode: false,
+  lightStyle: 'frost',
   glassIntensity: 'medium',
   ambientOrbs: true,
   ambientGlow: 'subtle',
   animationSpeed: 'fast',
   borderRadius: 'smooth',
-  fontFamily: 'vazirmatn',
 };
 
 const DEFAULT_ASSETS: AssetHolding[] = [
@@ -236,12 +252,26 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       root.classList.remove('amoled');
     }
 
+    // Liquid Glass On/Off
+    if (themeConfig.liquidGlass === false || themeConfig.performanceMode) {
+      root.classList.add('no-glass');
+    } else {
+      root.classList.remove('no-glass');
+    }
+
+    // Performance Mode (for mid-range phones)
+    if (themeConfig.performanceMode) {
+      root.classList.add('perf-mode');
+    } else {
+      root.classList.remove('perf-mode');
+    }
+
     root.setAttribute('data-accent', themeConfig.accent);
     root.setAttribute('data-glass', themeConfig.glassIntensity);
     root.setAttribute('data-anim', themeConfig.animationSpeed);
     root.setAttribute('data-radius', themeConfig.borderRadius || 'smooth');
-    root.setAttribute('data-font', themeConfig.fontFamily || 'vazirmatn');
     root.setAttribute('data-glow', themeConfig.ambientGlow || 'subtle');
+    root.setAttribute('data-light-style', themeConfig.lightStyle || 'frost');
 
     // Dynamic Custom Accent Color if selected
     if (themeConfig.accent === 'custom' && themeConfig.customAccentHex) {
@@ -275,6 +305,26 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       ...prev,
       ...updates,
     }));
+  };
+
+  const [dashboardConfig, setDashboardConfig] = useState<DashboardSectionConfig>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.DASHBOARD_CONFIG);
+    if (saved) {
+      try {
+        return { ...DEFAULT_DASHBOARD_CONFIG, ...JSON.parse(saved) };
+      } catch {
+        return DEFAULT_DASHBOARD_CONFIG;
+      }
+    }
+    return DEFAULT_DASHBOARD_CONFIG;
+  });
+
+  const updateDashboardConfig = (updates: Partial<DashboardSectionConfig>) => {
+    setDashboardConfig(prev => {
+      const next = { ...prev, ...updates };
+      localStorage.setItem(STORAGE_KEYS.DASHBOARD_CONFIG, JSON.stringify(next));
+      return next;
+    });
   };
 
   // Sync state to localStorage
@@ -700,6 +750,8 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setCurrency,
         toggleDarkMode,
         updateThemeConfig,
+        dashboardConfig,
+        updateDashboardConfig,
         loadDemoData,
         exportDataJSON,
         importDataJSON,
