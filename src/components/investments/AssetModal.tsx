@@ -29,7 +29,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({
   onClose,
   initialAsset,
 }) => {
-  const { addAsset, updateAsset, marketRates, currency } = useFinance();
+  const { addAsset, updateAsset, marketRates, currency, accounts } = useFinance();
 
   const [name, setName] = useState(PRESET_ASSET_TEMPLATES[0].name);
   const [type, setType] = useState<AssetType>('gold_18k');
@@ -37,6 +37,9 @@ export const AssetModal: React.FC<AssetModalProps> = ({
   const [amount, setAmount] = useState('');
   const [unitName, setUnitName] = useState('گرم');
   const [buyPrice, setBuyPrice] = useState('');
+  const [buyFee, setBuyFee] = useState('');
+  const [deductFromAccount, setDeductFromAccount] = useState(false);
+  const [selectedAccountId, setSelectedAccountId] = useState('');
   const [currentPrice, setCurrentPrice] = useState('');
   const [buyDate, setBuyDate] = useState(getTodayJalali());
   const [notes, setNotes] = useState('');
@@ -68,9 +71,11 @@ export const AssetModal: React.FC<AssetModalProps> = ({
       setAmount(initialAsset.amount.toString());
       setUnitName(initialAsset.unitName);
       setBuyPrice(initialAsset.buyPrice.toString());
+      setBuyFee(initialAsset.buyFee ? initialAsset.buyFee.toString() : '');
       setCurrentPrice(initialAsset.currentPrice.toString());
       setBuyDate(initialAsset.buyDate || getTodayJalali());
       setNotes(initialAsset.notes || '');
+      setDeductFromAccount(false);
     } else {
       const defaultT = PRESET_ASSET_TEMPLATES[0];
       setName(defaultT.name);
@@ -78,22 +83,28 @@ export const AssetModal: React.FC<AssetModalProps> = ({
       setUnitName(defaultT.unitName);
       setMarketSymbol(defaultT.symbol);
       setAmount('');
+      setBuyFee('');
+      setDeductFromAccount(false);
       const defaultRate = marketRates.find(r => r.id === defaultT.symbol);
       const priceStr = defaultRate ? defaultRate.priceToman.toString() : '3740000';
       setBuyPrice(priceStr);
       setCurrentPrice(priceStr);
       setBuyDate(getTodayJalali());
       setNotes('');
+      if (accounts.length > 0) {
+        setSelectedAccountId(accounts[0].id);
+      }
     }
-  }, [initialAsset, isOpen, marketRates]);
+  }, [initialAsset, isOpen, marketRates, accounts]);
 
   if (!isOpen) return null;
 
   const numAmount = parseFloat(amount) || 0;
   const numCurrentPrice = parseFloat(currentPrice) || 0;
   const numBuyPrice = parseFloat(buyPrice) || 0;
+  const numBuyFee = parseFloat(buyFee) || 0;
   const totalValue = numAmount * numCurrentPrice;
-  const totalCost = numAmount * numBuyPrice;
+  const totalCost = numAmount * numBuyPrice + numBuyFee;
   const profitLoss = totalValue - totalCost;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -110,6 +121,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({
       amount: numAmount,
       unitName: unitName.trim() || 'واحد',
       buyPrice: numBuyPrice,
+      buyFee: numBuyFee > 0 ? numBuyFee : undefined,
       currentPrice: numCurrentPrice,
       buyDate,
       notes: notes.trim() || undefined,
@@ -118,7 +130,7 @@ export const AssetModal: React.FC<AssetModalProps> = ({
     if (initialAsset) {
       updateAsset({ ...assetData, id: initialAsset.id });
     } else {
-      addAsset(assetData);
+      addAsset(assetData, deductFromAccount ? selectedAccountId : undefined);
     }
 
     onClose();
@@ -251,6 +263,59 @@ export const AssetModal: React.FC<AssetModalProps> = ({
               />
             </div>
           </div>
+
+          {/* Buy Fee / Commission */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-200 mb-1">
+              کارمزد / اجرت / کمیسیون خرید (تومان) - اختیاری
+            </label>
+            <input
+              type="number"
+              step="any"
+              min="0"
+              value={buyFee}
+              onChange={(e) => setBuyFee(e.target.value)}
+              placeholder="مثلاً: ۱۵۰,۰۰۰ تومان"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold outline-none"
+            />
+          </div>
+
+          {/* Deduct from Bank/Cash Account (Only for new purchases) */}
+          {!initialAsset && accounts.length > 0 && (
+            <div className="p-3.5 rounded-2xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200/50 dark:border-white/5 space-y-2">
+              <label className="flex items-center gap-2 cursor-pointer select-none text-xs font-bold text-slate-800 dark:text-slate-200">
+                <input
+                  type="checkbox"
+                  checked={deductFromAccount}
+                  onChange={(e) => setDeductFromAccount(e.target.checked)}
+                  className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"
+                />
+                <span>کسر بهای خرید و کارمزد از موجودی حساب بانکی / نقدی</span>
+              </label>
+
+              {deductFromAccount && (
+                <div className="pt-1.5 space-y-1.5">
+                  <label className="block text-[11px] text-slate-500 dark:text-slate-400 font-medium">
+                    حساب پرداخت‌کننده:
+                  </label>
+                  <select
+                    value={selectedAccountId}
+                    onChange={(e) => setSelectedAccountId(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-xs font-bold outline-none"
+                  >
+                    {accounts.map(acc => (
+                      <option key={acc.id} value={acc.id}>
+                        {acc.name} — موجودی: {formatCurrency(acc.balance, currency)}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-[10px] text-slate-400">
+                    مبلغ کل {formatCurrency(totalCost, currency)} از این حساب کسر و تراکنش هزینه ثبت خواهد شد.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Live Valuation Capsule */}
           {numAmount > 0 && numCurrentPrice > 0 && (

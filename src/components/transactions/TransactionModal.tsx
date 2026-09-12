@@ -5,7 +5,20 @@ import { getTodayJalali } from '../../utils/jalali';
 import { numberToWordsPersian } from '../../utils/formatters';
 import { getCategoryIcon } from '../../utils/categoryIcons';
 import { CategoryManagerModal } from '../categories/CategoryManagerModal';
-import { X, ArrowDownLeft, ArrowUpRight, ArrowLeftRight, Tag, Image, Check, Settings2 } from 'lucide-react';
+import { PersonManagerModal } from '../contacts/PersonManagerModal';
+import {
+  X,
+  ArrowDownLeft,
+  ArrowUpRight,
+  ArrowLeftRight,
+  Tag,
+  Image,
+  Check,
+  Settings2,
+  Users,
+  Link2,
+  Plus,
+} from 'lucide-react';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -18,7 +31,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   onClose,
   initialTransaction,
 }) => {
-  const { categories, accounts, currency, addTransaction, updateTransaction } = useFinance();
+  const { categories, accounts, currency, debts, persons, addTransaction, updateTransaction } = useFinance();
 
   const [type, setType] = useState<TransactionType>('expense');
   const [amount, setAmount] = useState<string>('');
@@ -32,6 +45,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const [tags, setTags] = useState<string[]>([]);
   const [receiptUrl, setReceiptUrl] = useState<string | undefined>(undefined);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [isPersonModalOpen, setIsPersonModalOpen] = useState(false);
+
+  // Persons and Debt linkage
+  const [personId, setPersonId] = useState<string>('');
+  const [linkToDebt, setLinkToDebt] = useState<boolean>(false);
+  const [selectedDebtId, setSelectedDebtId] = useState<string>('');
 
   useEffect(() => {
     if (initialTransaction) {
@@ -45,6 +64,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       setFee(initialTransaction.fee ? initialTransaction.fee.toString() : '0');
       setTags(initialTransaction.tags || []);
       setReceiptUrl(initialTransaction.receiptUrl);
+      setPersonId(initialTransaction.personId || '');
+      setLinkToDebt(!!initialTransaction.debtId);
+      setSelectedDebtId(initialTransaction.debtId || '');
     } else {
       setType('expense');
       setAmount('');
@@ -58,6 +80,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       setFee('0');
       setTags([]);
       setReceiptUrl(undefined);
+      setPersonId('');
+      setLinkToDebt(false);
+      setSelectedDebtId('');
     }
   }, [initialTransaction, isOpen, categories, accounts]);
 
@@ -123,6 +148,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       fee: type === 'transfer' ? parseFloat(fee) || 0 : undefined,
       receiptUrl,
       tags,
+      personId: personId || undefined,
+      debtId: (type !== 'transfer' && linkToDebt && selectedDebtId) ? selectedDebtId : undefined,
     };
 
     if (initialTransaction) {
@@ -344,6 +371,115 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               />
             </div>
 
+            {/* Person / Contact selector */}
+            <div className="space-y-1">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+                <span className="flex items-center gap-1">
+                  <Users className="w-3.5 h-3.5 text-indigo-500" />
+                  طرف‌حساب یا شخص مرتبط (اختیاری)
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsPersonModalOpen(true)}
+                  className="flex items-center gap-1 text-[11px] text-indigo-600 dark:text-indigo-400 hover:underline"
+                >
+                  <Plus className="w-3 h-3" />
+                  افزودن مخاطب جدید
+                </button>
+              </div>
+              <select
+                value={personId}
+                onChange={(e) => setPersonId(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl bg-white/70 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs outline-none"
+              >
+                <option value="">-- بدون انتخاب شخص (عمومی) --</option>
+                {persons.map(p => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} {p.phoneNumber ? `(${p.phoneNumber})` : ''} {p.relation ? `• ${p.relation}` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Link to Debt/Loan (for expense or income) */}
+            {type !== 'transfer' && (
+              <div className="p-3 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 space-y-2.5">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={linkToDebt}
+                    onChange={(e) => {
+                      setLinkToDebt(e.target.checked);
+                      if (!e.target.checked) setSelectedDebtId('');
+                    }}
+                    className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 rounded-md"
+                  />
+                  <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                    <Link2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                    {type === 'expense'
+                      ? 'اتصال این پرداخت به بدهی یا قسط وام (تسویه خودکار)'
+                      : 'اتصال این دریافتی به طلب من از دیگری (وصول خودکار)'}
+                  </span>
+                </label>
+
+                {linkToDebt && (
+                  <div className="pt-2 border-t border-indigo-100/70 dark:border-indigo-900/40 space-y-1.5">
+                    <label className="block text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                      انتخاب پرونده {type === 'expense' ? 'بدهی یا وام' : 'طلب'}:
+                    </label>
+                    <select
+                      value={selectedDebtId}
+                      onChange={(e) => {
+                        const dId = e.target.value;
+                        setSelectedDebtId(dId);
+                        const d = debts.find(x => x.id === dId);
+                        if (d) {
+                          const rem = Math.max(0, d.amount - d.paidAmount);
+                          if (!amount || amount === '0') {
+                            setAmount(rem.toString());
+                          }
+                          if (!description) {
+                            setDescription(
+                              d.type === 'debt'
+                                ? `پرداخت بدهی / قسط به ${d.personName}`
+                                : `دریافت طلب از ${d.personName}`
+                            );
+                          }
+                          if (d.personId) {
+                            setPersonId(d.personId);
+                          }
+                        }
+                      }}
+                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold outline-none"
+                    >
+                      <option value="">-- لطفاً پرونده مربوطه را انتخاب کنید --</option>
+                      {debts
+                        .filter(d => (type === 'expense' ? d.type === 'debt' : d.type === 'credit') && !d.isSettled)
+                        .map(d => {
+                          const rem = Math.max(0, d.amount - d.paidAmount);
+                          const typeLabel =
+                            d.category === 'loan'
+                              ? 'وام بانکی'
+                              : d.category === 'installment'
+                              ? 'خرید قسطی'
+                              : d.type === 'debt'
+                              ? 'بدهی من'
+                              : 'طلب من';
+                          return (
+                            <option key={d.id} value={d.id}>
+                              {d.personName} ({typeLabel}) - مانده: {rem.toLocaleString('fa-IR')}
+                            </option>
+                          );
+                        })}
+                    </select>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                      با ثبت تراکنش، مانده پرونده کاهش یافته و در صورت تسویه کامل علامت‌گذاری می‌شود.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Tags and Receipt */}
             <div className="space-y-2 pt-1 border-t border-slate-200/50 dark:border-white/10">
               <div className="flex items-center justify-between text-xs text-slate-500">
@@ -415,6 +551,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       <CategoryManagerModal
         isOpen={isCategoryModalOpen}
         onClose={() => setIsCategoryModalOpen(false)}
+      />
+
+      <PersonManagerModal
+        isOpen={isPersonModalOpen}
+        onClose={() => setIsPersonModalOpen(false)}
       />
     </>
   );

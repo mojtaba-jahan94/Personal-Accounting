@@ -19,8 +19,10 @@ import {
   Coins,
   ShieldCheck,
   Maximize2,
+  Users,
 } from 'lucide-react';
 import { SMSAssistantModal } from '../transactions/SMSAssistantModal';
+import { PersonManagerModal } from '../contacts/PersonManagerModal';
 
 const ACCENT_COLORS: { id: AccentColor; name: string; hex: string }[] = [
   { id: 'indigo', name: 'نیلی کلاسیک', hex: '#6366f1' },
@@ -54,6 +56,7 @@ export const SettingsView: React.FC = () => {
 
   const [message, setMessage] = useState<string | null>(null);
   const [isSmsModalOpen, setIsSmsModalOpen] = useState(false);
+  const [isPersonModalOpen, setIsPersonModalOpen] = useState(false);
 
   const showNotification = (msg: string) => {
     setMessage(msg);
@@ -367,7 +370,34 @@ export const SettingsView: React.FC = () => {
         </div>
       </div>
 
-      {/* 4. General Settings & Backup */}
+      {/* 4. Contacts & Persons Management Card */}
+      <div className="liquid-glass-card p-5 sm:p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-3 border-b border-slate-200/50 dark:border-white/10">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-violet-500/15 text-violet-600 dark:text-violet-400">
+              <Users className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-black text-slate-900 dark:text-white">
+                دفترچه طرف‌حساب‌ها و اشخاص
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                مدیریت نام، شماره تماس و نسبت افراد برای انتساب به بدهی، طلب، چک و تراکنش‌ها
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setIsPersonModalOpen(true)}
+            className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-sm flex items-center justify-center gap-2 shrink-0"
+          >
+            <Users className="w-4 h-4" />
+            <span>مدیریت مخاطبین</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 5. General Settings & Backup */}
       <div className="liquid-glass-card p-5 sm:p-6 space-y-4">
         <div className="flex items-center gap-2.5 pb-3 border-b border-slate-200/50 dark:border-white/10">
           <div className="p-2 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
@@ -447,6 +477,11 @@ export const SettingsView: React.FC = () => {
           </button>
         </div>
       </div>
+
+      <PersonManagerModal
+        isOpen={isPersonModalOpen}
+        onClose={() => setIsPersonModalOpen(false)}
+      />
     </div>
   );
 };

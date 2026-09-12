@@ -35,6 +35,8 @@ export interface Transaction {
   fee?: number; // Transfer fee
   receiptUrl?: string; // base64 or image url
   tags?: string[];
+  debtId?: string; // Optional link to a Debt or Loan
+  personId?: string; // Optional link to a Person/Contact
 }
 
 export interface Budget {
@@ -55,18 +57,41 @@ export interface Goal {
   color?: string;
 }
 
+export interface Person {
+  id: string;
+  name: string;
+  phoneNumber?: string;
+  relation?: string; // مثلاً: دوست، خانواده، همکار، بانک، مشتری
+  notes?: string;
+  createdAt?: string;
+}
+
 export type DebtType = 'debt' | 'credit';
+
+export interface DebtPayment {
+  id: string;
+  amount: number;
+  date: string; // تاریخ شمسی
+  accountId: string; // شناسه حساب بانکی
+  accountName?: string;
+  description?: string;
+}
 
 export interface Debt {
   id: string;
   type: DebtType;
+  personId?: string;
   personName: string;
   phoneNumber?: string;
   amount: number;
   paidAmount: number;
   dueDate: string;
+  startDate?: string;
+  category?: 'personal' | 'loan' | 'installment' | 'other';
+  accountId?: string; // حساب پیش‌فرض برای تسویه
   description?: string;
   isSettled: boolean;
+  payments?: DebtPayment[];
 }
 
 export type ChequeType = 'receivable' | 'payable';
@@ -81,6 +106,7 @@ export interface Cheque {
   chequeNumber: string;
   sayadNumber?: string;
   partyName: string;
+  personId?: string;
   status: ChequeStatus;
   notes?: string;
 }
@@ -101,6 +127,7 @@ export interface AssetHolding {
   amount: number; // e.g. 15 (grams), 2 (coins), 1000 (dollars)
   unitName: string; // گرم، عدد، دلار، واحد
   buyPrice: number; // average purchase price per unit in Toman
+  buyFee?: number; // کارمزد یا اجرت خرید
   currentPrice: number; // current market price per unit in Toman
   buyDate?: string; // Jalali date
   notes?: string;

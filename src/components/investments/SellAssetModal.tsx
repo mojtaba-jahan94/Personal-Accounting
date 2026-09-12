@@ -27,6 +27,7 @@ export const SellAssetModal: React.FC<SellAssetModalProps> = ({ isOpen, onClose,
 
   const [amountToSell, setAmountToSell] = useState<string>('');
   const [sellingPrice, setSellingPrice] = useState<string>('');
+  const [sellFee, setSellFee] = useState<string>('');
   const [depositToAccount, setDepositToAccount] = useState<boolean>(true);
   const [selectedAccountId, setSelectedAccountId] = useState<string>('');
   const [sellDate, setSellDate] = useState<string>(getTodayJalali());
@@ -36,6 +37,7 @@ export const SellAssetModal: React.FC<SellAssetModalProps> = ({ isOpen, onClose,
     if (asset) {
       setAmountToSell(String(asset.amount));
       setSellingPrice(String(asset.currentPrice || asset.buyPrice));
+      setSellFee('');
       setSellDate(getTodayJalali());
       setNotes(`فروش ${asset.name}`);
       if (accounts.length > 0) {
@@ -48,11 +50,13 @@ export const SellAssetModal: React.FC<SellAssetModalProps> = ({ isOpen, onClose,
 
   const numAmount = parseFloat(amountToSell) || 0;
   const numSellingPrice = parseFloat(sellingPrice) || 0;
+  const numSellFee = parseFloat(sellFee) || 0;
 
   // Real-time calculations
-  const totalProceeds = Math.round(numAmount * numSellingPrice);
+  const grossProceeds = Math.round(numAmount * numSellingPrice);
+  const netProceeds = Math.max(0, grossProceeds - numSellFee);
   const costOfSold = Math.round(numAmount * asset.buyPrice);
-  const realizedProfitLoss = totalProceeds - costOfSold;
+  const realizedProfitLoss = netProceeds - costOfSold;
   const roiPercent = costOfSold > 0 ? (realizedProfitLoss / costOfSold) * 100 : 0;
   const remainingAmount = Math.max(0, asset.amount - numAmount);
 
@@ -81,6 +85,7 @@ export const SellAssetModal: React.FC<SellAssetModalProps> = ({ isOpen, onClose,
       assetId: asset.id,
       amountToSell: numAmount,
       pricePerUnit: numSellingPrice,
+      fee: numSellFee > 0 ? numSellFee : undefined,
       depositToAccountId: depositToAccount ? selectedAccountId : undefined,
       description: notes.trim() || `فروش ${toPersianDigits(numAmount)} ${asset.unitName} ${asset.name}`,
       date: sellDate,
@@ -185,31 +190,59 @@ export const SellAssetModal: React.FC<SellAssetModalProps> = ({ isOpen, onClose,
             />
           </div>
 
+          {/* Sell Fee / Commission */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              کارمزد / کمیسیون فروش ({currency === 'toman' ? 'تومان' : 'ریال'}) - اختیاری
+            </label>
+            <input
+              type="number"
+              min="0"
+              step="any"
+              value={sellFee}
+              onChange={e => setSellFee(e.target.value)}
+              placeholder="مثلاً: ۵۰,۰۰۰ تومان"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-bold font-mono outline-none focus:border-amber-500 transition"
+            />
+          </div>
+
           {/* Live Realized Profit & Proceeds Card */}
           {numAmount > 0 && numSellingPrice > 0 && (
             <div className="p-4 rounded-2xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-800/30 space-y-2 text-xs">
               <div className="flex justify-between items-center pb-2 border-b border-amber-200/40 dark:border-white/5">
                 <span className="font-bold text-slate-700 dark:text-slate-300">
-                  ارزش کل فروش (مبلغ دریافتی شما):
+                  مبلغ دریافتی خالص شما (واریزی):
                 </span>
                 <span className="font-black text-sm text-slate-900 dark:text-white font-mono">
-                  {formatCurrency(totalProceeds, currency)}
+                  {formatCurrency(netProceeds, currency)}
                 </span>
               </div>
+
+              <div className="flex justify-between items-center text-[11px] text-slate-500">
+                <span>مبلغ ناخالص فروش:</span>
+                <span className="font-mono">{formatCurrency(grossProceeds, currency)}</span>
+              </div>
+
+              {numSellFee > 0 && (
+                <div className="flex justify-between items-center text-[11px] text-rose-500 font-bold">
+                  <span>کسر کارمزد و کمیسیون فروش:</span>
+                  <span className="font-mono">-{formatCurrency(numSellFee, currency)}</span>
+                </div>
+              )}
 
               <div className="flex justify-between items-center text-[11px] text-slate-500">
                 <span>بهای تمام‌شده خرید این مقدار:</span>
                 <span className="font-mono">{formatCurrency(costOfSold, currency)}</span>
               </div>
 
-              <div className="flex justify-between items-center pt-1 font-bold">
+              <div className="flex justify-between items-center pt-1 font-bold border-t border-amber-200/40 dark:border-white/5">
                 <span className="flex items-center gap-1">
                   {realizedProfitLoss >= 0 ? (
                     <TrendingUp className="w-4 h-4 text-emerald-600" />
                   ) : (
                     <TrendingDown className="w-4 h-4 text-rose-600" />
                   )}
-                  <span>سود / زیان قطعی معامله:</span>
+                  <span>سود / زیان واقعی پس از کسر کارمزد:</span>
                 </span>
                 <span
                   className={`font-mono text-xs ${

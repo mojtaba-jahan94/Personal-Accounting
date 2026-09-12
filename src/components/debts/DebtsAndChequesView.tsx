@@ -5,6 +5,8 @@ import { formatCurrency, toPersianDigits } from '../../utils/formatters';
 import { formatJalaliLong } from '../../utils/jalali';
 import { DebtModal } from './DebtModal';
 import { ChequeModal } from './ChequeModal';
+import { PayDebtModal } from './PayDebtModal';
+import { PersonManagerModal } from '../contacts/PersonManagerModal';
 import { CollapsibleSection } from '../common/CollapsibleSection';
 import {
   FileCheck2,
@@ -22,6 +24,9 @@ import {
   Check,
   Scale,
   Calendar,
+  ChevronDown,
+  ChevronUp,
+  CreditCard,
 } from 'lucide-react';
 
 export const DebtsAndChequesView: React.FC = () => {
@@ -30,7 +35,6 @@ export const DebtsAndChequesView: React.FC = () => {
     cheques,
     currency,
     deleteDebt,
-    payDebt,
     deleteCheque,
     changeChequeStatus,
   } = useFinance();
@@ -40,13 +44,14 @@ export const DebtsAndChequesView: React.FC = () => {
   // Modals
   const [isDebtModalOpen, setIsDebtModalOpen] = useState(false);
   const [editingDebt, setEditingDebt] = useState<Debt | null>(null);
+  const [isPersonModalOpen, setIsPersonModalOpen] = useState(false);
 
   const [isChequeModalOpen, setIsChequeModalOpen] = useState(false);
   const [editingCheque, setEditingCheque] = useState<Cheque | null>(null);
 
   // Pay Debt Modal
   const [payingDebt, setPayingDebt] = useState<Debt | null>(null);
-  const [payAmount, setPayAmount] = useState('');
+  const [expandedDebtId, setExpandedDebtId] = useState<string | null>(null);
 
   // Computations
   const totalCredits = debts
@@ -77,19 +82,6 @@ export const DebtsAndChequesView: React.FC = () => {
     }
   };
 
-  const handlePaySubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!payingDebt) return;
-    const num = parseFloat(payAmount);
-    if (isNaN(num) || num <= 0) {
-      alert('لطفاً مبلغ معتبری وارد کنید.');
-      return;
-    }
-    payDebt(payingDebt.id, num);
-    setPayingDebt(null);
-    setPayAmount('');
-  };
-
   return (
     <div className="space-y-6 pb-12">
       {/* Top Header */}
@@ -103,7 +95,16 @@ export const DebtsAndChequesView: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <button
+            onClick={() => setIsPersonModalOpen(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl liquid-glass text-slate-700 dark:text-slate-200 text-xs font-bold hover:border-indigo-400 transition"
+            title="مدیریت اشخاص و طرف‌حساب‌ها"
+          >
+            <Users className="w-4 h-4 text-indigo-500" />
+            <span className="whitespace-nowrap">مدیریت طرف‌حساب‌ها</span>
+          </button>
+
           {activeTab === 'debts' ? (
             <button
               onClick={() => {
@@ -113,7 +114,7 @@ export const DebtsAndChequesView: React.FC = () => {
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white text-xs font-black shadow-md shadow-indigo-500/20 transition active:scale-95"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
-              <span>ثبت بدهی / طلب جدید</span>
+              <span className="whitespace-nowrap">ثبت بدهی / طلب جدید</span>
             </button>
           ) : (
             <button
@@ -124,7 +125,7 @@ export const DebtsAndChequesView: React.FC = () => {
               className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white text-xs font-black shadow-md shadow-indigo-500/20 transition active:scale-95"
             >
               <Plus className="w-4 h-4 stroke-[3]" />
-              <span>ثبت چک صیادی</span>
+              <span className="whitespace-nowrap">ثبت چک صیادی</span>
             </button>
           )}
         </div>
@@ -224,125 +225,206 @@ export const DebtsAndChequesView: React.FC = () => {
                 </div>
               ) : (
                 debts.map(item => {
-                  const remaining = item.amount - item.paidAmount;
+                  const remaining = Math.max(0, item.amount - item.paidAmount);
                   const percent = Math.min(
                     100,
                     Math.round((item.paidAmount / item.amount) * 100)
                   );
+                  const isExpanded = expandedDebtId === item.id;
+                  const hasPayments = item.payments && item.payments.length > 0;
+
+                  const categoryLabel =
+                    item.category === 'loan'
+                      ? 'وام بانکی'
+                      : item.category === 'installment'
+                      ? 'خرید قسطی'
+                      : item.category === 'other'
+                      ? 'سایر'
+                      : 'قرض شخصی';
 
                   return (
                     <div
                       key={item.id}
-                      className={`p-4 sm:p-5 rounded-2xl liquid-glass border border-slate-200/50 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition ${
-                        item.isSettled ? 'opacity-65 bg-slate-50/50 dark:bg-slate-900/40' : ''
+                      className={`p-4 sm:p-5 rounded-2xl liquid-glass border border-slate-200/50 dark:border-white/10 flex flex-col gap-4 transition ${
+                        item.isSettled ? 'opacity-70 bg-slate-50/50 dark:bg-slate-900/40' : ''
                       }`}
                     >
-                      <div className="flex items-start gap-3.5">
-                        <div
-                          className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 text-white ${
-                            item.type === 'credit' ? 'bg-emerald-600' : 'bg-rose-600'
-                          }`}
-                        >
-                          {item.type === 'credit' ? (
-                            <ArrowDownLeft className="w-5 h-5" />
-                          ) : (
-                            <ArrowUpRight className="w-5 h-5" />
-                          )}
-                        </div>
-
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                              {item.personName}
-                            </h4>
-                            <span
-                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                item.isSettled
-                                  ? 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
-                                  : item.type === 'credit'
-                                  ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40'
-                                  : 'bg-rose-50 text-rose-700 dark:bg-rose-950/40'
-                              }`}
-                            >
-                              {item.isSettled
-                                ? 'تسویه شده'
-                                : item.type === 'credit'
-                                ? 'طلب من'
-                                : 'بدهی من'}
-                            </span>
-                          </div>
-
-                          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 mt-1">
-                            <span>سررسید: {toPersianDigits(item.dueDate)}</span>
-                            {item.phoneNumber && (
-                              <>
-                                <span>•</span>
-                                <span className="flex items-center gap-1 dir-ltr">
-                                  <Phone className="w-3 h-3 text-slate-400" />
-                                  {toPersianDigits(item.phoneNumber)}
-                                </span>
-                              </>
-                            )}
-                            {item.description && (
-                              <>
-                                <span>•</span>
-                                <span className="truncate max-w-[150px]">{item.description}</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 sm:pt-0 border-t sm:border-0 border-slate-100 dark:border-slate-800">
-                        <div className="text-right sm:text-left">
-                          <div className="text-xs text-slate-400">
-                            مبلغ کل: {formatCurrency(item.amount, currency)}
-                          </div>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex items-start gap-3.5">
                           <div
-                            className={`text-sm font-black font-mono ${
-                              item.isSettled
-                                ? 'text-slate-400 line-through'
-                                : item.type === 'credit'
-                                ? 'text-emerald-600'
-                                : 'text-rose-600'
+                            className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 text-white shadow-sm ${
+                              item.type === 'credit' ? 'bg-emerald-600' : 'bg-rose-600'
                             }`}
                           >
-                            مانده: {formatCurrency(remaining, currency)}
+                            {item.type === 'credit' ? (
+                              <ArrowDownLeft className="w-5 h-5" />
+                            ) : (
+                              <ArrowUpRight className="w-5 h-5" />
+                            )}
                           </div>
-                          <div className="text-[10px] text-slate-400">
-                            پرداخت شده: {toPersianDigits(percent)}٪
+
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                                {item.personName}
+                              </h4>
+                              <span
+                                className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                  item.isSettled
+                                    ? 'bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300'
+                                    : item.type === 'credit'
+                                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50'
+                                    : 'bg-rose-50 text-rose-700 dark:bg-rose-950/50'
+                                }`}
+                              >
+                                {item.isSettled
+                                  ? 'تسویه شده'
+                                  : item.type === 'credit'
+                                  ? 'طلب من'
+                                  : 'بدهی من'}
+                              </span>
+                              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700">
+                                {categoryLabel}
+                              </span>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+                              <span>سررسید: {toPersianDigits(item.dueDate)}</span>
+                              {item.phoneNumber && (
+                                <>
+                                  <span>•</span>
+                                  <span className="flex items-center gap-1 dir-ltr">
+                                    <Phone className="w-3 h-3 text-slate-400" />
+                                    {toPersianDigits(item.phoneNumber)}
+                                  </span>
+                                </>
+                              )}
+                              {item.description && (
+                                <>
+                                  <span>•</span>
+                                  <span className="truncate max-w-[200px]">{item.description}</span>
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-1.5">
-                          {!item.isSettled && (
+                        <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 sm:pt-0 border-t sm:border-0 border-slate-100 dark:border-slate-800">
+                          <div className="text-right sm:text-left">
+                            <div className="text-xs text-slate-400">
+                              مبلغ کل: {formatCurrency(item.amount, currency)}
+                            </div>
+                            <div
+                              className={`text-sm font-black font-mono ${
+                                item.isSettled
+                                  ? 'text-slate-400 line-through'
+                                  : item.type === 'credit'
+                                  ? 'text-emerald-600 dark:text-emerald-400'
+                                  : 'text-rose-600 dark:text-rose-400'
+                              }`}
+                            >
+                              مانده: {formatCurrency(remaining, currency)}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1.5">
+                            {!item.isSettled && (
+                              <button
+                                onClick={() => setPayingDebt(item)}
+                                className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-sm"
+                              >
+                                ثبت تسویه / قسط
+                              </button>
+                            )}
                             <button
                               onClick={() => {
-                                setPayingDebt(item);
-                                setPayAmount(remaining.toString());
+                                setEditingDebt(item);
+                                setIsDebtModalOpen(true);
                               }}
-                              className="px-2.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-950/60 dark:hover:bg-indigo-900/80 text-indigo-700 dark:text-indigo-300 text-xs font-bold transition"
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 transition"
+                              title="ویرایش"
                             >
-                              ثبت تسویه
+                              <Edit2 className="w-4 h-4" />
                             </button>
-                          )}
-                          <button
-                            onClick={() => {
-                              setEditingDebt(item);
-                              setIsDebtModalOpen(true);
-                            }}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 transition"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteDebt(item.id)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 transition"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                            <button
+                              onClick={() => handleDeleteDebt(item.id)}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 transition"
+                              title="حذف"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
                       </div>
+
+                      {/* Progress Bar */}
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+                          <span>پرداخت شده: {formatCurrency(item.paidAmount, currency)} ({toPersianDigits(percent)}٪)</span>
+                          {hasPayments && (
+                            <button
+                              type="button"
+                              onClick={() => setExpandedDebtId(isExpanded ? null : item.id)}
+                              className="flex items-center gap-1 text-indigo-600 dark:text-indigo-400 hover:underline font-bold"
+                            >
+                              <span>تاریخچه پرداخت‌ها ({toPersianDigits(item.payments!.length)})</span>
+                              {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                            </button>
+                          )}
+                        </div>
+                        <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all duration-500 rounded-full ${
+                              item.isSettled
+                                ? 'bg-emerald-500'
+                                : item.type === 'credit'
+                                ? 'bg-emerald-500'
+                                : 'bg-rose-500'
+                            }`}
+                            style={{ width: `${percent}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Installments / Payment History Accordion */}
+                      {isExpanded && hasPayments && (
+                        <div className="pt-3 border-t border-slate-100 dark:border-slate-800/80 space-y-2">
+                          <div className="text-[11px] font-bold text-slate-600 dark:text-slate-300 flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5 text-indigo-500" />
+                            <span>ریز واریزی‌ها و اقساط ثبت‌شده:</span>
+                          </div>
+                          <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                            {item.payments!.map(pay => (
+                              <div
+                                key={pay.id}
+                                className="flex items-center justify-between p-2 rounded-xl bg-slate-50/70 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800 text-xs"
+                              >
+                                <div className="space-y-0.5">
+                                  <div className="font-bold text-slate-800 dark:text-slate-200">
+                                    {formatCurrency(pay.amount, currency)}
+                                  </div>
+                                  <div className="text-[10px] text-slate-400 flex items-center gap-2">
+                                    <span>تاریخ: {toPersianDigits(pay.date)}</span>
+                                    {pay.accountName && (
+                                      <>
+                                        <span>•</span>
+                                        <span className="text-indigo-600 dark:text-indigo-400 font-medium">
+                                          حساب: {pay.accountName}
+                                        </span>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                                {pay.description && (
+                                  <div className="text-[11px] text-slate-500 dark:text-slate-400 max-w-[140px] truncate">
+                                    {pay.description}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })
@@ -529,43 +611,17 @@ export const DebtsAndChequesView: React.FC = () => {
       />
 
       {/* Pay Debt Modal */}
-      {payingDebt && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-          <div className="relative w-full max-w-sm liquid-glass-card p-5 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
-              <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                ثبت تسویه یا قسط برای {payingDebt.personName}
-              </h4>
-              <button onClick={() => setPayingDebt(null)}>
-                <X className="w-4 h-4 text-slate-400" />
-              </button>
-            </div>
+      <PayDebtModal
+        isOpen={!!payingDebt}
+        onClose={() => setPayingDebt(null)}
+        debt={payingDebt}
+      />
 
-            <form onSubmit={handlePaySubmit} className="space-y-3">
-              <div>
-                <label className="text-xs text-slate-500 block mb-1">
-                  مبلغ پرداختی / دریافتی ({currency === 'toman' ? 'تومان' : 'ریال'})
-                </label>
-                <input
-                  type="number"
-                  required
-                  min="1"
-                  value={payAmount}
-                  onChange={e => setPayAmount(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-bold outline-none font-mono"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition"
-              >
-                ثبت تسویه
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* Person Manager Modal */}
+      <PersonManagerModal
+        isOpen={isPersonModalOpen}
+        onClose={() => setIsPersonModalOpen(false)}
+      />
     </div>
   );
 };

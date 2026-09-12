@@ -1,4 +1,4 @@
-import { Account, Category, Transaction, Budget, Goal, Debt, Cheque } from '../types';
+import { Account, Category, Transaction, Budget, Goal, Debt, Cheque, Person } from '../types';
 import { getTodayJalali } from './jalali';
 
 export const DEFAULT_CATEGORIES: Category[] = [
@@ -11,14 +11,23 @@ export const DEFAULT_CATEGORIES: Category[] = [
   { id: 'cat-fun', name: 'تفریح و رستوران', icon: 'Coffee', color: '#8b5cf6', type: 'expense' },
   { id: 'cat-shopping', name: 'پوشاک و خرید', icon: 'ShoppingBag', color: '#06b6d4', type: 'expense' },
   { id: 'cat-education', name: 'آموزش و کتاب', icon: 'GraduationCap', color: '#10b981', type: 'expense' },
+  { id: 'cat-debt-pay', name: 'پرداخت بدهی و اقساط وام', icon: 'Scale', color: '#f43f5e', type: 'expense' },
+  { id: 'cat-invest', name: 'سرمایه‌گذاری و خرید دارایی', icon: 'Coins', color: '#f59e0b', type: 'expense' },
   { id: 'cat-other-exp', name: 'سایر هزینه‌ها', icon: 'MoreHorizontal', color: '#64748b', type: 'expense' },
 
   // Incomes
   { id: 'cat-salary', name: 'حقوق و دستمزد', icon: 'Briefcase', color: '#10b981', type: 'income' },
   { id: 'cat-freelance', name: 'پروژه و فریلنسری', icon: 'Laptop', color: '#3b82f6', type: 'income' },
   { id: 'cat-investment', name: 'سود سرمایه‌گذاری و بورس', icon: 'TrendingUp', color: '#8b5cf6', type: 'income' },
+  { id: 'cat-debt-collect', name: 'وصول طلب و بازپرداخت وام', icon: 'Coins', color: '#10b981', type: 'income' },
   { id: 'cat-gift', name: 'هدیه و پاداش', icon: 'Gift', color: '#f59e0b', type: 'income' },
   { id: 'cat-other-inc', name: 'سایر درآمدها', icon: 'PlusCircle', color: '#64748b', type: 'income' },
+];
+
+export const DEFAULT_PERSONS: Person[] = [
+  { id: 'per-1', name: 'علی صادقی', phoneNumber: '09121112233', relation: 'همکار / دوست', createdAt: '1403/01/15' },
+  { id: 'per-2', name: 'بانک مسکن', phoneNumber: '02161000', relation: 'بانک / وام', notes: 'شعبه مرکزی - وام مسکن', createdAt: '1403/02/01' },
+  { id: 'per-3', name: 'سارا احمدی', phoneNumber: '09359998877', relation: 'خانواده', createdAt: '1403/03/10' },
 ];
 
 export const DEFAULT_ACCOUNTS: Account[] = [

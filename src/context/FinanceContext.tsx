@@ -12,8 +12,11 @@ import {
   AssetHolding,
   MarketRate,
   DashboardSectionConfig,
+  Person,
+  DebtPayment,
+  TransactionType,
 } from '../types';
-import { DEFAULT_ACCOUNTS, DEFAULT_CATEGORIES, getDemoData } from '../utils/sampleData';
+import { DEFAULT_ACCOUNTS, DEFAULT_CATEGORIES, DEFAULT_PERSONS, getDemoData } from '../utils/sampleData';
 import { getCachedMarketRates, fetchLiveMarketRates, setManualMarketRate, INITIAL_MARKET_RATES } from '../services/marketRates';
 import { getTodayJalali } from '../utils/jalali';
 
@@ -26,6 +29,7 @@ interface FinanceContextType {
   debts: Debt[];
   cheques: Cheque[];
   assets: AssetHolding[];
+  persons: Person[];
   marketRates: MarketRate[];
   currency: Currency;
   darkMode: boolean;
@@ -44,6 +48,10 @@ interface FinanceContextType {
   updateCategory: (cat: Category) => void;
   deleteCategory: (id: string) => void;
 
+  addPerson: (p: Omit<Person, 'id' | 'createdAt'>) => Person;
+  updatePerson: (p: Person) => void;
+  deletePerson: (id: string) => void;
+
   addBudget: (b: Omit<Budget, 'id'>) => void;
   updateBudget: (b: Budget) => void;
   deleteBudget: (id: string) => void;
@@ -57,19 +65,27 @@ interface FinanceContextType {
   updateDebt: (d: Debt) => void;
   deleteDebt: (id: string) => void;
   payDebt: (id: string, amount: number) => void;
+  payDebtWithAccount: (params: {
+    debtId: string;
+    amount: number;
+    accountId: string;
+    date?: string;
+    description?: string;
+  }) => void;
 
   addCheque: (ch: Omit<Cheque, 'id'>) => void;
   updateCheque: (ch: Cheque) => void;
   deleteCheque: (id: string) => void;
   changeChequeStatus: (id: string, status: Cheque['status']) => void;
 
-  addAsset: (asset: Omit<AssetHolding, 'id'>) => void;
+  addAsset: (asset: Omit<AssetHolding, 'id'>, deductFromAccountId?: string) => void;
   updateAsset: (asset: AssetHolding) => void;
   deleteAsset: (id: string) => void;
   sellAsset: (params: {
     assetId: string;
     amountToSell: number;
     pricePerUnit: number;
+    fee?: number;
     depositToAccountId?: string;
     description?: string;
     date?: string;
@@ -104,6 +120,7 @@ const STORAGE_KEYS = {
   DEBTS: 'pf_debts_v1',
   CHEQUES: 'pf_cheques_v1',
   ASSETS: 'pf_assets_v1',
+  PERSONS: 'pf_persons_v1',
   CURRENCY: 'pf_currency_v1',
   THEME_CONFIG: 'pf_theme_config_v2',
   DASHBOARD_CONFIG: 'pf_dashboard_config_v1',
@@ -222,6 +239,11 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [assets, setAssets] = useState<AssetHolding[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.ASSETS);
     return saved ? JSON.parse(saved) : DEFAULT_ASSETS;
+  });
+
+  const [persons, setPersons] = useState<Person[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.PERSONS);
+    return saved ? JSON.parse(saved) : DEFAULT_PERSONS;
   });
 
   const [marketRates, setMarketRates] = useState<MarketRate[]>(() => {
@@ -370,6 +392,10 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [assets]);
 
   useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.PERSONS, JSON.stringify(persons));
+  }, [persons]);
+
+  useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.CURRENCY, currency);
   }, [currency]);
 
@@ -409,9 +435,36 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   // Assets CRUD
-  const addAsset = (asset: Omit<AssetHolding, 'id'>) => {
+  const addAsset = (asset: Omit<AssetHolding, 'id'>, deductFromAccountId?: string) => {
     const newAsset: AssetHolding = { ...asset, id: 'ast-' + Date.now() };
     setAssets(prev => [newAsset, ...prev]);
+
+    if (deductFromAccountId) {
+      const buyFee = asset.buyFee || 0;
+      const totalCost = Math.round(asset.amount * asset.buyPrice) + buyFee;
+      if (totalCost > 0) {
+        const txId = 'tx-' + Date.now();
+        const newTx: Transaction = {
+          id: txId,
+          type: 'expense',
+          amount: totalCost,
+          fee: buyFee > 0 ? buyFee : undefined,
+          date: asset.buyDate || getTodayJalali(),
+          description: `خرید ${asset.amount} ${asset.unitName} ${asset.name}${buyFee > 0 ? ` (شامل کارمزد: ${buyFee.toLocaleString('fa-IR')} تومان)` : ''}`,
+          categoryId: 'cat-invest',
+          accountId: deductFromAccountId,
+          tags: ['خرید دارایی', asset.name],
+        };
+        setTransactions(prev => [newTx, ...prev]);
+        setAccounts(prev =>
+          prev.map(acc =>
+            acc.id === deductFromAccountId
+              ? { ...acc, balance: acc.balance - totalCost }
+              : acc
+          )
+        );
+      }
+    }
   };
 
   const updateAsset = (asset: AssetHolding) => {
@@ -426,6 +479,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     assetId: string;
     amountToSell: number;
     pricePerUnit: number;
+    fee?: number;
     depositToAccountId?: string;
     description?: string;
     date?: string;
@@ -442,17 +496,21 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       );
     }
 
-    const totalProceeds = Math.round(params.amountToSell * params.pricePerUnit);
-    if (params.depositToAccountId && totalProceeds > 0) {
+    const grossProceeds = Math.round(params.amountToSell * params.pricePerUnit);
+    const fee = params.fee || 0;
+    const netProceeds = Math.max(0, grossProceeds - fee);
+
+    if (params.depositToAccountId && netProceeds > 0) {
       const txId = 'tx-' + Date.now();
       const newTx: Transaction = {
         id: txId,
         type: 'income',
-        amount: totalProceeds,
+        amount: netProceeds,
+        fee: fee > 0 ? fee : undefined,
         date: params.date || getTodayJalali(),
         description:
           params.description ||
-          `فروش ${params.amountToSell} ${asset.unitName} ${asset.name}`,
+          `فروش ${params.amountToSell} ${asset.unitName} ${asset.name}${fee > 0 ? ` (کارمزد: ${fee.toLocaleString('fa-IR')} تومان)` : ''}`,
         categoryId: 'cat-invest',
         accountId: params.depositToAccountId,
         tags: ['فروش دارایی', asset.name],
@@ -461,7 +519,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setAccounts(prev =>
         prev.map(acc =>
           acc.id === params.depositToAccountId
-            ? { ...acc, balance: acc.balance + totalProceeds }
+            ? { ...acc, balance: acc.balance + netProceeds }
             : acc
         )
       );
@@ -495,6 +553,34 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     );
 
     setTransactions(prev => [newTx, ...prev]);
+
+    // If transaction is linked to a debt, automatically update the debt balance & history
+    if (newTx.debtId) {
+      setDebts(prev =>
+        prev.map(d => {
+          if (d.id === newTx.debtId) {
+            const addedPaid = d.paidAmount + newTx.amount;
+            const isSettled = addedPaid >= d.amount;
+            const accName = accounts.find(a => a.id === newTx.accountId)?.name;
+            const newPayment: DebtPayment = {
+              id: 'dp-' + Date.now(),
+              amount: newTx.amount,
+              date: newTx.date,
+              accountId: newTx.accountId,
+              accountName: accName,
+              description: newTx.description,
+            };
+            return {
+              ...d,
+              paidAmount: addedPaid,
+              isSettled,
+              payments: [...(d.payments || []), newPayment],
+            };
+          }
+          return d;
+        })
+      );
+    }
   };
 
   const updateTransaction = (updatedTx: Transaction) => {
@@ -669,6 +755,100 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     );
   };
 
+  const payDebtWithAccount = (params: {
+    debtId: string;
+    amount: number;
+    accountId: string;
+    date?: string;
+    description?: string;
+  }) => {
+    const debt = debts.find(d => d.id === params.debtId);
+    if (!debt) return;
+
+    const txDate = params.date || getTodayJalali();
+    const isDebtPay = debt.type === 'debt';
+    const txType: TransactionType = isDebtPay ? 'expense' : 'income';
+    const txDesc =
+      params.description ||
+      (isDebtPay
+        ? `پرداخت بدهی / قسط به ${debt.personName}`
+        : `دریافت طلب از ${debt.personName}`);
+
+    // 1. Create transaction
+    const txId = 'tx-' + Date.now();
+    const newTx: Transaction = {
+      id: txId,
+      type: txType,
+      amount: params.amount,
+      date: txDate,
+      description: txDesc,
+      categoryId: isDebtPay ? 'cat-debt-pay' : 'cat-debt-collect',
+      accountId: params.accountId,
+      debtId: debt.id,
+      personId: debt.personId,
+      tags: [isDebtPay ? 'تسویه بدهی' : 'وصول طلب', debt.personName],
+    };
+
+    setTransactions(prev => [newTx, ...prev]);
+
+    // 2. Adjust account balance
+    setAccounts(prev =>
+      prev.map(acc => {
+        if (acc.id === params.accountId) {
+          return {
+            ...acc,
+            balance: isDebtPay ? acc.balance - params.amount : acc.balance + params.amount,
+          };
+        }
+        return acc;
+      })
+    );
+
+    // 3. Update debt and payment history
+    const accName = accounts.find(a => a.id === params.accountId)?.name;
+    setDebts(prev =>
+      prev.map(d => {
+        if (d.id === params.debtId) {
+          const paidAmount = d.paidAmount + params.amount;
+          const newPayment: DebtPayment = {
+            id: 'dp-' + Date.now(),
+            amount: params.amount,
+            date: txDate,
+            accountId: params.accountId,
+            accountName: accName,
+            description: txDesc,
+          };
+          return {
+            ...d,
+            paidAmount,
+            isSettled: paidAmount >= d.amount,
+            payments: [...(d.payments || []), newPayment],
+          };
+        }
+        return d;
+      })
+    );
+  };
+
+  // Persons / Contacts CRUD
+  const addPerson = (p: Omit<Person, 'id' | 'createdAt'>): Person => {
+    const newP: Person = {
+      ...p,
+      id: 'per-' + Date.now(),
+      createdAt: getTodayJalali(),
+    };
+    setPersons(prev => [newP, ...prev]);
+    return newP;
+  };
+
+  const updatePerson = (p: Person) => {
+    setPersons(prev => prev.map(item => (item.id === p.id ? p : item)));
+  };
+
+  const deletePerson = (id: string) => {
+    setPersons(prev => prev.filter(p => p.id !== id));
+  };
+
   // Cheques
   const addCheque = (ch: Omit<Cheque, 'id'>) => {
     const newCh: Cheque = { ...ch, id: 'ch-' + Date.now() };
@@ -697,11 +877,12 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setDebts(demo.debts);
     setCheques(demo.cheques);
     setAssets(DEFAULT_ASSETS);
+    setPersons(DEFAULT_PERSONS);
   };
 
   const exportDataJSON = (): string => {
     const data = {
-      version: 3,
+      version: 4,
       exportDate: new Date().toISOString(),
       accounts,
       transactions,
@@ -711,6 +892,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       debts,
       cheques,
       assets,
+      persons,
       currency,
       themeConfig,
     };
@@ -728,6 +910,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (data.debts) setDebts(data.debts);
       if (data.cheques) setCheques(data.cheques);
       if (data.assets) setAssets(data.assets);
+      if (data.persons) setPersons(data.persons);
       if (data.currency) setCurrency(data.currency);
       if (data.themeConfig) setThemeConfig(data.themeConfig);
       return true;
@@ -744,6 +927,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setDebts([]);
     setCheques([]);
     setAssets([]);
+    setPersons([]);
     setAccounts(DEFAULT_ACCOUNTS.map(a => ({ ...a, balance: 0 })));
   };
 
@@ -769,6 +953,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         debts,
         cheques,
         assets,
+        persons,
         marketRates,
         currency,
         darkMode,
@@ -782,6 +967,9 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         addCategory,
         updateCategory,
         deleteCategory,
+        addPerson,
+        updatePerson,
+        deletePerson,
         addBudget,
         updateBudget,
         deleteBudget,
@@ -793,6 +981,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updateDebt,
         deleteDebt,
         payDebt,
+        payDebtWithAccount,
         addCheque,
         updateCheque,
         deleteCheque,
