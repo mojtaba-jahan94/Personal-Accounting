@@ -164,12 +164,12 @@ export interface MarketSourceConfig {
 export type Currency = 'toman' | 'rial';
 
 // Theme Studio Pro Types
-export type AccentColor = 'indigo' | 'emerald' | 'rose' | 'amber' | 'cyan' | 'purple' | 'custom';
+export type AccentColor = 'telegram' | 'indigo' | 'emerald' | 'rose' | 'amber' | 'cyan' | 'purple' | 'custom';
 export type GlassIntensity = 'low' | 'medium' | 'high';
 export type AnimationSpeed = 'fast' | 'normal' | 'none';
 export type BorderRadius = 'sharp' | 'smooth' | 'round';
 export type AmbientGlow = 'off' | 'subtle' | 'vibrant';
-export type LightStyle = 'pure_white' | 'frost' | 'warm_cream' | 'soft_slate';
+export type LightStyle = 'telegram' | 'pure_white' | 'frost' | 'warm_cream' | 'soft_slate';
 
 export interface DashboardSectionConfig {
   showHero: boolean;

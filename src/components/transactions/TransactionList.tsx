@@ -171,15 +171,15 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => setIsCategoryModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl liquid-glass text-slate-700 dark:text-slate-200 text-xs font-bold hover:border-indigo-400 transition"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-slate-100/90 dark:bg-[#242f3d] border border-slate-200/60 dark:border-white/5 text-slate-700 dark:text-slate-200 text-xs font-bold hover:border-[#2481cc] transition tg-tap-active"
           >
-            <Settings2 className="w-4 h-4 text-indigo-500" />
+            <Settings2 className="w-4 h-4 text-[#2481cc]" />
             <span>دسته‌ها</span>
           </button>
 
           <button
             onClick={handleExportExcel}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl liquid-glass text-slate-700 dark:text-slate-200 text-xs font-bold hover:border-emerald-400 transition"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-slate-100/90 dark:bg-[#242f3d] border border-slate-200/60 dark:border-white/5 text-slate-700 dark:text-slate-200 text-xs font-bold hover:border-emerald-500 transition tg-tap-active"
             title="دانلود فایل اکسل از تراکنش‌های فیلترشده"
           >
             <Download className="w-4 h-4 text-emerald-600" />
@@ -188,12 +188,46 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
 
           <button
             onClick={() => onOpenTransactionModal()}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white text-xs font-black shadow-md shadow-indigo-500/20 transition active:scale-95"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#2481cc] hover:bg-[#168acd] text-white text-xs font-black shadow-md shadow-[#2481cc]/25 transition tg-tap-active"
           >
-            <Plus className="w-4 h-4 stroke-[3]" />
+            <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>ثبت تراکنش</span>
           </button>
         </div>
+      </div>
+
+      {/* Telegram Style Bubbly Folder Tabs */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+        {[
+          { id: 'all', label: 'همه تراکنش‌ها', count: transactions.length },
+          { id: 'income', label: 'واریز و درآمد', count: transactions.filter(t => t.type === 'income').length },
+          { id: 'expense', label: 'برداشت و هزینه', count: transactions.filter(t => t.type === 'expense').length },
+          { id: 'transfer', label: 'انتقال وجه', count: transactions.filter(t => t.type === 'transfer').length },
+        ].map((tab) => {
+          const isActive = selectedType === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setSelectedType(tab.id as any)}
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold transition-all tg-tap-active shrink-0 ${
+                isActive
+                  ? 'bg-[#2481cc] text-white shadow-md shadow-[#2481cc]/30 scale-105'
+                  : 'bg-slate-100/90 dark:bg-[#17212b] hover:bg-slate-200/80 dark:hover:bg-[#242f3d] text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-white/5'
+              }`}
+            >
+              <span>{tab.label}</span>
+              <span
+                className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
+                  isActive
+                    ? 'bg-white/20 text-white'
+                    : 'bg-slate-200/80 dark:bg-[#242f3d] text-slate-500 dark:text-slate-400'
+                }`}
+              >
+                {toPersianDigits(tab.count)}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* 1. Filter & Search Drawer (Collapsible) */}

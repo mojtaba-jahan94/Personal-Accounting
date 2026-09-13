@@ -41,19 +41,26 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
     { id: 'accounts', label: 'حساب‌ها و کارت‌ها', icon: CreditCard },
     { id: 'investments', label: 'سبد طلا، ارز و دارایی', icon: Coins },
     { id: 'budgets', label: 'بودجه‌بندی ماهانه', icon: PieChart },
-    { id: 'goals', label: 'اهداف و قلک پس‌انداز', icon: Target },
+    { id: 'goals', label: 'اهداف و پس‌انداز', icon: Target },
     { id: 'debts', label: 'بدهی، طلب و چک', icon: FileCheck2 },
     { id: 'reports', label: 'گزارش‌ها و نمودارها', icon: BarChart3 },
     { id: 'settings', label: 'تنظیمات و استودیو', icon: Settings },
   ];
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 shrink-0 p-4 m-4 mr-0 liquid-glass rounded-3xl border border-white/30 dark:border-white/10 shadow-xl self-start sticky top-24 min-h-[calc(100vh-8rem)]">
-      <div className="space-y-1.5">
-        <div className="px-3 py-2 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-          <span>منوی مدیریت مالی</span>
+    <aside className="hidden lg:flex flex-col w-64 shrink-0 p-3.5 m-4 mr-0 bubbly-card bg-white/80 dark:bg-[#17212b]/90 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-xl self-start sticky top-24 min-h-[calc(100vh-8rem)]">
+      {/* Telegram Style Header Capsule */}
+      <div className="px-3 py-2.5 mb-2 rounded-2xl bg-slate-100/70 dark:bg-[#242f3d]/60 border border-slate-200/50 dark:border-white/5 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-[11px] font-black text-slate-700 dark:text-slate-200">منوی تلگرامی</span>
         </div>
+        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#2481cc]/15 text-[#2481cc]">
+          آفلاین
+        </span>
+      </div>
+
+      <div className="space-y-1">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentTab === item.id;
@@ -61,25 +68,34 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
             <button
               key={item.id}
               onClick={() => onSelectTab(item.id)}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold transition-all duration-200 ${
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-bold transition-all duration-150 tg-tap-active ${
                 isActive
-                  ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-lg shadow-indigo-600/30'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-white/60 dark:hover:bg-slate-800/60 hover:text-indigo-600 dark:hover:text-indigo-400'
+                  ? 'bg-[#2481cc] text-white shadow-md shadow-[#2481cc]/30 scale-[1.02]'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-[#242f3d]/70 hover:text-[#2481cc] dark:hover:text-[#2481cc]'
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400 dark:text-slate-400'}`} />
-              <span>{item.label}</span>
+              <div
+                className={`w-7 h-7 rounded-xl flex items-center justify-center transition-colors ${
+                  isActive
+                    ? 'bg-white/20 text-white'
+                    : 'bg-slate-200/60 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                }`}
+              >
+                <Icon className="w-4 h-4" />
+              </div>
+              <span className="truncate">{item.label}</span>
             </button>
           );
         })}
       </div>
 
-      {/* Tip Card at bottom of sidebar */}
-      <div className="mt-auto p-4 rounded-2xl bg-gradient-to-br from-amber-500/10 via-purple-500/10 to-transparent border border-amber-200/40 dark:border-amber-800/40">
-        <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 text-xs font-bold mb-1">
-          💡 تنوع سبد سرمایه
+      {/* Tip Card at bottom of sidebar (Telegram Bubbly Card) */}
+      <div className="mt-auto p-3.5 rounded-2xl bg-slate-50/90 dark:bg-[#242f3d]/50 border border-slate-200/70 dark:border-white/5 space-y-1">
+        <div className="flex items-center gap-1.5 text-amber-500 text-xs font-black">
+          <span>💡</span>
+          <span>راهنمای مالی</span>
         </div>
-        <p className="text-[11px] text-slate-600 dark:text-slate-300 leading-relaxed">
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
           تقسیم دارایی میان طلا، ارز و پس‌انداز نقد ریسک نوسانات بازار را به حداقل می‌رساند.
         </p>
       </div>

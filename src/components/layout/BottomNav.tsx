@@ -39,24 +39,24 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
   return (
     <>
-      {/* More Menu Drawer for Mobile */}
+      {/* More Menu Drawer for Mobile (Bubbly Island Style) */}
       {moreMenuOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div
             className="fixed inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity"
             onClick={() => setMoreMenuOpen(false)}
           />
-          <div className="fixed bottom-24 inset-x-4 liquid-glass rounded-3xl p-5 shadow-2xl border border-white/30 dark:border-white/10 space-y-3 animate-in slide-in-from-bottom duration-200">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-200/50 dark:border-slate-800/50">
+          <div className="fixed bottom-20 inset-x-3 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-[440px] bubbly-card bg-white/95 dark:bg-[#17212b]/95 backdrop-blur-2xl p-4 shadow-2xl border border-slate-200/80 dark:border-white/10 space-y-3 animate-in slide-in-from-bottom-4 duration-200">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-200/60 dark:border-white/5">
               <span className="text-xs font-black text-slate-800 dark:text-slate-200">سایر امکانات مالی</span>
               <button
                 onClick={() => setMoreMenuOpen(false)}
-                className="p-1 rounded-full hover:bg-white/40 dark:hover:bg-slate-800 text-slate-400"
+                className="p-1 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 transition"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="grid grid-cols-2 gap-2.5 pt-1">
+            <div className="grid grid-cols-2 gap-2 pt-0.5">
               {moreItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentTab === item.id;
@@ -67,10 +67,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                       onSelectTab(item.id);
                       setMoreMenuOpen(false);
                     }}
-                    className={`flex items-center gap-2.5 p-3 rounded-2xl text-xs font-bold transition text-right ${
+                    className={`flex items-center gap-2.5 p-3 rounded-2xl text-xs font-bold transition text-right tg-tap-active ${
                       isActive
-                        ? 'bg-gradient-to-r from-indigo-600 to-indigo-500 text-white shadow-md'
-                        : 'liquid-glass hover:bg-white/70 dark:hover:bg-slate-800/80 text-slate-700 dark:text-slate-300'
+                        ? 'bg-[#2481cc] text-white shadow-md shadow-[#2481cc]/30'
+                        : 'bg-slate-50 dark:bg-[#242f3d]/80 hover:bg-slate-100 dark:hover:bg-[#242f3d] text-slate-700 dark:text-slate-200 border border-slate-200/50 dark:border-white/5'
                     }`}
                   >
                     <Icon className="w-4 h-4 shrink-0" />
@@ -83,70 +83,70 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         </div>
       )}
 
-      {/* Main Bottom Bar */}
-      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-30 liquid-glass border-t border-white/25 dark:border-white/10 px-4 py-2 pb-safe shadow-2xl">
-        <div className="flex items-center justify-around relative max-w-md mx-auto">
+      {/* Main Telegram Bubbly Floating Bottom Bar */}
+      <nav className="lg:hidden fixed bottom-3 inset-x-3 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-[440px] z-30 bubbly-island bg-white/90 dark:bg-[#17212b]/95 backdrop-blur-2xl border border-slate-200/80 dark:border-white/10 p-1.5 shadow-2xl">
+        <div className="flex items-center justify-between gap-1 w-full">
           {/* Dashboard */}
           <button
             onClick={() => onSelectTab('dashboard')}
-            className={`flex flex-col items-center gap-1 text-[11px] font-bold transition ${
+            className={`transition-all duration-200 tg-tap-active flex items-center justify-center ${
               currentTab === 'dashboard'
-                ? 'text-indigo-600 dark:text-indigo-400'
-                : 'text-slate-500 dark:text-slate-400'
+                ? 'bg-[#2481cc] text-white rounded-full px-3.5 py-2 gap-1.5 font-bold text-xs shadow-md shadow-[#2481cc]/35 scale-105'
+                : 'p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:text-[#2481cc] hover:bg-slate-100 dark:hover:bg-white/5'
             }`}
           >
-            <LayoutDashboard className="w-5 h-5" />
-            <span>پیشخوان</span>
+            <LayoutDashboard className="w-5 h-5 shrink-0" />
+            {currentTab === 'dashboard' && <span className="text-[11px] whitespace-nowrap">پیشخوان</span>}
           </button>
 
           {/* Transactions */}
           <button
             onClick={() => onSelectTab('transactions')}
-            className={`flex flex-col items-center gap-1 text-[11px] font-bold transition ${
+            className={`transition-all duration-200 tg-tap-active flex items-center justify-center ${
               currentTab === 'transactions'
-                ? 'text-indigo-600 dark:text-indigo-400'
-                : 'text-slate-500 dark:text-slate-400'
+                ? 'bg-[#2481cc] text-white rounded-full px-3.5 py-2 gap-1.5 font-bold text-xs shadow-md shadow-[#2481cc]/35 scale-105'
+                : 'p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:text-[#2481cc] hover:bg-slate-100 dark:hover:bg-white/5'
             }`}
           >
-            <ReceiptText className="w-5 h-5" />
-            <span>تراکنش‌ها</span>
+            <ReceiptText className="w-5 h-5 shrink-0" />
+            {currentTab === 'transactions' && <span className="text-[11px] whitespace-nowrap">تراکنش‌ها</span>}
           </button>
 
-          {/* Center Floating Plus Button */}
-          <div className="relative -top-5">
-            <button
-              onClick={onOpenTransactionModal}
-              className="w-13 h-13 rounded-full bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 text-white shadow-xl shadow-indigo-600/50 flex items-center justify-center p-3.5 hover:scale-105 active:scale-95 transition-all ring-4 ring-white/80 dark:ring-slate-900"
-              title="ثبت سریع تراکنش"
-            >
-              <Plus className="w-6 h-6 stroke-[3]" />
-            </button>
-          </div>
+          {/* Center Floating Telegram Plus Bubble Button */}
+          <button
+            onClick={onOpenTransactionModal}
+            className="w-11 h-11 rounded-full bg-[#2481cc] hover:bg-[#168acd] text-white shadow-lg shadow-[#2481cc]/40 flex items-center justify-center shrink-0 hover:scale-105 active:scale-90 transition-all ring-2 ring-white dark:ring-[#17212b]"
+            title="ثبت سریع تراکنش"
+          >
+            <Plus className="w-6 h-6 stroke-[2.5]" />
+          </button>
 
           {/* Budgets */}
           <button
             onClick={() => onSelectTab('budgets')}
-            className={`flex flex-col items-center gap-1 text-[11px] font-bold transition ${
+            className={`transition-all duration-200 tg-tap-active flex items-center justify-center ${
               currentTab === 'budgets'
-                ? 'text-indigo-600 dark:text-indigo-400'
-                : 'text-slate-500 dark:text-slate-400'
+                ? 'bg-[#2481cc] text-white rounded-full px-3.5 py-2 gap-1.5 font-bold text-xs shadow-md shadow-[#2481cc]/35 scale-105'
+                : 'p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:text-[#2481cc] hover:bg-slate-100 dark:hover:bg-white/5'
             }`}
           >
-            <PieChart className="w-5 h-5" />
-            <span>بودجه</span>
+            <PieChart className="w-5 h-5 shrink-0" />
+            {currentTab === 'budgets' && <span className="text-[11px] whitespace-nowrap">بودجه</span>}
           </button>
 
           {/* More Menu */}
           <button
             onClick={() => setMoreMenuOpen(!moreMenuOpen)}
-            className={`flex flex-col items-center gap-1 text-[11px] font-bold transition ${
+            className={`transition-all duration-200 tg-tap-active flex items-center justify-center ${
               moreMenuOpen || ['investments', 'accounts', 'goals', 'debts', 'reports', 'settings'].includes(currentTab)
-                ? 'text-indigo-600 dark:text-indigo-400'
-                : 'text-slate-500 dark:text-slate-400'
+                ? 'bg-[#2481cc] text-white rounded-full px-3.5 py-2 gap-1.5 font-bold text-xs shadow-md shadow-[#2481cc]/35 scale-105'
+                : 'p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:text-[#2481cc] hover:bg-slate-100 dark:hover:bg-white/5'
             }`}
           >
-            <Menu className="w-5 h-5" />
-            <span>امکانات</span>
+            <Menu className="w-5 h-5 shrink-0" />
+            {(moreMenuOpen || ['investments', 'accounts', 'goals', 'debts', 'reports', 'settings'].includes(currentTab)) && (
+              <span className="text-[11px] whitespace-nowrap">امکانات</span>
+            )}
           </button>
         </div>
       </nav>
