@@ -346,8 +346,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   ) : (
                     budgets.slice(0, 3).map(b => {
                       const cat = categories.find(c => c.id === b.categoryId);
+                      const normalizedMonth = b.month ? b.month.replace(/-/g, '/') : '';
                       const spent = transactions
-                        .filter(t => t.type === 'expense' && t.categoryId === b.categoryId)
+                        .filter(t => {
+                          if (t.type !== 'expense' || t.categoryId !== b.categoryId) return false;
+                          if (!normalizedMonth) return true;
+                          return t.date.replace(/-/g, '/').startsWith(normalizedMonth);
+                        })
                         .reduce((sum, t) => sum + t.amount, 0);
 
                       const percent = Math.min(100, Math.round((spent / b.amount) * 100));

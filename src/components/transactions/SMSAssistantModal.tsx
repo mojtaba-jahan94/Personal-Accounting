@@ -17,6 +17,7 @@ import { useFinance } from '../../context/FinanceContext';
 import { parseBankSMS } from '../../utils/smsParser';
 import { ParsedBankSMS } from '../../types';
 import { formatCurrency, toPersianDigits } from '../../utils/formatters';
+import { getTodayJalali } from '../../utils/jalali';
 
 interface SMSAssistantModalProps {
   isOpen: boolean;
@@ -117,19 +118,14 @@ export const SMSAssistantModal: React.FC<SMSAssistantModalProps> = ({
     const accId = selectedAccountId || (accounts[0] ? accounts[0].id : '');
     const catId = selectedCategoryId || (categories[0] ? categories[0].id : '');
 
-    const todayJalali = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    })
-      .format(new Date())
-      .replace(/\//g, '/');
+    const todayJalali = getTodayJalali();
+    const nowTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 
     addTransaction({
       type: parsed.type,
       amount: parsed.amountToman,
       date: parsed.date || todayJalali,
-      time: parsed.time || new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' }),
+      time: parsed.time || nowTime,
       description: description.trim() || parsed.description,
       categoryId: catId,
       accountId: accId,

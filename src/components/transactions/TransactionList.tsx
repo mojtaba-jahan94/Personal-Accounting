@@ -130,14 +130,14 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
       return {
         'شناسه': t.id,
         'نوع': t.type === 'income' ? 'درآمد' : t.type === 'expense' ? 'هزینه' : 'انتقال وجه',
-        'مبلغ': t.amount,
+        'مبلغ': currency === 'rial' ? t.amount * 10 : t.amount,
         'واحد': currency === 'toman' ? 'تومان' : 'ریال',
         'تاریخ': t.date,
         'شرح': t.description,
         'دسته‌بندی': cat ? cat.name : '-',
         'حساب مبدا': acc ? acc.name : '-',
         'حساب مقصد': toAcc ? toAcc.name : '-',
-        'کارمزد': t.fee || 0,
+        'کارمزد': t.fee ? (currency === 'rial' ? t.fee * 10 : t.fee) : 0,
         'برچسب‌ها': t.tags?.join('، ') || '',
       };
     });

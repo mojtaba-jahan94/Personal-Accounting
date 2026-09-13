@@ -615,7 +615,8 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setAccounts(prev =>
       prev.map(acc => {
         if (newTx.type === 'expense' && acc.id === newTx.accountId) {
-          return { ...acc, balance: acc.balance - newTx.amount };
+          const fee = newTx.fee || 0;
+          return { ...acc, balance: acc.balance - (newTx.amount + fee) };
         }
         if (newTx.type === 'income' && acc.id === newTx.accountId) {
           return { ...acc, balance: acc.balance + newTx.amount };
@@ -644,7 +645,8 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
             const isSettled = addedPaid >= d.amount;
             const accName = accounts.find(a => a.id === newTx.accountId)?.name;
             const newPayment: DebtPayment = {
-              id: 'dp-' + Date.now(),
+              id: 'dp-' + id,
+              transactionId: id,
               amount: newTx.amount,
               date: newTx.date,
               accountId: newTx.accountId,
@@ -673,7 +675,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       // 1. Revert old
       accs = accs.map(acc => {
         if (oldTx.type === 'expense' && acc.id === oldTx.accountId) {
-          return { ...acc, balance: acc.balance + oldTx.amount };
+          return { ...acc, balance: acc.balance + (oldTx.amount + (oldTx.fee || 0)) };
         }
         if (oldTx.type === 'income' && acc.id === oldTx.accountId) {
           return { ...acc, balance: acc.balance - oldTx.amount };
@@ -692,7 +694,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       // 2. Apply new
       accs = accs.map(acc => {
         if (updatedTx.type === 'expense' && acc.id === updatedTx.accountId) {
-          return { ...acc, balance: acc.balance - updatedTx.amount };
+          return { ...acc, balance: acc.balance - (updatedTx.amount + (updatedTx.fee || 0)) };
         }
         if (updatedTx.type === 'income' && acc.id === updatedTx.accountId) {
           return { ...acc, balance: acc.balance + updatedTx.amount };
@@ -710,6 +712,70 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return accs;
     });
 
+    // 3. Sync debt updates
+    if (oldTx.debtId || updatedTx.debtId) {
+      setDebts(prev =>
+        prev.map(d => {
+          // If transaction moved away from this debt, revert payment
+          if (d.id === oldTx.debtId && oldTx.debtId !== updatedTx.debtId) {
+            const newPaid = Math.max(0, d.paidAmount - oldTx.amount);
+            return {
+              ...d,
+              paidAmount: newPaid,
+              isSettled: newPaid >= d.amount,
+              payments: d.payments?.filter(p => p.transactionId !== updatedTx.id && p.id !== 'dp-' + updatedTx.id),
+            };
+          }
+          // If transaction moved to this debt
+          if (d.id === updatedTx.debtId && oldTx.debtId !== updatedTx.debtId) {
+            const newPaid = d.paidAmount + updatedTx.amount;
+            const accName = accounts.find(a => a.id === updatedTx.accountId)?.name;
+            const newPayment: DebtPayment = {
+              id: 'dp-' + updatedTx.id,
+              transactionId: updatedTx.id,
+              amount: updatedTx.amount,
+              date: updatedTx.date,
+              accountId: updatedTx.accountId,
+              accountName: accName,
+              description: updatedTx.description,
+            };
+            return {
+              ...d,
+              paidAmount: newPaid,
+              isSettled: newPaid >= d.amount,
+              payments: [...(d.payments || []), newPayment],
+            };
+          }
+          // If transaction stayed with this debt, update amount and details
+          if (d.id === updatedTx.debtId && oldTx.debtId === updatedTx.debtId) {
+            const diff = updatedTx.amount - oldTx.amount;
+            const newPaid = Math.max(0, d.paidAmount + diff);
+            const accName = accounts.find(a => a.id === updatedTx.accountId)?.name;
+            const updatedPayments = (d.payments || []).map(p => {
+              if (p.transactionId === updatedTx.id || p.id === 'dp-' + updatedTx.id) {
+                return {
+                  ...p,
+                  amount: updatedTx.amount,
+                  date: updatedTx.date,
+                  accountId: updatedTx.accountId,
+                  accountName: accName,
+                  description: updatedTx.description,
+                };
+              }
+              return p;
+            });
+            return {
+              ...d,
+              paidAmount: newPaid,
+              isSettled: newPaid >= d.amount,
+              payments: updatedPayments,
+            };
+          }
+          return d;
+        })
+      );
+    }
+
     setTransactions(prev => prev.map(t => (t.id === updatedTx.id ? updatedTx : t)));
   };
 
@@ -719,7 +785,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setAccounts(prev =>
         prev.map(acc => {
           if (tx.type === 'expense' && acc.id === tx.accountId) {
-            return { ...acc, balance: acc.balance + tx.amount };
+            return { ...acc, balance: acc.balance + (tx.amount + (tx.fee || 0)) };
           }
           if (tx.type === 'income' && acc.id === tx.accountId) {
             return { ...acc, balance: acc.balance - tx.amount };
@@ -735,6 +801,23 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
           return acc;
         })
       );
+
+      if (tx.debtId) {
+        setDebts(prev =>
+          prev.map(d => {
+            if (d.id === tx.debtId) {
+              const newPaid = Math.max(0, d.paidAmount - tx.amount);
+              return {
+                ...d,
+                paidAmount: newPaid,
+                isSettled: newPaid >= d.amount,
+                payments: d.payments?.filter(p => p.transactionId !== id && p.id !== 'dp-' + id),
+              };
+            }
+            return d;
+          })
+        );
+      }
     }
     setTransactions(prev => prev.filter(t => t.id !== id));
   };
@@ -865,37 +948,78 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       })
     );
 
-    // 2. Fix suspect inflated transactions
-    setTransactions(prev =>
-      prev.map(tx => {
-        const isAssetTx =
-          tx.categoryId === 'cat-invest' ||
-          tx.tags?.some(t => t === 'خرید دارایی' || t === 'فروش دارایی' || fixedAssetNames.includes(t)) ||
-          fixedAssetNames.some(name => tx.description.includes(name));
+    // 2. Fix suspect inflated transactions with accumulated account deltas
+    const accountDeltas = new Map<string, number>();
+    const debtDeltas = new Map<string, number>();
 
-        if ((isAssetTx && tx.amount >= 15000000) || tx.amount >= 100000000) {
-          fixedCount++;
-          const newAmount = Math.round(tx.amount / 10);
-          const diff = tx.amount - newAmount;
-          const newFee = tx.fee ? Math.round(tx.fee / 10) : undefined;
+    const updatedTransactions = transactions.map(tx => {
+      const isAssetTx =
+        tx.categoryId === 'cat-invest' ||
+        tx.tags?.some(t => t === 'خرید دارایی' || t === 'فروش دارایی' || fixedAssetNames.includes(t)) ||
+        fixedAssetNames.some(name => tx.description.includes(name));
 
-          setAccounts(accPrev =>
-            accPrev.map(acc => {
-              if (acc.id === tx.accountId) {
-                return {
-                  ...acc,
-                  balance: tx.type === 'expense' ? acc.balance + diff : acc.balance - diff,
-                };
-              }
-              return acc;
-            })
-          );
+      if ((isAssetTx && tx.amount >= 15000000) || tx.amount >= 100000000) {
+        fixedCount++;
+        const newAmount = Math.round(tx.amount / 10);
+        const diff = tx.amount - newAmount;
+        const oldFee = tx.fee || 0;
+        const newFee = tx.fee ? Math.round(tx.fee / 10) : undefined;
+        const feeDiff = oldFee - (newFee || 0);
 
-          return { ...tx, amount: newAmount, fee: newFee };
+        if (tx.type === 'expense') {
+          const currentDelta = accountDeltas.get(tx.accountId) || 0;
+          accountDeltas.set(tx.accountId, currentDelta + diff + feeDiff);
+        } else if (tx.type === 'income') {
+          const currentDelta = accountDeltas.get(tx.accountId) || 0;
+          accountDeltas.set(tx.accountId, currentDelta - diff);
+        } else if (tx.type === 'transfer') {
+          const fromDelta = accountDeltas.get(tx.accountId) || 0;
+          accountDeltas.set(tx.accountId, fromDelta + diff + feeDiff);
+          if (tx.toAccountId) {
+            const toDelta = accountDeltas.get(tx.toAccountId) || 0;
+            accountDeltas.set(tx.toAccountId, toDelta - diff);
+          }
         }
-        return tx;
-      })
-    );
+
+        if (tx.debtId) {
+          const currentDebtDiff = debtDeltas.get(tx.debtId) || 0;
+          debtDeltas.set(tx.debtId, currentDebtDiff + diff);
+        }
+
+        return { ...tx, amount: newAmount, fee: newFee };
+      }
+      return tx;
+    });
+
+    if (fixedCount > 0) {
+      setTransactions(updatedTransactions);
+
+      if (accountDeltas.size > 0) {
+        setAccounts(prev =>
+          prev.map(acc => {
+            const delta = accountDeltas.get(acc.id);
+            return delta ? { ...acc, balance: acc.balance + delta } : acc;
+          })
+        );
+      }
+
+      if (debtDeltas.size > 0) {
+        setDebts(prev =>
+          prev.map(d => {
+            const dDiff = debtDeltas.get(d.id);
+            if (dDiff) {
+              const newPaid = Math.max(0, d.paidAmount - dDiff);
+              return {
+                ...d,
+                paidAmount: newPaid,
+                isSettled: newPaid >= d.amount,
+              };
+            }
+            return d;
+          })
+        );
+      }
+    }
 
     return fixedCount;
   };
@@ -993,6 +1117,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const contributeToGoal = (id: string, amount: number, accountId?: string) => {
+    const goal = goals.find(g => g.id === id);
     setGoals(prev =>
       prev.map(g => (g.id === id ? { ...g, currentAmount: g.currentAmount + amount } : g))
     );
@@ -1000,6 +1125,18 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       setAccounts(prev =>
         prev.map(a => (a.id === accountId ? { ...a, balance: a.balance - amount } : a))
       );
+      const txId = 'tx-' + Date.now();
+      const newTx: Transaction = {
+        id: txId,
+        type: 'expense',
+        amount,
+        date: getTodayJalali(),
+        description: `واریز به هدف پس‌انداز: ${goal?.title || 'هدف'}`,
+        categoryId: 'cat-invest',
+        accountId,
+        tags: ['هدف پس‌انداز', goal?.title || ''],
+      };
+      setTransactions(prev => [newTx, ...prev]);
     }
   };
 
@@ -1160,7 +1297,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const exportDataJSON = (): string => {
     const data = {
-      version: 4,
+      version: 5,
       exportDate: new Date().toISOString(),
       accounts,
       transactions,
@@ -1173,6 +1310,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       persons,
       currency,
       themeConfig,
+      dashboardConfig,
     };
     return JSON.stringify(data, null, 2);
   };
@@ -1191,6 +1329,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (data.persons) setPersons(data.persons);
       if (data.currency) setCurrency(data.currency);
       if (data.themeConfig) setThemeConfig(data.themeConfig);
+      if (data.dashboardConfig) setDashboardConfig(data.dashboardConfig);
       return true;
     } catch (e) {
       console.error('Error importing backup:', e);

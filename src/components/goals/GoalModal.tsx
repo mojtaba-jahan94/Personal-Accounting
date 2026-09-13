@@ -30,8 +30,10 @@ export const GoalModal: React.FC<GoalModalProps> = ({
   useEffect(() => {
     if (initialGoal) {
       setTitle(initialGoal.title);
-      setTargetAmount(initialGoal.targetAmount.toString());
-      setCurrentAmount(initialGoal.currentAmount.toString());
+      const displayTarget = currency === 'rial' ? initialGoal.targetAmount * 10 : initialGoal.targetAmount;
+      const displayCurrent = currency === 'rial' ? initialGoal.currentAmount * 10 : initialGoal.currentAmount;
+      setTargetAmount(displayTarget.toString());
+      setCurrentAmount(displayCurrent.toString());
       setDeadline(initialGoal.deadline || '');
       setCategory(initialGoal.category || '');
       setIcon(initialGoal.icon || PRESET_GOAL_ICONS[0]);
@@ -45,7 +47,7 @@ export const GoalModal: React.FC<GoalModalProps> = ({
       setIcon(PRESET_GOAL_ICONS[0]);
       setColor('#4f46e5');
     }
-  }, [initialGoal, isOpen]);
+  }, [initialGoal, isOpen, currency]);
 
   if (!isOpen) return null;
 
@@ -58,10 +60,14 @@ export const GoalModal: React.FC<GoalModalProps> = ({
       return;
     }
 
+    const savedTarget = currency === 'rial' ? Math.round(numTarget / 10) : numTarget;
+    const rawCurrent = parseFloat(currentAmount) || 0;
+    const savedCurrent = currency === 'rial' ? Math.round(rawCurrent / 10) : rawCurrent;
+
     const goalData = {
       title: title.trim(),
-      targetAmount: numTarget,
-      currentAmount: parseFloat(currentAmount) || 0,
+      targetAmount: savedTarget,
+      currentAmount: savedCurrent,
       deadline: deadline.trim() || undefined,
       category: category.trim() || undefined,
       icon,
@@ -127,7 +133,7 @@ export const GoalModal: React.FC<GoalModalProps> = ({
 
             <div>
               <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                موجودی فعلی پس‌انداز
+                موجودی فعلی پس‌انداز ({currency === 'toman' ? 'تومان' : 'ریال'})
               </label>
               <input
                 type="number"

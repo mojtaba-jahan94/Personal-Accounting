@@ -34,8 +34,9 @@ export const PayDebtModal: React.FC<PayDebtModalProps> = ({ isOpen, onClose, deb
 
   useEffect(() => {
     if (debt) {
-      const remaining = Math.max(0, debt.amount - debt.paidAmount);
-      setAmount(remaining > 0 ? remaining.toString() : '');
+      const remainingToman = Math.max(0, debt.amount - debt.paidAmount);
+      const remainingDisplay = currency === 'rial' ? remainingToman * 10 : remainingToman;
+      setAmount(remainingDisplay > 0 ? remainingDisplay.toString() : '');
       setDate(getTodayJalali());
       const defaultAcc = accounts.find(a => a.isDefault) || accounts[0];
       setAccountId(defaultAcc ? defaultAcc.id : '');
@@ -45,7 +46,7 @@ export const PayDebtModal: React.FC<PayDebtModalProps> = ({ isOpen, onClose, deb
           : `دریافت و وصول طلب از ${debt.personName}`
       );
     }
-  }, [debt, accounts, isOpen]);
+  }, [debt, accounts, isOpen, currency]);
 
   if (!isOpen || !debt) return null;
 
@@ -55,7 +56,8 @@ export const PayDebtModal: React.FC<PayDebtModalProps> = ({ isOpen, onClose, deb
   const selectedAccount = accounts.find(a => a.id === accountId);
 
   const handleQuickPercent = (pct: number) => {
-    const val = Math.round((remainingAmount * pct) / 100);
+    const remainingDisplay = currency === 'rial' ? remainingAmount * 10 : remainingAmount;
+    const val = Math.round((remainingDisplay * pct) / 100);
     setAmount(val.toString());
   };
 
@@ -70,7 +72,9 @@ export const PayDebtModal: React.FC<PayDebtModalProps> = ({ isOpen, onClose, deb
       return;
     }
 
-    if (isDebt && selectedAccount && selectedAccount.balance < numAmount) {
+    const savedAmount = currency === 'rial' ? Math.round(numAmount / 10) : numAmount;
+
+    if (isDebt && selectedAccount && selectedAccount.balance < savedAmount) {
       if (
         !window.confirm(
           `موجودی حساب انتخابی (${formatCurrency(selectedAccount.balance, currency)}) کمتر از مبلغ پرداختی است. آیا مایل به ادامه هستید؟`
@@ -82,7 +86,7 @@ export const PayDebtModal: React.FC<PayDebtModalProps> = ({ isOpen, onClose, deb
 
     payDebtWithAccount({
       debtId: debt.id,
-      amount: numAmount,
+      amount: savedAmount,
       accountId,
       date,
       description: description.trim() || undefined,
@@ -210,7 +214,7 @@ export const PayDebtModal: React.FC<PayDebtModalProps> = ({ isOpen, onClose, deb
 
               {numAmount > 0 && (
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-                  معادل: {numberToWordsPersian(numAmount)} {currency === 'toman' ? 'تومان' : 'ریال'}
+                  معادل: {numberToWordsPersian(numAmount, currency)}
                 </p>
               )}
             </div>

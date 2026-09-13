@@ -70,12 +70,14 @@ export type DebtType = 'debt' | 'credit';
 
 export interface DebtPayment {
   id: string;
+  transactionId?: string;
   amount: number;
   date: string; // تاریخ شمسی
   accountId: string; // شناسه حساب بانکی
   accountName?: string;
   description?: string;
 }
+
 
 export interface Debt {
   id: string;

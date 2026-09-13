@@ -128,7 +128,8 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
     setAmount(val);
     const n = parseFloat(val);
     if (!isNaN(n) && activeAsset && assetUnitPrice > 0) {
-      const units = n / assetUnitPrice;
+      const nInToman = currency === 'rial' ? n / 10 : n;
+      const units = nInToman / assetUnitPrice;
       setAssetUnits(Number(units.toFixed(4)).toString());
     } else {
       setAssetUnits('');
@@ -139,8 +140,9 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
     setAssetUnits(val);
     const u = parseFloat(val);
     if (!isNaN(u) && activeAsset && assetUnitPrice > 0) {
-      const money = Math.round(u * assetUnitPrice);
-      setAmount(money.toString());
+      const moneyToman = Math.round(u * assetUnitPrice);
+      const moneyDisplay = currency === 'rial' ? moneyToman * 10 : moneyToman;
+      setAmount(moneyDisplay.toString());
     } else {
       setAmount('');
     }
@@ -157,9 +159,12 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
       return;
     }
 
+    const savedAmount = currency === 'rial' ? Math.round(numAmount / 10) : numAmount;
+    const savedFee = currency === 'rial' ? Math.round(numFee / 10) : numFee;
+
     // 1. Asset -> Bank Account (Selling / Withdrawing from specific asset to cash)
     if (isFromAsset && fromAst && toAcc) {
-      const unitsToSell = parseFloat(assetUnits) || numAmount / assetUnitPrice;
+      const unitsToSell = parseFloat(assetUnits) || (savedAmount / assetUnitPrice);
       if (unitsToSell > fromAst.amount) {
         alert(
           `موجودی ${fromAst.name} (${toPersianDigits(fromAst.amount)} ${fromAst.unitName}) کمتر از مقدار برداشتی است.`
@@ -182,12 +187,12 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
 
     // 2. Bank Account -> Asset (Buying / Depositing cash into specific asset)
     if (fromAcc && isToAsset && toAst) {
-      if (fromAcc.balance < numAmount + numFee) {
+      if (fromAcc.balance < savedAmount + savedFee) {
         if (!window.confirm('موجودی حساب مبدأ کمتر از این مبلغ و کارمزد است. آیا مایل به ادامه هستید؟')) {
           return;
         }
       }
-      const unitsToAdd = parseFloat(assetUnits) || numAmount / assetUnitPrice;
+      const unitsToAdd = parseFloat(assetUnits) || (savedAmount / assetUnitPrice);
 
       // Update asset holdings
       updateAsset({
@@ -198,14 +203,14 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
       // Record transaction
       addTransaction({
         type: 'expense',
-        amount: numAmount,
+        amount: savedAmount,
         date,
         description:
           description.trim() ||
           `خرید و واریز به ${toAst.name} (${toPersianDigits(unitsToAdd)} ${toAst.unitName}) از حساب ${fromAcc.name}`,
         categoryId: 'cat-invest',
         accountId: fromAcc.id,
-        fee: numFee,
+        fee: savedFee,
         tags: ['صندوق طلا و ارز', toAst.name],
       });
       onClose();
@@ -214,14 +219,14 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
 
     // 3. Normal Bank -> Bank Transfer
     if (fromAcc && toAcc) {
-      if (fromAcc.balance < numAmount + numFee) {
+      if (fromAcc.balance < savedAmount + savedFee) {
         if (!window.confirm('موجودی حساب مبدأ کمتر از این مبلغ است. آیا مایل به ادامه هستید؟')) {
           return;
         }
       }
       addTransaction({
         type: 'transfer',
-        amount: numAmount,
+        amount: savedAmount,
         date,
         description:
           description.trim() ||
@@ -229,7 +234,7 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
         categoryId: 'cat-other-exp',
         accountId: fromAcc.id,
         toAccountId: toAcc.id,
-        fee: numFee,
+        fee: savedFee,
       });
       onClose();
       return;
@@ -458,7 +463,7 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
             ) : (
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  کارمزد پایا / کارت به کارت
+                  کارمزد پایا / کارت به کارت ({currency === 'toman' ? 'تومان' : 'ریال'})
                 </label>
                 <input
                   type="number"

@@ -29,8 +29,13 @@ export const BudgetView: React.FC = () => {
 
   const budgetItemsWithStats = budgets.map(b => {
     const cat = categories.find(c => c.id === b.categoryId);
+    const normalizedMonth = b.month ? b.month.replace(/-/g, '/') : '';
     const spent = transactions
-      .filter(t => t.type === 'expense' && t.categoryId === b.categoryId)
+      .filter(t => {
+        if (t.type !== 'expense' || t.categoryId !== b.categoryId) return false;
+        if (!normalizedMonth) return true;
+        return t.date.replace(/-/g, '/').startsWith(normalizedMonth);
+      })
       .reduce((sum, t) => sum + t.amount, 0);
 
     totalBudgetAmount += b.amount;

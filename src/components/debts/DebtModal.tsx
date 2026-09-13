@@ -37,8 +37,10 @@ export const DebtModal: React.FC<DebtModalProps> = ({
       setPersonName(initialDebt.personName);
       setPhoneNumber(initialDebt.phoneNumber || '');
       setCategory(initialDebt.category || 'personal');
-      setAmount(initialDebt.amount.toString());
-      setPaidAmount(initialDebt.paidAmount.toString());
+      const displayAmount = currency === 'rial' ? initialDebt.amount * 10 : initialDebt.amount;
+      const displayPaid = currency === 'rial' ? initialDebt.paidAmount * 10 : initialDebt.paidAmount;
+      setAmount(displayAmount.toString());
+      setPaidAmount(displayPaid.toString());
       setDueDate(initialDebt.dueDate);
       setDescription(initialDebt.description || '');
     } else {
@@ -52,7 +54,7 @@ export const DebtModal: React.FC<DebtModalProps> = ({
       setDueDate(getTodayJalali());
       setDescription('');
     }
-  }, [initialDebt, isOpen]);
+  }, [initialDebt, isOpen, currency]);
 
   if (!isOpen) return null;
 
@@ -80,18 +82,21 @@ export const DebtModal: React.FC<DebtModalProps> = ({
       return;
     }
 
-    const numPaid = parseFloat(paidAmount) || 0;
+    const rawPaid = parseFloat(paidAmount) || 0;
+    const savedAmount = currency === 'rial' ? Math.round(numAmount / 10) : numAmount;
+    const savedPaid = currency === 'rial' ? Math.round(rawPaid / 10) : rawPaid;
+
     const debtData = {
       type,
       personId,
       personName: personName.trim(),
       phoneNumber: phoneNumber.trim() || undefined,
       category,
-      amount: numAmount,
-      paidAmount: numPaid,
+      amount: savedAmount,
+      paidAmount: savedPaid,
       dueDate,
       description: description.trim() || undefined,
-      isSettled: numPaid >= numAmount,
+      isSettled: savedPaid >= savedAmount,
       payments: initialDebt?.payments || [],
     };
 
@@ -264,7 +269,7 @@ export const DebtModal: React.FC<DebtModalProps> = ({
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  مبلغ تسویه‌شده تا الان
+                  مبلغ تسویه‌شده تا الان ({currency === 'toman' ? 'تومان' : 'ریال'})
                 </label>
                 <input
                   type="number"
@@ -279,7 +284,7 @@ export const DebtModal: React.FC<DebtModalProps> = ({
 
             {numAmount > 0 && (
               <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">
-                معادل: {numberToWordsPersian(numAmount)} {currency === 'toman' ? 'تومان' : 'ریال'}
+                معادل: {numberToWordsPersian(numAmount, currency)}
               </p>
             )}
 

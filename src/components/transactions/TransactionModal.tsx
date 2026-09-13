@@ -305,10 +305,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               {numAmount > 0 && (
                 <div className="mt-1.5 px-1 space-y-0.5">
                   <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium leading-relaxed">
-                    به حروف: {numberToWordsPersian(
-                      inputUnit === 'rial' ? Math.round(numAmount / 10) : numAmount,
-                      inputUnit
-                    )}
+                    به حروف: {numberToWordsPersian(numAmount, inputUnit)}
                   </p>
                   <p className="text-[11px] text-slate-400 font-mono">
                     {inputUnit === 'rial'

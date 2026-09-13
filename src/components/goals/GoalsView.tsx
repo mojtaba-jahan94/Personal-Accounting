@@ -44,10 +44,11 @@ export const GoalsView: React.FC = () => {
       return;
     }
 
-    contributeToGoal(depositGoal.id, num, depositAccountId || undefined);
+    const savedDeposit = currency === 'rial' ? Math.round(num / 10) : num;
+    contributeToGoal(depositGoal.id, savedDeposit, depositAccountId || undefined);
 
     // If this contribution completes or reaches 100%, trigger confetti!
-    if (depositGoal.currentAmount + num >= depositGoal.targetAmount) {
+    if (depositGoal.currentAmount + savedDeposit >= depositGoal.targetAmount) {
       confetti({
         particleCount: 120,
         spread: 70,

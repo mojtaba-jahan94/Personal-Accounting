@@ -27,14 +27,15 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
   useEffect(() => {
     if (initialBudget) {
       setCategoryId(initialBudget.categoryId);
-      setAmount(initialBudget.amount.toString());
+      const displayAmount = currency === 'rial' ? initialBudget.amount * 10 : initialBudget.amount;
+      setAmount(displayAmount.toString());
       setMonth(initialBudget.month);
     } else {
       setCategoryId(expenseCategories[0]?.id || '');
       setAmount('');
       setMonth(getCurrentJalaliMonth());
     }
-  }, [initialBudget, isOpen]);
+  }, [initialBudget, isOpen, currency]);
 
   if (!isOpen) return null;
 
@@ -47,17 +48,19 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
       return;
     }
 
+    const savedAmount = currency === 'rial' ? Math.round(numAmount / 10) : numAmount;
+
     if (initialBudget) {
       updateBudget({
         id: initialBudget.id,
         categoryId,
-        amount: numAmount,
+        amount: savedAmount,
         month,
       });
     } else {
       addBudget({
         categoryId,
-        amount: numAmount,
+        amount: savedAmount,
         month,
       });
     }

@@ -31,7 +31,8 @@ export const ChequeModal: React.FC<ChequeModalProps> = ({
   useEffect(() => {
     if (initialCheque) {
       setType(initialCheque.type);
-      setAmount(initialCheque.amount.toString());
+      const displayAmount = currency === 'rial' ? initialCheque.amount * 10 : initialCheque.amount;
+      setAmount(displayAmount.toString());
       setDueDate(initialCheque.dueDate);
       setBankName(initialCheque.bankName);
       setChequeNumber(initialCheque.chequeNumber);
@@ -50,7 +51,7 @@ export const ChequeModal: React.FC<ChequeModalProps> = ({
       setStatus('pending');
       setNotes('');
     }
-  }, [initialCheque, isOpen]);
+  }, [initialCheque, isOpen, currency]);
 
   if (!isOpen) return null;
 
@@ -63,9 +64,11 @@ export const ChequeModal: React.FC<ChequeModalProps> = ({
       return;
     }
 
+    const savedAmount = currency === 'rial' ? Math.round(numAmount / 10) : numAmount;
+
     const chequeData = {
       type,
-      amount: numAmount,
+      amount: savedAmount,
       dueDate,
       bankName: bankName.trim() || 'نامشخص',
       chequeNumber: chequeNumber.trim() || '0',

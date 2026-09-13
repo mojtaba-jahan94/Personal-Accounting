@@ -1,5 +1,27 @@
 import { Currency } from '../types';
 
+export function normalizeDigits(str: string): string {
+  if (!str) return '';
+  const faDigits = '۰۱۲۳۴۵۶۷۸۹';
+  const arDigits = '٠١٢٣٤٥٦٧٨٩';
+  let out = '';
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i];
+    const faIdx = faDigits.indexOf(char);
+    if (faIdx !== -1) {
+      out += faIdx;
+      continue;
+    }
+    const arIdx = arDigits.indexOf(char);
+    if (arIdx !== -1) {
+      out += arIdx;
+      continue;
+    }
+    out += char;
+  }
+  return out;
+}
+
 export function toPersianDigits(n: number | string): string {
   if (n === null || n === undefined) return '';
   const farsiDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];

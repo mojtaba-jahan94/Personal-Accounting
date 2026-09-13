@@ -1,3 +1,5 @@
+import { normalizeDigits } from './formatters';
+
 // Algorithms for Gregorian <-> Jalali conversion
 export function gregorianToJalali(gy: number, gm: number, gd: number): [number, number, number] {
   const g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
@@ -93,8 +95,9 @@ export function getDaysInJalaliMonth(year: number, month: number): number {
 
 export function normalizeJalaliDate(dateStr: string): string {
   if (!dateStr) return '';
-  const parts = dateStr.replace(/-/g, '/').split('/');
-  if (parts.length !== 3) return dateStr;
+  const clean = normalizeDigits(dateStr).trim();
+  const parts = clean.replace(/-/g, '/').split('/');
+  if (parts.length !== 3) return clean;
   const y = parts[0].padStart(4, '0');
   const m = parts[1].padStart(2, '0');
   const d = parts[2].padStart(2, '0');

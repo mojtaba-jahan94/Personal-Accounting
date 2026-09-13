@@ -93,7 +93,7 @@ export const InvestmentsView: React.FC = () => {
 
   // Totals
   const totalCurrentValue = assets.reduce((sum, a) => sum + a.amount * a.currentPrice, 0);
-  const totalCostValue = assets.reduce((sum, a) => sum + a.amount * a.buyPrice, 0);
+  const totalCostValue = assets.reduce((sum, a) => sum + a.amount * a.buyPrice + (a.buyFee || 0), 0);
   const totalProfitLoss = totalCurrentValue - totalCostValue;
   const overallRoiPercent = totalCostValue > 0 ? (totalProfitLoss / totalCostValue) * 100 : 0;
 
@@ -348,7 +348,7 @@ export const InvestmentsView: React.FC = () => {
               ) : (
                 assets.map(asset => {
                   const totalAssetValue = asset.amount * asset.currentPrice;
-                  const totalAssetCost = asset.amount * asset.buyPrice;
+                  const totalAssetCost = asset.amount * asset.buyPrice + (asset.buyFee || 0);
                   const assetProfit = totalAssetValue - totalAssetCost;
                   const roi = totalAssetCost > 0 ? (assetProfit / totalAssetCost) * 100 : 0;
 

@@ -41,7 +41,8 @@ export const AccountModal: React.FC<AccountModalProps> = ({
     if (initialAccount) {
       setName(initialAccount.name);
       setType(initialAccount.type);
-      setBalance(initialAccount.balance.toString());
+      const displayBalance = currency === 'rial' ? initialAccount.balance * 10 : initialAccount.balance;
+      setBalance(displayBalance.toString());
       setBankName(initialAccount.bankName || '');
       setCardNumber(initialAccount.cardNumber || '');
       setShaba(initialAccount.shaba || '');
@@ -57,7 +58,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
       setColor(PRESET_COLORS[0]);
       setIsDefault(false);
     }
-  }, [initialAccount, isOpen]);
+  }, [initialAccount, isOpen, currency]);
 
   if (!isOpen) return null;
 
@@ -68,10 +69,13 @@ export const AccountModal: React.FC<AccountModalProps> = ({
       return;
     }
 
+    const rawBalance = parseFloat(balance) || 0;
+    const savedBalance = currency === 'rial' ? Math.round(rawBalance / 10) : rawBalance;
+
     const accData = {
       name: name.trim(),
       type,
-      balance: parseFloat(balance) || 0,
+      balance: savedBalance,
       bankName: bankName.trim() || undefined,
       cardNumber: cardNumber.trim() || undefined,
       shaba: shaba.trim() || undefined,

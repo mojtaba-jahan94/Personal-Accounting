@@ -55,14 +55,16 @@ export const ExpenseChart: React.FC<ExpenseChartProps> = ({ type }) => {
     'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
   ];
 
-  const barData = Object.keys(monthDataMap).map(mKey => {
-    const idx = parseInt(mKey, 10) - 1;
-    return {
-      name: monthNames[idx] || `ماه ${mKey}`,
-      درآمد: monthDataMap[mKey].income,
-      هزینه: monthDataMap[mKey].expense,
-    };
-  });
+  const barData = Object.keys(monthDataMap)
+    .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
+    .map(mKey => {
+      const idx = parseInt(mKey, 10) - 1;
+      return {
+        name: monthNames[idx] || `ماه ${mKey}`,
+        درآمد: monthDataMap[mKey].income,
+        هزینه: monthDataMap[mKey].expense,
+      };
+    });
 
   const textColor = darkMode ? '#94a3b8' : '#64748b';
   const gridColor = darkMode ? '#334155' : '#f1f5f9';
@@ -128,7 +130,17 @@ export const ExpenseChart: React.FC<ExpenseChartProps> = ({ type }) => {
           <XAxis dataKey="name" tick={{ fill: textColor, fontSize: 11 }} />
           <YAxis
             tick={{ fill: textColor, fontSize: 10 }}
-            tickFormatter={(val) => toPersianDigits(val > 1000000 ? `${Math.round(val / 1000000)}M` : `${Math.round(val / 1000)}K`)}
+            tickFormatter={(val: number) => {
+              if (val === 0) return '۰';
+              const displayVal = currency === 'rial' ? val * 10 : val;
+              if (Math.abs(displayVal) >= 1000000) {
+                return toPersianDigits(`${(displayVal / 1000000).toFixed(1).replace('.0', '')}M`);
+              }
+              if (Math.abs(displayVal) >= 1000) {
+                return toPersianDigits(`${Math.round(displayVal / 1000)}K`);
+              }
+              return toPersianDigits(displayVal.toString());
+            }}
           />
           <Tooltip
             formatter={(value: any) => [formatCurrency(Number(value) || 0, currency), '']}

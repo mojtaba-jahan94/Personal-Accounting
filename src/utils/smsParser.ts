@@ -1,6 +1,7 @@
 import { ParsedBankSMS, TransactionType } from '../types';
+import { normalizeDigits } from './formatters';
 
-// Iranian Banks registry
+export { normalizeDigits };
 const KNOWN_BANKS = [
   { name: 'بلوبانک (BluBank)', patterns: [/بلو/i, /blubank/i, /بلوکارت/i] },
   { name: 'بانک ملی ایران', patterns: [/ملی/i, /ساپتا/i, /بام/i] },
@@ -24,27 +25,7 @@ const KNOWN_BANKS = [
   { name: 'بانک ایران زمین', patterns: [/ایران\s*زمین/i] },
 ];
 
-// Helper to convert Persian/Arabic digits to English digits
-export function normalizeDigits(str: string): string {
-  const faDigits = '۰۱۲۳۴۵۶۷۸۹';
-  const arDigits = '٠١٢٣٤٥٦٧٨٩';
-  let out = '';
-  for (let i = 0; i < str.length; i++) {
-    const char = str[i];
-    const faIdx = faDigits.indexOf(char);
-    if (faIdx !== -1) {
-      out += faIdx;
-      continue;
-    }
-    const arIdx = arDigits.indexOf(char);
-    if (arIdx !== -1) {
-      out += arIdx;
-      continue;
-    }
-    out += char;
-  }
-  return out;
-}
+
 
 export function parseBankSMS(rawSMS: string): ParsedBankSMS | null {
   if (!rawSMS || rawSMS.trim().length < 10) return null;
@@ -137,18 +118,33 @@ export function parseBankSMS(rawSMS: string): ParsedBankSMS | null {
   let date: string | undefined;
   let time: string | undefined;
 
-  // Jalali date match e.g. 1403/06/22 or 03/06/22 or 1403-06-22
-  const dateMatch = normalized.match(/(140[0-9]|139[0-9]|[0-9]{2})[\/\-.](0[1-9]|1[0-2])[\/\-.](0[1-9]|[12][0-9]|3[01])/);
-  if (dateMatch) {
-    let year = dateMatch[1];
-    if (year.length === 2) year = '14' + year;
-    date = `${year}/${dateMatch[2]}/${dateMatch[3]}`;
+  // Jalali date match: handles YYYY/MM/DD, DD/MM/YYYY, YY/MM/DD, and DD/MM/YY
+  const y4FirstMatch = normalized.match(/\b(140[0-9]|139[0-9])[\/\-.](0[1-9]|1[0-2])[\/\-.](0[1-9]|[12][0-9]|3[01])\b/);
+  const y4EndMatch = normalized.match(/\b(0[1-9]|[12][0-9]|3[01])[\/\-.](0[1-9]|1[0-2])[\/\-.](140[0-9]|139[0-9])\b/);
+
+  if (y4FirstMatch) {
+    date = `${y4FirstMatch[1]}/${y4FirstMatch[2]}/${y4FirstMatch[3]}`;
+  } else if (y4EndMatch) {
+    date = `${y4EndMatch[3]}/${y4EndMatch[2]}/${y4EndMatch[1]}`;
+  } else {
+    const y2Match = normalized.match(/\b([0-9]{2})[\/\-.](0[1-9]|1[0-2])[\/\-.]([0-9]{2})\b/);
+    if (y2Match) {
+      const p1 = parseInt(y2Match[1], 10);
+      const p3 = parseInt(y2Match[3], 10);
+      if (p1 > 20 && p3 <= 20) {
+        // e.g. 22/06/03 -> DD/MM/YY
+        date = `14${y2Match[3]}/${y2Match[2]}/${y2Match[1]}`;
+      } else {
+        // e.g. 03/06/22 -> YY/MM/DD
+        date = `14${y2Match[1]}/${y2Match[2]}/${y2Match[3]}`;
+      }
+    }
   }
 
-  // Time match e.g. 14:32:05 or 14:32
-  const timeMatch = normalized.match(/([01]?[0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9]))?/);
+  // Time match e.g. 14:32:05 or 14:32 (pad single-digit hour if any)
+  const timeMatch = normalized.match(/\b([01]?[0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9]))?\b/);
   if (timeMatch) {
-    time = `${timeMatch[1]}:${timeMatch[2]}`;
+    time = `${timeMatch[1].padStart(2, '0')}:${timeMatch[2].padStart(2, '0')}`;
   }
 
   // Description summary

@@ -1,4 +1,5 @@
 import { MarketRate, MarketSourceConfig, MarketPriceUnit } from '../types';
+import { normalizeDigits } from '../utils/formatters';
 
 export const INITIAL_MARKET_RATES: MarketRate[] = [
   {
@@ -351,14 +352,15 @@ function parseGoldFromTelegram(
   unitPref: MarketPriceUnit = 'auto'
 ): { priceToman: number; snippet: string } | null {
   for (let i = messages.length - 1; i >= 0; i--) {
-    const msg = messages[i];
+    const rawMsg = messages[i];
+    const msg = normalizeDigits(rawMsg).replace(/،/g, ',');
     // e.g. ✨ #طلا_گرمی 45,208,204 or طلا گرمی 4,520,000
     const goldMatch = msg.match(/(?:#?طلا_?گرمی|گرم\s*طلا|طلای\s*۱۸)[^\d]*([\d,]{6,10})/i);
     if (goldMatch) {
       const raw = parseInt(goldMatch[1].replace(/,/g, ''), 10);
       if (raw > 10000) {
         const priceToman = normalizePriceToToman(raw, 'gold_18k', unitPref);
-        return { priceToman, snippet: msg.slice(0, 150) };
+        return { priceToman, snippet: rawMsg.slice(0, 150) };
       }
     }
   }
@@ -371,14 +373,15 @@ function parseUsdFromTelegram(
   unitPref: MarketPriceUnit = 'auto'
 ): { priceToman: number; snippet: string } | null {
   for (let i = messages.length - 1; i >= 0; i--) {
-    const msg = messages[i];
+    const rawMsg = messages[i];
+    const msg = normalizeDigits(rawMsg).replace(/،/g, ',');
     // Matches: دلار فردایی تهران 89,400 or آخرین معامله : 89,200 or 895,000
     const usdMatch = msg.match(/(?:آخرین معامله|دلار فردایی|دلار نقدی|دلار تهران|دلار سبزه|دلار)[^\d]{0,30}([\d,]{5,8})/i);
     if (usdMatch) {
       const raw = parseInt(usdMatch[1].replace(/,/g, ''), 10);
       if (raw > 1000) {
         const priceToman = normalizePriceToToman(raw, 'usd', unitPref);
-        return { priceToman, snippet: msg.slice(0, 150) };
+        return { priceToman, snippet: rawMsg.slice(0, 150) };
       }
     }
   }
@@ -387,11 +390,12 @@ function parseUsdFromTelegram(
 
 // Parse TGJU HTML
 function parseTgjuHtml(html: string, tgjuUnitPref: MarketPriceUnit = 'rial'): Record<string, number> {
+  const normalizedHtml = normalizeDigits(html).replace(/،/g, ',');
   const result: Record<string, number> = {};
 
   function extractPrice(key: string, symbolId: string): number | null {
     const reg = new RegExp(`data-market-row="${key}"[\\s\\S]*?<\\/tr>`, 'i');
-    const rowMatch = html.match(reg);
+    const rowMatch = normalizedHtml.match(reg);
     if (!rowMatch) return null;
 
     const row = rowMatch[0];

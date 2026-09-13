@@ -96,7 +96,7 @@ export const ReportsView: React.FC = () => {
   const handleExport = () => {
     const data = categoryRanking.map(c => ({
       'دسته‌بندی': c.name,
-      'مبلغ کل': c.amount,
+      'مبلغ کل': currency === 'rial' ? c.amount * 10 : c.amount,
       'واحد': currency === 'toman' ? 'تومان' : 'ریال',
       'درصد از کل مخارج': `${c.percent}%`,
     }));
