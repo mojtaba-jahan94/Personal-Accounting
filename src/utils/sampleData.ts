@@ -12,7 +12,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   { id: 'cat-shopping', name: 'پوشاک و خرید', icon: 'ShoppingBag', color: '#06b6d4', type: 'expense' },
   { id: 'cat-education', name: 'آموزش و کتاب', icon: 'GraduationCap', color: '#10b981', type: 'expense' },
   { id: 'cat-debt-pay', name: 'پرداخت بدهی و اقساط وام', icon: 'Scale', color: '#f43f5e', type: 'expense' },
-  { id: 'cat-invest', name: 'سرمایه‌گذاری و خرید دارایی', icon: 'Coins', color: '#f59e0b', type: 'expense' },
+  { id: 'cat-invest', name: 'سرمایه‌گذاری و پس‌انداز', icon: 'Coins', color: '#f59e0b', type: 'expense' },
   { id: 'cat-other-exp', name: 'سایر هزینه‌ها', icon: 'MoreHorizontal', color: '#64748b', type: 'expense' },
 
   // Incomes
@@ -60,8 +60,8 @@ export const DEFAULT_ACCOUNTS: Account[] = [
   },
   {
     id: 'acc-gold',
-    name: 'صندوق طلا و پس‌انداز',
-    type: 'gold_crypto',
+    name: 'صندوق پس‌انداز و اندوخته',
+    type: 'savings',
     balance: 65000000,
     color: '#d97706',
   }

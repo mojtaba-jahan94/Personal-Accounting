@@ -23,57 +23,6 @@
 }
 
 /* Accent Color Variations with System-wide Overrides */
-/* Telegram Classic Blue Theme */
-[data-accent="telegram"] {
-  --primary-color: #2481cc;
-  --primary-rgb: 36, 129, 204;
-  --primary-hover: #168acd;
-  --primary-glow: rgba(36, 129, 204, 0.35);
-}
-[data-accent="telegram"] .bg-indigo-600,
-[data-accent="telegram"] .bg-indigo-500,
-[data-accent="telegram"] [class*="from-indigo-600"] {
-  background-color: #2481cc !important;
-  --tw-gradient-from: #2481cc !important;
-}
-[data-accent="telegram"] [class*="to-indigo-500"],
-[data-accent="telegram"] [class*="to-indigo-600"] {
-  --tw-gradient-to: #168acd !important;
-}
-[data-accent="telegram"] .text-indigo-600,
-[data-accent="telegram"] .text-indigo-500,
-[data-accent="telegram"] .text-indigo-700,
-[data-accent="telegram"] .dark\:text-indigo-400,
-[data-accent="telegram"] .dark\:text-indigo-300 {
-  color: #2481cc !important;
-}
-[data-accent="telegram"] .border-indigo-500,
-[data-accent="telegram"] .border-indigo-600,
-[data-accent="telegram"] .focus\:border-indigo-500:focus {
-  border-color: #2481cc !important;
-}
-[data-accent="telegram"] .bg-indigo-50,
-[data-accent="telegram"] .bg-indigo-500\/15,
-[data-accent="telegram"] .dark\:bg-indigo-950\/60 {
-  background-color: rgba(36, 129, 204, 0.15) !important;
-}
-
-/* Telegram Dark Mode specific background and surface overrides */
-.dark[data-accent="telegram"] body,
-html.dark[data-accent="telegram"] body {
-  background-color: #0e1621 !important;
-  background-image: radial-gradient(circle at 50% 0%, rgba(36, 129, 204, 0.08) 0%, transparent 60%) !important;
-}
-.dark[data-accent="telegram"] .liquid-glass {
-  background: #17212b !important;
-  border-color: #202b36 !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
-}
-.dark[data-accent="telegram"] .liquid-glass-card {
-  background: #17212b !important;
-  border-color: #242f3d !important;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3) !important;
-}
 
 [data-accent="emerald"] {
   --primary-color: #10b981;
@@ -354,17 +303,6 @@ html:not(.dark).no-glass .liquid-glass-card {
 }
 
 /* DISTINCT Light Mode Customization Styles */
-/* Telegram Light Style */
-html:not(.dark)[data-light-style="telegram"] body {
-  background-color: #f0f2f5 !important;
-  background-image: none !important;
-}
-html:not(.dark)[data-light-style="telegram"] .liquid-glass,
-html:not(.dark)[data-light-style="telegram"] .liquid-glass-card {
-  background: #ffffff !important;
-  border-color: #e3e8ee !important;
-  box-shadow: 0 1px 4px rgba(16, 35, 60, 0.06) !important;
-}
 
 html:not(.dark)[data-light-style="pure_white"] body {
   background-color: #ffffff !important;
@@ -543,35 +481,5 @@ html:not(.dark)[data-light-style="soft_slate"] .liquid-glass-card {
   contain: layout style paint;
 }
 
-/* Telegram Bubbly UI Styling */
-.bubbly-island {
-  border-radius: 9999px;
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.4) inset;
-}
-.dark .bubbly-island {
-  box-shadow: 0 12px 35px -5px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
-}
 
-.bubbly-pill {
-  border-radius: 9999px;
-  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-.bubbly-pill:active {
-  transform: scale(0.92);
-}
-
-.bubbly-card {
-  border-radius: 1.75rem;
-  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.tg-tap-active {
-  transition: transform 120ms ease, opacity 120ms ease;
-}
-.tg-tap-active:active {
-  transform: scale(0.94);
-  opacity: 0.9;
-}
 

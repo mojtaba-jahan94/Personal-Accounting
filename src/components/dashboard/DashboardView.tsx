@@ -62,7 +62,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       <div className="flex items-center justify-between gap-3 pt-1">
         <div>
           <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">داشبورد مالی</h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400">نمای کلی دارایی‌ها و جریان نقدی</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">نمای کلی حساب‌ها و جریان نقدی</p>
         </div>
         <button
           onClick={() => setIsCustomizeOpen(true)}
@@ -84,13 +84,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             <div>
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-700 dark:text-indigo-300 text-xs font-bold mb-3">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>پیشخوان مالی هوشمند • مدیریت یکپارچه دارایی</span>
+                <span>پیشخوان مالی هوشمند • مدیریت یکپارچه امور مالی</span>
               </div>
               <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white mb-2">
                 وضعیت تراز مالی شما {netSavings >= 0 ? 'مطلوب و رو به رشد' : 'نیازمند بهینه‌سازی'} است
               </h2>
               <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed">
-                مدیریت هوشمند دارایی‌ها، کنترل سقف بودجه ماهانه و یادآور چک‌های صیادی به صورت کاملاً آفلاین و امن.
+                مدیریت هوشمند هزینه‌ها، کنترل سقف بودجه ماهانه و یادآور چک‌های صیادی به صورت کاملاً آفلاین و امن.
               </p>
             </div>
 
@@ -118,7 +118,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {dashboardConfig.showKpiCards && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            title="مجموع موجودی و دارایی"
+            title="مجموع موجودی حساب‌ها"
             amount={formatCurrency(totalBalance, currency)}
             subtext={`${toPersianDigits(accounts.length)} حساب و کارت فعال`}
             icon={Wallet}

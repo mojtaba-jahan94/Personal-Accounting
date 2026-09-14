@@ -51,8 +51,6 @@ export const AccountsView: React.FC = () => {
         return Wallet;
       case 'savings':
         return PiggyBank;
-      case 'gold_crypto':
-        return Coins;
       default:
         return Wallet;
     }
@@ -153,7 +151,7 @@ export const AccountsView: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="my-4 opacity-75 text-xs">کیف پول نقدی و دارایی‌های جاری</div>
+                  <div className="my-4 opacity-75 text-xs">کیف پول نقدی و حساب‌های جاری</div>
                 )}
 
                 {/* Card Footer: Balance & Actions */}

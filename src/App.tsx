@@ -1,22 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { FinanceProvider, useFinance } from './context/FinanceContext';
 import { Header } from './components/layout/Header';
 import { Sidebar, TabType } from './components/layout/Sidebar';
 import { BottomNav } from './components/layout/BottomNav';
 import { InstallPrompt } from './components/layout/InstallPrompt';
 import { DashboardView } from './components/dashboard/DashboardView';
-import { TransactionList } from './components/transactions/TransactionList';
 import { TransactionModal } from './components/transactions/TransactionModal';
-import { AccountsView } from './components/accounts/AccountsView';
 import { TransferModal } from './components/accounts/TransferModal';
-import { InvestmentsView } from './components/investments/InvestmentsView';
-import { BudgetView } from './components/budget/BudgetView';
-import { GoalsView } from './components/goals/GoalsView';
-import { DebtsAndChequesView } from './components/debts/DebtsAndChequesView';
-import { ReportsView } from './components/reports/ReportsView';
-import { SettingsView } from './components/settings/SettingsView';
-import { SMSAssistantModal } from './components/transactions/SMSAssistantModal';
 import { Transaction } from './types';
+
+// Code-split views for optimal bundle loading & performance
+const TransactionList = lazy(() => import('./components/transactions/TransactionList').then(m => ({ default: m.TransactionList })));
+const AccountsView = lazy(() => import('./components/accounts/AccountsView').then(m => ({ default: m.AccountsView })));
+const BudgetView = lazy(() => import('./components/budget/BudgetView').then(m => ({ default: m.BudgetView })));
+const GoalsView = lazy(() => import('./components/goals/GoalsView').then(m => ({ default: m.GoalsView })));
+const DebtsAndChequesView = lazy(() => import('./components/debts/DebtsAndChequesView').then(m => ({ default: m.DebtsAndChequesView })));
+const ReportsView = lazy(() => import('./components/reports/ReportsView').then(m => ({ default: m.ReportsView })));
+const SettingsView = lazy(() => import('./components/settings/SettingsView').then(m => ({ default: m.SettingsView })));
+const SMSAssistantModal = lazy(() => import('./components/transactions/SMSAssistantModal').then(m => ({ default: m.SMSAssistantModal })));
+
+const ViewLoadingFallback: React.FC = () => (
+  <div className="flex items-center justify-center min-h-[300px] w-full">
+    <div className="flex flex-col items-center gap-3">
+      <div className="w-8 h-8 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin" />
+      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">در حال بارگذاری...</span>
+    </div>
+  </div>
+);
 
 const MainApp: React.FC = () => {
   const { themeConfig } = useFinance();
@@ -52,24 +62,48 @@ const MainApp: React.FC = () => {
         );
       case 'transactions':
         return (
-          <TransactionList
-            onOpenTransactionModal={handleOpenTransactionModal}
-          />
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <TransactionList
+              onOpenTransactionModal={handleOpenTransactionModal}
+            />
+          </Suspense>
         );
       case 'accounts':
-        return <AccountsView />;
-      case 'investments':
-        return <InvestmentsView />;
+        return (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <AccountsView />
+          </Suspense>
+        );
       case 'budgets':
-        return <BudgetView />;
+        return (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <BudgetView />
+          </Suspense>
+        );
       case 'goals':
-        return <GoalsView />;
+        return (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <GoalsView />
+          </Suspense>
+        );
       case 'debts':
-        return <DebtsAndChequesView />;
+        return (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <DebtsAndChequesView />
+          </Suspense>
+        );
       case 'reports':
-        return <ReportsView />;
+        return (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <ReportsView />
+          </Suspense>
+        );
       case 'settings':
-        return <SettingsView />;
+        return (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <SettingsView />
+          </Suspense>
+        );
       default:
         return (
           <DashboardView
@@ -134,10 +168,14 @@ const MainApp: React.FC = () => {
         onClose={() => setIsTransferModalOpen(false)}
       />
 
-      <SMSAssistantModal
-        isOpen={isSmsModalOpen}
-        onClose={() => setIsSmsModalOpen(false)}
-      />
+      {isSmsModalOpen && (
+        <Suspense fallback={null}>
+          <SMSAssistantModal
+            isOpen={isSmsModalOpen}
+            onClose={() => setIsSmsModalOpen(false)}
+          />
+        </Suspense>
+      )}
     </div>
   );
 };

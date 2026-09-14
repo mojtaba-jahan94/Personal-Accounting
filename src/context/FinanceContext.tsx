@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import {
   Account,
   Category,
@@ -9,15 +9,12 @@ import {
   Cheque,
   Currency,
   ThemeConfig,
-  AssetHolding,
-  MarketRate,
   DashboardSectionConfig,
   Person,
   DebtPayment,
   TransactionType,
 } from '../types';
 import { DEFAULT_ACCOUNTS, DEFAULT_CATEGORIES, DEFAULT_PERSONS, getDemoData } from '../utils/sampleData';
-import { getCachedMarketRates, fetchLiveMarketRates, setManualMarketRate, normalizePriceToToman, INITIAL_MARKET_RATES } from '../services/marketRates';
 import { getTodayJalali } from '../utils/jalali';
 
 interface FinanceContextType {
@@ -28,9 +25,7 @@ interface FinanceContextType {
   goals: Goal[];
   debts: Debt[];
   cheques: Cheque[];
-  assets: AssetHolding[];
   persons: Person[];
-  marketRates: MarketRate[];
   currency: Currency;
   darkMode: boolean;
   themeConfig: ThemeConfig;
@@ -82,21 +77,6 @@ interface FinanceContextType {
   deleteCheque: (id: string) => void;
   changeChequeStatus: (id: string, status: Cheque['status']) => void;
 
-  addAsset: (asset: Omit<AssetHolding, 'id'>, deductFromAccountId?: string) => void;
-  updateAsset: (asset: AssetHolding) => void;
-  deleteAsset: (id: string) => void;
-  sellAsset: (params: {
-    assetId: string;
-    amountToSell: number;
-    pricePerUnit: number;
-    fee?: number;
-    depositToAccountId?: string;
-    description?: string;
-    date?: string;
-  }) => void;
-  refreshMarketRates: () => Promise<void>;
-  setManualRate: (id: string, priceToman: number | null) => void;
-
   setCurrency: (c: Currency) => void;
   toggleDarkMode: () => void;
   updateThemeConfig: (config: Partial<ThemeConfig>) => void;
@@ -123,7 +103,6 @@ const STORAGE_KEYS = {
   GOALS: 'pf_goals_v1',
   DEBTS: 'pf_debts_v1',
   CHEQUES: 'pf_cheques_v1',
-  ASSETS: 'pf_assets_v1',
   PERSONS: 'pf_persons_v1',
   CURRENCY: 'pf_currency_v1',
   THEME_CONFIG: 'pf_theme_config_v2',
@@ -154,45 +133,6 @@ const DEFAULT_THEME_CONFIG: ThemeConfig = {
   animationSpeed: 'fast',
   borderRadius: 'smooth',
 };
-
-const DEFAULT_ASSETS: AssetHolding[] = [
-  {
-    id: 'ast-1',
-    name: 'طلای ۱۸ عیار',
-    type: 'gold_18k',
-    marketSymbol: 'gold_18k',
-    amount: 15.2,
-    unitName: 'گرم',
-    buyPrice: 3450000,
-    currentPrice: 3740000,
-    buyDate: '1403/04/10',
-    notes: 'پس‌انداز طلا',
-  },
-  {
-    id: 'ast-2',
-    name: 'سکه تمام طرح جدید (امامی)',
-    type: 'gold_coin',
-    marketSymbol: 'coin_emami',
-    amount: 2,
-    unitName: 'عدد',
-    buyPrice: 41000000,
-    currentPrice: 44200000,
-    buyDate: '1403/03/15',
-    notes: 'خرید از صرافی ملت',
-  },
-  {
-    id: 'ast-3',
-    name: 'دلار آمریکا',
-    type: 'currency',
-    marketSymbol: 'usd',
-    amount: 1500,
-    unitName: 'دلار',
-    buyPrice: 58500,
-    currentPrice: 61500,
-    buyDate: '1403/05/20',
-    notes: 'ارز مسافرتی',
-  }
-];
 
 export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [accounts, setAccounts] = useState<Account[]>(() => {
@@ -240,18 +180,9 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return demo.cheques;
   });
 
-  const [assets, setAssets] = useState<AssetHolding[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.ASSETS);
-    return saved ? JSON.parse(saved) : DEFAULT_ASSETS;
-  });
-
   const [persons, setPersons] = useState<Person[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.PERSONS);
     return saved ? JSON.parse(saved) : DEFAULT_PERSONS;
-  });
-
-  const [marketRates, setMarketRates] = useState<MarketRate[]>(() => {
-    return getCachedMarketRates();
   });
 
   const [currency, setCurrency] = useState<Currency>(() => {
@@ -392,220 +323,12 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, [cheques]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.ASSETS, JSON.stringify(assets));
-  }, [assets]);
-
-  useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.PERSONS, JSON.stringify(persons));
   }, [persons]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.CURRENCY, currency);
   }, [currency]);
-
-  // One-time sanitization: fix previously recorded Rial-scale assets and their corresponding transactions
-  useEffect(() => {
-    const isSanitized = localStorage.getItem('pf_sanitized_rial_v2');
-    if (isSanitized) return;
-
-    let hasChanges = false;
-    const fixedAssetMap = new Map<string, { oldPrice: number; newPrice: number; name: string }>();
-
-    // 1. Check & Sanitize assets
-    const sanitizedAssets = assets.map(asset => {
-      const normBuy = normalizePriceToToman(asset.buyPrice, asset.marketSymbol);
-      const normCur = normalizePriceToToman(asset.currentPrice, asset.marketSymbol);
-      if (normBuy !== asset.buyPrice || normCur !== asset.currentPrice) {
-        hasChanges = true;
-        fixedAssetMap.set(asset.name, {
-          oldPrice: asset.buyPrice,
-          newPrice: normBuy,
-          name: asset.name,
-        });
-        return {
-          ...asset,
-          buyPrice: normBuy,
-          currentPrice: normCur,
-          buyFee: asset.buyFee && asset.buyFee > 1000000 ? Math.round(asset.buyFee / 10) : asset.buyFee,
-        };
-      }
-      return asset;
-    });
-
-    if (hasChanges) {
-      setAssets(sanitizedAssets);
-
-      // 2. Adjust matching purchase transactions and refund over-deducted accounts
-      const accountsToRefund = new Map<string, number>();
-
-      const sanitizedTransactions = transactions.map(tx => {
-        const matchedEntry = Array.from(fixedAssetMap.values()).find(
-          entry => tx.description.includes(entry.name) || tx.tags?.includes(entry.name)
-        );
-
-        if (matchedEntry && tx.type === 'expense' && tx.amount > 10000000) {
-          const newAmount = Math.round(tx.amount / 10);
-          const refundDiff = tx.amount - newAmount;
-          const currentRefund = accountsToRefund.get(tx.accountId) || 0;
-          accountsToRefund.set(tx.accountId, currentRefund + refundDiff);
-
-          return {
-            ...tx,
-            amount: newAmount,
-            fee: tx.fee ? Math.round(tx.fee / 10) : undefined,
-          };
-        }
-        return tx;
-      });
-
-      setTransactions(sanitizedTransactions);
-
-      if (accountsToRefund.size > 0) {
-        setAccounts(prev =>
-          prev.map(acc => {
-            const refund = accountsToRefund.get(acc.id);
-            return refund ? { ...acc, balance: acc.balance + refund } : acc;
-          })
-        );
-      }
-    }
-
-    localStorage.setItem('pf_sanitized_rial_v2', 'true');
-  }, []);
-
-  // Refresh live market rates
-  const refreshMarketRates = async () => {
-    const latest = await fetchLiveMarketRates();
-    setMarketRates(latest);
-
-    // Also automatically update currentPrice for assets tied to marketSymbol
-    setAssets(prev =>
-      prev.map(asset => {
-        if (asset.marketSymbol) {
-          const rate = latest.find(r => r.id === asset.marketSymbol);
-          if (rate) {
-            return { ...asset, currentPrice: rate.priceToman };
-          }
-        }
-        return asset;
-      })
-    );
-  };
-
-  const setManualRate = (id: string, priceToman: number | null) => {
-    setManualMarketRate(id, priceToman);
-    const latest = getCachedMarketRates();
-    setMarketRates(latest);
-
-    // Sync assets immediately if needed
-    setAssets(prev =>
-      prev.map(asset => {
-        if (asset.marketSymbol === id && priceToman !== null) {
-          return { ...asset, currentPrice: priceToman };
-        }
-        return asset;
-      })
-    );
-  };
-
-  // Assets CRUD
-  const addAsset = (asset: Omit<AssetHolding, 'id'>, deductFromAccountId?: string) => {
-    const normalizedBuyPrice = normalizePriceToToman(asset.buyPrice, asset.marketSymbol);
-    const normalizedCurrentPrice = normalizePriceToToman(asset.currentPrice, asset.marketSymbol);
-    const assetToSave = {
-      ...asset,
-      buyPrice: normalizedBuyPrice,
-      currentPrice: normalizedCurrentPrice,
-    };
-    const newAsset: AssetHolding = { ...assetToSave, id: 'ast-' + Date.now() };
-    setAssets(prev => [newAsset, ...prev]);
-
-    if (deductFromAccountId) {
-      const buyFee = asset.buyFee || 0;
-      const totalCost = Math.round(asset.amount * normalizedBuyPrice) + buyFee;
-      if (totalCost > 0) {
-        const txId = 'tx-' + Date.now();
-        const newTx: Transaction = {
-          id: txId,
-          type: 'expense',
-          amount: totalCost,
-          fee: buyFee > 0 ? buyFee : undefined,
-          date: asset.buyDate || getTodayJalali(),
-          description: `خرید ${asset.amount} ${asset.unitName} ${asset.name}${buyFee > 0 ? ` (شامل کارمزد: ${buyFee.toLocaleString('fa-IR')} تومان)` : ''}`,
-          categoryId: 'cat-invest',
-          accountId: deductFromAccountId,
-          tags: ['خرید دارایی', asset.name],
-        };
-        setTransactions(prev => [newTx, ...prev]);
-        setAccounts(prev =>
-          prev.map(acc =>
-            acc.id === deductFromAccountId
-              ? { ...acc, balance: acc.balance - totalCost }
-              : acc
-          )
-        );
-      }
-    }
-  };
-
-  const updateAsset = (asset: AssetHolding) => {
-    setAssets(prev => prev.map(a => (a.id === asset.id ? asset : a)));
-  };
-
-  const deleteAsset = (id: string) => {
-    setAssets(prev => prev.filter(a => a.id !== id));
-  };
-
-  const sellAsset = (params: {
-    assetId: string;
-    amountToSell: number;
-    pricePerUnit: number;
-    fee?: number;
-    depositToAccountId?: string;
-    description?: string;
-    date?: string;
-  }) => {
-    const asset = assets.find(a => a.id === params.assetId);
-    if (!asset) return;
-
-    const remainingAmount = Math.max(0, asset.amount - params.amountToSell);
-    if (remainingAmount <= 0.00001) {
-      setAssets(prev => prev.filter(a => a.id !== params.assetId));
-    } else {
-      setAssets(prev =>
-        prev.map(a => (a.id === params.assetId ? { ...a, amount: remainingAmount } : a))
-      );
-    }
-
-    const grossProceeds = Math.round(params.amountToSell * params.pricePerUnit);
-    const fee = params.fee || 0;
-    const netProceeds = Math.max(0, grossProceeds - fee);
-
-    if (params.depositToAccountId && netProceeds > 0) {
-      const txId = 'tx-' + Date.now();
-      const newTx: Transaction = {
-        id: txId,
-        type: 'income',
-        amount: netProceeds,
-        fee: fee > 0 ? fee : undefined,
-        date: params.date || getTodayJalali(),
-        description:
-          params.description ||
-          `فروش ${params.amountToSell} ${asset.unitName} ${asset.name}${fee > 0 ? ` (کارمزد: ${fee.toLocaleString('fa-IR')} تومان)` : ''}`,
-        categoryId: 'cat-invest',
-        accountId: params.depositToAccountId,
-        tags: ['فروش دارایی', asset.name],
-      };
-      setTransactions(prev => [newTx, ...prev]);
-      setAccounts(prev =>
-        prev.map(acc =>
-          acc.id === params.depositToAccountId
-            ? { ...acc, balance: acc.balance + netProceeds }
-            : acc
-        )
-      );
-    }
-  };
 
   // Transaction Actions
   const addTransaction = (tx: Omit<Transaction, 'id'>) => {
@@ -928,37 +651,11 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const batchFixRialTransactions = (): number => {
     let fixedCount = 0;
-    const fixedAssetNames: string[] = [];
-
-    // 1. Sanitize inflated assets
-    setAssets(prev =>
-      prev.map(asset => {
-        const normBuy = normalizePriceToToman(asset.buyPrice, asset.marketSymbol);
-        const normCur = normalizePriceToToman(asset.currentPrice, asset.marketSymbol);
-        if (normBuy !== asset.buyPrice || normCur !== asset.currentPrice) {
-          fixedAssetNames.push(asset.name);
-          return {
-            ...asset,
-            buyPrice: normBuy,
-            currentPrice: normCur,
-            buyFee: asset.buyFee && asset.buyFee > 1000000 ? Math.round(asset.buyFee / 10) : asset.buyFee,
-          };
-        }
-        return asset;
-      })
-    );
-
-    // 2. Fix suspect inflated transactions with accumulated account deltas
     const accountDeltas = new Map<string, number>();
     const debtDeltas = new Map<string, number>();
 
     const updatedTransactions = transactions.map(tx => {
-      const isAssetTx =
-        tx.categoryId === 'cat-invest' ||
-        tx.tags?.some(t => t === 'خرید دارایی' || t === 'فروش دارایی' || fixedAssetNames.includes(t)) ||
-        fixedAssetNames.some(name => tx.description.includes(name));
-
-      if ((isAssetTx && tx.amount >= 15000000) || tx.amount >= 100000000) {
+      if (tx.amount >= 100000000) {
         fixedCount++;
         const newAmount = Math.round(tx.amount / 10);
         const diff = tx.amount - newAmount;
@@ -1050,14 +747,6 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }))
     );
     setCheques(prev => prev.map(c => ({ ...c, amount: Math.round(c.amount * factor) })));
-    setAssets(prev =>
-      prev.map(a => ({
-        ...a,
-        buyPrice: Math.round(a.buyPrice * factor),
-        currentPrice: Math.round(a.currentPrice * factor),
-        buyFee: a.buyFee ? Math.round(a.buyFee * factor) : undefined,
-      }))
-    );
   };
 
   // Account Actions
@@ -1283,7 +972,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   // Demo data and Backup
-  const loadDemoData = () => {
+  const loadDemoData = useCallback(() => {
     const demo = getDemoData();
     setAccounts(demo.accounts);
     setTransactions(demo.transactions);
@@ -1291,13 +980,12 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setGoals(demo.goals);
     setDebts(demo.debts);
     setCheques(demo.cheques);
-    setAssets(DEFAULT_ASSETS);
     setPersons(DEFAULT_PERSONS);
-  };
+  }, []);
 
-  const exportDataJSON = (): string => {
+  const exportDataJSON = useCallback((): string => {
     const data = {
-      version: 5,
+      version: 6,
       exportDate: new Date().toISOString(),
       accounts,
       transactions,
@@ -1306,16 +994,15 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       goals,
       debts,
       cheques,
-      assets,
       persons,
       currency,
       themeConfig,
       dashboardConfig,
     };
     return JSON.stringify(data, null, 2);
-  };
+  }, [accounts, transactions, categories, budgets, goals, debts, cheques, persons, currency, themeConfig, dashboardConfig]);
 
-  const importDataJSON = (jsonStr: string): boolean => {
+  const importDataJSON = useCallback((jsonStr: string): boolean => {
     try {
       const data = JSON.parse(jsonStr);
       if (data.accounts) setAccounts(data.accounts);
@@ -1325,7 +1012,6 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (data.goals) setGoals(data.goals);
       if (data.debts) setDebts(data.debts);
       if (data.cheques) setCheques(data.cheques);
-      if (data.assets) setAssets(data.assets);
       if (data.persons) setPersons(data.persons);
       if (data.currency) setCurrency(data.currency);
       if (data.themeConfig) setThemeConfig(data.themeConfig);
@@ -1335,98 +1021,111 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       console.error('Error importing backup:', e);
       return false;
     }
-  };
+  }, []);
 
-  const clearAllData = () => {
+  const clearAllData = useCallback(() => {
     setTransactions([]);
     setBudgets([]);
     setGoals([]);
     setDebts([]);
     setCheques([]);
-    setAssets([]);
     setPersons([]);
     setAccounts(DEFAULT_ACCOUNTS.map(a => ({ ...a, balance: 0 })));
-  };
+  }, []);
 
-  // Computations
-  const totalBalance = accounts.reduce((sum, a) => sum + a.balance, 0);
+  // Memoized Computations for high performance
+  const totalBalance = useMemo(() => {
+    return accounts.reduce((sum, a) => sum + a.balance, 0);
+  }, [accounts]);
 
-  const totalIncome = transactions
-    .filter(t => t.type === 'income')
-    .reduce((sum, t) => sum + t.amount, 0);
+  const totalIncome = useMemo(() => {
+    return transactions
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + t.amount, 0);
+  }, [transactions]);
 
-  const totalExpense = transactions
-    .filter(t => t.type === 'expense')
-    .reduce((sum, t) => sum + t.amount, 0);
+  const totalExpense = useMemo(() => {
+    return transactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + t.amount, 0);
+  }, [transactions]);
+
+  const contextValue = useMemo(() => ({
+    accounts,
+    transactions,
+    categories,
+    budgets,
+    goals,
+    debts,
+    cheques,
+    persons,
+    currency,
+    darkMode,
+    themeConfig,
+    addTransaction,
+    updateTransaction,
+    deleteTransaction,
+    divideTransactionBy10,
+    multiplyTransactionBy10,
+    batchFixRialTransactions,
+    convertAllDataCurrency,
+    addAccount,
+    updateAccount,
+    deleteAccount,
+    addCategory,
+    updateCategory,
+    deleteCategory,
+    addPerson,
+    updatePerson,
+    deletePerson,
+    addBudget,
+    updateBudget,
+    deleteBudget,
+    addGoal,
+    updateGoal,
+    deleteGoal,
+    contributeToGoal,
+    addDebt,
+    updateDebt,
+    deleteDebt,
+    payDebt,
+    payDebtWithAccount,
+    addCheque,
+    updateCheque,
+    deleteCheque,
+    changeChequeStatus,
+    setCurrency,
+    toggleDarkMode,
+    updateThemeConfig,
+    dashboardConfig,
+    updateDashboardConfig,
+    loadDemoData,
+    exportDataJSON,
+    importDataJSON,
+    clearAllData,
+    totalBalance,
+    totalIncome,
+    totalExpense,
+  }), [
+    accounts,
+    transactions,
+    categories,
+    budgets,
+    goals,
+    debts,
+    cheques,
+    persons,
+    currency,
+    darkMode,
+    themeConfig,
+    dashboardConfig,
+    totalBalance,
+    totalIncome,
+    totalExpense,
+  ]);
 
   return (
-    <FinanceContext.Provider
-      value={{
-        accounts,
-        transactions,
-        categories,
-        budgets,
-        goals,
-        debts,
-        cheques,
-        assets,
-        persons,
-        marketRates,
-        currency,
-        darkMode,
-        themeConfig,
-        addTransaction,
-        updateTransaction,
-        deleteTransaction,
-        divideTransactionBy10,
-        multiplyTransactionBy10,
-        batchFixRialTransactions,
-        convertAllDataCurrency,
-        addAccount,
-        updateAccount,
-        deleteAccount,
-        addCategory,
-        updateCategory,
-        deleteCategory,
-        addPerson,
-        updatePerson,
-        deletePerson,
-        addBudget,
-        updateBudget,
-        deleteBudget,
-        addGoal,
-        updateGoal,
-        deleteGoal,
-        contributeToGoal,
-        addDebt,
-        updateDebt,
-        deleteDebt,
-        payDebt,
-        payDebtWithAccount,
-        addCheque,
-        updateCheque,
-        deleteCheque,
-        changeChequeStatus,
-        addAsset,
-        updateAsset,
-        deleteAsset,
-        sellAsset,
-        refreshMarketRates,
-        setManualRate,
-        setCurrency,
-        toggleDarkMode,
-        updateThemeConfig,
-        dashboardConfig,
-        updateDashboardConfig,
-        loadDemoData,
-        exportDataJSON,
-        importDataJSON,
-        clearAllData,
-        totalBalance,
-        totalIncome,
-        totalExpense,
-      }}
-    >
+    <FinanceContext.Provider value={contextValue}>
       {children}
     </FinanceContext.Provider>
   );

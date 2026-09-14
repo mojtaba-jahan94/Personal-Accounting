@@ -95,11 +95,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
   const filteredNet = filteredIncome - filteredExpense;
 
   const suspectTransactions = transactions.filter(
-    tx =>
-      (tx.categoryId === 'cat-invest' ||
-        tx.tags?.includes('خرید دارایی') ||
-        tx.tags?.includes('فروش دارایی')) &&
-      tx.amount >= 15000000
+    tx => tx.amount >= 100000000
   );
 
   const handleResetFilters = () => {
@@ -171,24 +167,24 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => setIsCategoryModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-slate-100/90 dark:bg-[#242f3d] border border-slate-200/60 dark:border-white/5 text-slate-700 dark:text-slate-200 text-xs font-bold hover:border-[#2481cc] transition tg-tap-active"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:border-indigo-500 transition active:scale-95"
           >
-            <Settings2 className="w-4 h-4 text-[#2481cc]" />
+            <Settings2 className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
             <span>دسته‌ها</span>
           </button>
 
           <button
             onClick={handleExportExcel}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-slate-100/90 dark:bg-[#242f3d] border border-slate-200/60 dark:border-white/5 text-slate-700 dark:text-slate-200 text-xs font-bold hover:border-emerald-500 transition tg-tap-active"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold hover:border-emerald-500 transition active:scale-95"
             title="دانلود فایل اکسل از تراکنش‌های فیلترشده"
           >
-            <Download className="w-4 h-4 text-emerald-600" />
+            <Download className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <span>خروجی اکسل</span>
           </button>
 
           <button
             onClick={() => onOpenTransactionModal()}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#2481cc] hover:bg-[#168acd] text-white text-xs font-black shadow-md shadow-[#2481cc]/25 transition tg-tap-active"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black shadow-md shadow-indigo-600/25 transition active:scale-95"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span>ثبت تراکنش</span>
@@ -196,7 +192,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
         </div>
       </div>
 
-      {/* Telegram Style Bubbly Folder Tabs */}
+      {/* Transaction Type Filter Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
         {[
           { id: 'all', label: 'همه تراکنش‌ها', count: transactions.length },
@@ -209,10 +205,10 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
             <button
               key={tab.id}
               onClick={() => setSelectedType(tab.id as any)}
-              className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold transition-all tg-tap-active shrink-0 ${
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all active:scale-95 shrink-0 ${
                 isActive
-                  ? 'bg-[#2481cc] text-white shadow-md shadow-[#2481cc]/30 scale-105'
-                  : 'bg-slate-100/90 dark:bg-[#17212b] hover:bg-slate-200/80 dark:hover:bg-[#242f3d] text-slate-600 dark:text-slate-300 border border-slate-200/60 dark:border-white/5'
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                  : 'bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200/80 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700'
               }`}
             >
               <span>{tab.label}</span>
@@ -220,7 +216,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
                 className={`text-[10px] px-2 py-0.5 rounded-full font-black ${
                   isActive
                     ? 'bg-white/20 text-white'
-                    : 'bg-slate-200/80 dark:bg-[#242f3d] text-slate-500 dark:text-slate-400'
+                    : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400'
                 }`}
               >
                 {toPersianDigits(tab.count)}
@@ -405,7 +401,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
               onClick={() => {
                 if (
                   window.confirm(
-                    'آیا می‌خواهید تراکنش‌های با مبالغ بالای ریالی در سبد دارایی‌ها تصحیح شده و به تومان تبدیل شوند؟ موجودی حساب‌ها نیز اصلاح خواهد شد.'
+                    'آیا می‌خواهید تراکنش‌های با مبالغ مشکوک ریالی (۱۰ برابر) تصحیح شده و به تومان تبدیل شوند؟ موجودی حساب‌ها نیز اصلاح خواهد شد.'
                   )
                 ) {
                   const count = batchFixRialTransactions();

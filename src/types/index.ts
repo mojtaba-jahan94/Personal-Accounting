@@ -1,6 +1,6 @@
 export type TransactionType = 'expense' | 'income' | 'transfer';
 
-export type AccountType = 'bank' | 'cash' | 'savings' | 'gold_crypto' | 'other';
+export type AccountType = 'bank' | 'cash' | 'savings' | 'other';
 
 export interface Category {
   id: string;
@@ -113,63 +113,15 @@ export interface Cheque {
   notes?: string;
 }
 
-// Investments & Portfolio Types
-export type AssetType =
-  | 'gold_18k'
-  | 'gold_coin'
-  | 'currency'
-  | 'crypto'
-  | 'stock_other';
-
-export interface AssetHolding {
-  id: string;
-  name: string;
-  type: AssetType;
-  marketSymbol?: string; // e.g. 'usd', 'gold_18k', 'coin_emami', 'tether'
-  amount: number; // e.g. 15 (grams), 2 (coins), 1000 (dollars)
-  unitName: string; // گرم، عدد، دلار، واحد
-  buyPrice: number; // average purchase price per unit in Toman
-  buyFee?: number; // کارمزد یا اجرت خرید
-  currentPrice: number; // current market price per unit in Toman
-  buyDate?: string; // Jalali date
-  notes?: string;
-}
-
-export interface MarketRate {
-  id: string;
-  symbol: string;
-  name: string;
-  category: 'gold' | 'currency' | 'crypto';
-  priceToman: number;
-  changePercent?: number;
-  unit: string;
-  lastUpdated: string;
-  source?: string;
-  isManual?: boolean;
-}
-
-export type MarketPriceUnit = 'auto' | 'toman' | 'rial';
-
-export interface MarketSourceConfig {
-  sourceType: 'auto' | 'telegram' | 'tgju';
-  telegramGoldChannel: string; // default: 'Narkuab'
-  telegramUsdChannel: string; // default: 'tahran_sabza'
-  lastTelegramMessageGold?: string;
-  lastTelegramMessageUsd?: string;
-  goldSourceUnit?: MarketPriceUnit;
-  usdSourceUnit?: MarketPriceUnit;
-  tgjuSourceUnit?: MarketPriceUnit;
-}
-
 export type Currency = 'toman' | 'rial';
 
 // Theme Studio Pro Types
-export type AccentColor = 'telegram' | 'indigo' | 'emerald' | 'rose' | 'amber' | 'cyan' | 'purple' | 'custom';
+export type AccentColor = 'indigo' | 'emerald' | 'rose' | 'amber' | 'cyan' | 'purple' | 'custom';
 export type GlassIntensity = 'low' | 'medium' | 'high';
 export type AnimationSpeed = 'fast' | 'normal' | 'none';
 export type BorderRadius = 'sharp' | 'smooth' | 'round';
 export type AmbientGlow = 'off' | 'subtle' | 'vibrant';
-export type LightStyle = 'telegram' | 'pure_white' | 'frost' | 'warm_cream' | 'soft_slate';
+export type LightStyle = 'pure_white' | 'frost' | 'warm_cream' | 'soft_slate';
 
 export interface DashboardSectionConfig {
   showHero: boolean;

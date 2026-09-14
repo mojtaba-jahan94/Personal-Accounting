@@ -137,8 +137,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                 <option value="bank">کارت بانکی</option>
                 <option value="cash">کیف پول نقدی</option>
                 <option value="savings">سپرده پس‌انداز</option>
-                <option value="gold_crypto">طلا و ارز دیجیتال</option>
-                <option value="other">سایر دارایی‌ها</option>
+                <option value="other">سایر حساب‌ها</option>
               </select>
             </div>
 

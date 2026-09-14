@@ -8,15 +8,13 @@ import {
   FileCheck2,
   BarChart3,
   Settings,
-  Coins,
-  Sparkles,
+  ShieldCheck,
 } from 'lucide-react';
 
 export type TabType =
   | 'dashboard'
   | 'transactions'
   | 'accounts'
-  | 'investments'
   | 'budgets'
   | 'goals'
   | 'debts'
@@ -39,7 +37,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
     { id: 'dashboard', label: 'داشبورد اصلی', icon: LayoutDashboard },
     { id: 'transactions', label: 'تراکنش‌ها و اسناد', icon: ReceiptText },
     { id: 'accounts', label: 'حساب‌ها و کارت‌ها', icon: CreditCard },
-    { id: 'investments', label: 'سبد طلا، ارز و دارایی', icon: Coins },
     { id: 'budgets', label: 'بودجه‌بندی ماهانه', icon: PieChart },
     { id: 'goals', label: 'اهداف و پس‌انداز', icon: Target },
     { id: 'debts', label: 'بدهی، طلب و چک', icon: FileCheck2 },
@@ -48,14 +45,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
   ];
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 shrink-0 p-3.5 m-4 mr-0 bubbly-card bg-white/80 dark:bg-[#17212b]/90 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-xl self-start sticky top-24 min-h-[calc(100vh-8rem)]">
-      {/* Telegram Style Header Capsule */}
-      <div className="px-3 py-2.5 mb-2 rounded-2xl bg-slate-100/70 dark:bg-[#242f3d]/60 border border-slate-200/50 dark:border-white/5 flex items-center justify-between">
+    <aside className="hidden lg:flex flex-col w-64 shrink-0 p-3.5 m-4 mr-0 rounded-3xl bg-white/80 dark:bg-slate-900/90 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 shadow-xl self-start sticky top-24 min-h-[calc(100vh-8rem)]">
+      {/* App Status Capsule */}
+      <div className="px-3 py-2.5 mb-2 rounded-2xl bg-slate-100/70 dark:bg-slate-800/60 border border-slate-200/50 dark:border-white/5 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-[11px] font-black text-slate-700 dark:text-slate-200">منوی تلگرامی</span>
+          <span className="text-[11px] font-black text-slate-700 dark:text-slate-200">مدیریت مالی شخصی</span>
         </div>
-        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#2481cc]/15 text-[#2481cc]">
+        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400">
           آفلاین
         </span>
       </div>
@@ -68,10 +65,10 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
             <button
               key={item.id}
               onClick={() => onSelectTab(item.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-bold transition-all duration-150 tg-tap-active ${
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs font-bold transition-all duration-150 active:scale-95 ${
                 isActive
-                  ? 'bg-[#2481cc] text-white shadow-md shadow-[#2481cc]/30 scale-[1.02]'
-                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-[#242f3d]/70 hover:text-[#2481cc] dark:hover:text-[#2481cc]'
+                  ? 'bg-indigo-600 dark:bg-indigo-500 text-white shadow-md shadow-indigo-600/30 scale-[1.02]'
+                  : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100/80 dark:hover:bg-slate-800/70 hover:text-indigo-600 dark:hover:text-indigo-400'
               }`}
             >
               <div
@@ -89,14 +86,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
         })}
       </div>
 
-      {/* Tip Card at bottom of sidebar (Telegram Bubbly Card) */}
-      <div className="mt-auto p-3.5 rounded-2xl bg-slate-50/90 dark:bg-[#242f3d]/50 border border-slate-200/70 dark:border-white/5 space-y-1">
+      {/* Tip Card at bottom of sidebar */}
+      <div className="mt-auto p-3.5 rounded-2xl bg-slate-50/90 dark:bg-slate-800/50 border border-slate-200/70 dark:border-white/5 space-y-1">
         <div className="flex items-center gap-1.5 text-amber-500 text-xs font-black">
-          <span>💡</span>
-          <span>راهنمای مالی</span>
+          <ShieldCheck className="w-4 h-4 text-emerald-500" />
+          <span className="text-slate-700 dark:text-slate-200">حریم خصوصی کامل</span>
         </div>
         <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-          تقسیم دارایی میان طلا، ارز و پس‌انداز نقد ریسک نوسانات بازار را به حداقل می‌رساند.
+          تمامی اطلاعات شما به صورت کاملاً امن و رمزگذاری شده فقط در دستگاه خودتان ذخیره می‌شود.
         </p>
       </div>
     </aside>

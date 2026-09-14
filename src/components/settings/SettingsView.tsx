@@ -453,30 +453,30 @@ export const SettingsView: React.FC = () => {
             <h4 className="text-xs font-black">ابزارهای اصلاح و تبدیل مقیاس مبالغ (تومان / ریال)</h4>
           </div>
           <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
-            اگر تراکنش‌ها یا دارایی‌هایی در گذشته با ارقام ریالی (۱۰ برابر) ثبت شده‌اند، یا مبالغ کل برنامه را بر حسب ریال وارد کرده‌اید و قصد تبدیل کامل به تومان را دارید:
+            اگر تراکنش‌هایی در گذشته با ارقام ریالی (۱۰ برابر) ثبت شده‌اند، یا مبالغ کل برنامه را بر حسب ریال وارد کرده‌اید و قصد تبدیل کامل به تومان را دارید:
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
             <button
               onClick={() => {
                 if (
                   window.confirm(
-                    'آیا می‌خواهید تراکنش‌ها و دارایی‌های ثبت‌شده با ارقام ریالی در سبد شناسایی شده و به تومان تصحیح شوند؟ حساب‌های بانکی متناظر نیز اصلاح خواهند شد.'
+                    'آیا می‌خواهید تراکنش‌های ثبت‌شده با ارقام ریالی (۱۰ برابر) شناسایی شده و به تومان تصحیح شوند؟ موجودی حساب‌ها نیز متناسباً اصلاح خواهند شد.'
                   )
                 ) {
                   const count = batchFixRialTransactions();
-                  showNotification(`${count.toLocaleString('fa-IR')} تراکنش و دارایی ریالی با موفقیت به تومان اصلاح شد.`);
+                  showNotification(`${count.toLocaleString('fa-IR')} تراکنش ریالی با موفقیت به تومان اصلاح شد.`);
                 }
               }}
               className="p-2.5 rounded-xl bg-white dark:bg-slate-800 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-xs font-bold hover:bg-amber-50 dark:hover:bg-amber-950/40 transition flex items-center justify-center gap-2"
             >
-              <span>اصلاح خودکار تراکنش‌های ریالی دارایی‌ها</span>
+              <span>اصلاح هوشمند تراکنش‌های ریالی</span>
             </button>
 
             <button
               onClick={() => {
                 if (
                   window.confirm(
-                    '⚠️ توجه: آیا مطمئنید که می‌خواهید تمام داده‌های مالی برنامه (موجودی حساب‌ها، تراکنش‌ها، دارایی‌ها، بدهی‌ها، بودجه‌ها) را بر ۱۰ تقسیم کنید (تبدیل سراسری ریال به تومان)؟'
+                    '⚠️ توجه: آیا مطمئنید که می‌خواهید تمام داده‌های مالی برنامه (موجودی حساب‌ها، تراکنش‌ها، بدهی‌ها، بودجه‌ها) را بر ۱۰ تقسیم کنید (تبدیل سراسری ریال به تومان)؟'
                   )
                 ) {
                   convertAllDataCurrency(0.1);
