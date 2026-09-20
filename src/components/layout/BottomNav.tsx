@@ -13,6 +13,7 @@ import {
   BarChart3,
   Settings,
 } from 'lucide-react';
+import { LIQUID_GLASS_PRESETS } from '../../utils/liquidGlassPresets';
 
 interface BottomNavProps {
   currentTab: TabType;
@@ -52,7 +53,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               <span className="text-xs font-black text-slate-900 dark:text-white">سایر امکانات و ماژول‌ها</span>
               <button
                 onClick={() => setMoreMenuOpen(false)}
-                className="glass-pill p-1 text-slate-500 hover:text-slate-800 dark:hover:text-white transition"
+                className="liquid-glass-pill-lens p-1.5 text-slate-500 hover:text-slate-800 dark:hover:text-white transition"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -68,14 +69,16 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                       onSelectTab(item.id);
                       setMoreMenuOpen(false);
                     }}
-                    className={`flex items-center gap-2.5 p-3 rounded-2xl text-xs font-bold transition-all text-right active:scale-95 ${
+                    data-glass
+                    data-config={JSON.stringify(LIQUID_GLASS_PRESETS.ios27LiquidPill)}
+                    className={`flex items-center gap-2.5 p-3 rounded-full text-xs font-bold transition-all text-right liquid-glass-pill-lens active:scale-95 ${
                       isActive
-                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md shadow-indigo-600/30'
-                        : 'bg-white/50 dark:bg-white/5 hover:bg-white/80 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200 border border-white/40 dark:border-white/5'
+                        ? 'active text-slate-950 dark:text-white shadow-md'
+                        : 'text-slate-700 dark:text-slate-200'
                     }`}
                   >
-                    <Icon className="w-4 h-4 shrink-0" />
-                    <span>{item.label}</span>
+                    <Icon className="w-4 h-4 shrink-0 text-indigo-600 dark:text-indigo-400" />
+                    <span className="font-black">{item.label}</span>
                   </button>
                 );
               })}
@@ -84,7 +87,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         </div>
       )}
 
-      {/* Floating iOS 27 Liquid Glass Bottom Dock */}
+      {/* Floating iOS 27 Convex Liquid Glass Bottom Dock */}
       <nav
         data-glass
         className="lg:hidden fixed bottom-3 inset-x-3 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-[440px] z-40 rounded-full glass-dock border border-white/60 dark:border-white/15 p-1.5 shadow-2xl"
@@ -93,33 +96,37 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           {/* Dashboard */}
           <button
             onClick={() => onSelectTab('dashboard')}
+            data-glass
+            data-config={JSON.stringify(LIQUID_GLASS_PRESETS.ios27LiquidPill)}
             className={`transition-all duration-200 active:scale-90 flex items-center justify-center ${
               currentTab === 'dashboard'
-                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full px-3.5 py-2 gap-1.5 font-bold text-xs shadow-md shadow-indigo-600/35 scale-105'
+                ? 'liquid-glass-pill-lens active px-3.5 py-2 gap-1.5 font-black text-xs text-slate-950 dark:text-white scale-105'
                 : 'p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:text-indigo-600 hover:bg-white/40 dark:hover:bg-white/5'
             }`}
           >
-            <LayoutDashboard className="w-5 h-5 shrink-0" />
+            <LayoutDashboard className="w-5 h-5 shrink-0 text-indigo-600 dark:text-indigo-400" />
             {currentTab === 'dashboard' && <span className="text-[11px] whitespace-nowrap font-black">پیشخوان</span>}
           </button>
 
           {/* Transactions */}
           <button
             onClick={() => onSelectTab('transactions')}
+            data-glass
+            data-config={JSON.stringify(LIQUID_GLASS_PRESETS.ios27LiquidPill)}
             className={`transition-all duration-200 active:scale-90 flex items-center justify-center ${
               currentTab === 'transactions'
-                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full px-3.5 py-2 gap-1.5 font-bold text-xs shadow-md shadow-indigo-600/35 scale-105'
+                ? 'liquid-glass-pill-lens active px-3.5 py-2 gap-1.5 font-black text-xs text-slate-950 dark:text-white scale-105'
                 : 'p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:text-indigo-600 hover:bg-white/40 dark:hover:bg-white/5'
             }`}
           >
-            <ReceiptText className="w-5 h-5 shrink-0" />
+            <ReceiptText className="w-5 h-5 shrink-0 text-indigo-600 dark:text-indigo-400" />
             {currentTab === 'transactions' && <span className="text-[11px] whitespace-nowrap font-black">تراکنش‌ها</span>}
           </button>
 
           {/* Center Luminous Plus Action Button */}
           <button
             onClick={onOpenTransactionModal}
-            className="relative w-11 h-11 rounded-full bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 text-white shadow-xl shadow-indigo-600/40 flex items-center justify-center shrink-0 hover:scale-105 active:scale-90 transition-all ring-2 ring-white/80 dark:ring-white/20 group"
+            className="relative w-11 h-11 rounded-full bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-600 text-white shadow-xl shadow-indigo-600/40 flex items-center justify-center shrink-0 hover:scale-105 active:scale-90 transition-all ring-2 ring-white/90 dark:ring-white/30 group"
             title="ثبت سریع تراکنش"
           >
             <Plus className="w-6 h-6 stroke-[3] group-hover:rotate-90 transition-transform duration-300" />
@@ -128,26 +135,30 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           {/* Budgets */}
           <button
             onClick={() => onSelectTab('budgets')}
+            data-glass
+            data-config={JSON.stringify(LIQUID_GLASS_PRESETS.ios27LiquidPill)}
             className={`transition-all duration-200 active:scale-90 flex items-center justify-center ${
               currentTab === 'budgets'
-                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full px-3.5 py-2 gap-1.5 font-bold text-xs shadow-md shadow-indigo-600/35 scale-105'
+                ? 'liquid-glass-pill-lens active px-3.5 py-2 gap-1.5 font-black text-xs text-slate-950 dark:text-white scale-105'
                 : 'p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:text-indigo-600 hover:bg-white/40 dark:hover:bg-white/5'
             }`}
           >
-            <PieChart className="w-5 h-5 shrink-0" />
+            <PieChart className="w-5 h-5 shrink-0 text-indigo-600 dark:text-indigo-400" />
             {currentTab === 'budgets' && <span className="text-[11px] whitespace-nowrap font-black">بودجه</span>}
           </button>
 
           {/* More Menu */}
           <button
             onClick={() => setMoreMenuOpen(!moreMenuOpen)}
+            data-glass
+            data-config={JSON.stringify(LIQUID_GLASS_PRESETS.ios27LiquidPill)}
             className={`transition-all duration-200 active:scale-90 flex items-center justify-center ${
               moreMenuOpen || ['accounts', 'goals', 'debts', 'reports', 'settings'].includes(currentTab)
-                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full px-3.5 py-2 gap-1.5 font-bold text-xs shadow-md shadow-indigo-600/35 scale-105'
+                ? 'liquid-glass-pill-lens active px-3.5 py-2 gap-1.5 font-black text-xs text-slate-950 dark:text-white scale-105'
                 : 'p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:text-indigo-600 hover:bg-white/40 dark:hover:bg-white/5'
             }`}
           >
-            <Menu className="w-5 h-5 shrink-0" />
+            <Menu className="w-5 h-5 shrink-0 text-indigo-600 dark:text-indigo-400" />
             {(moreMenuOpen || ['accounts', 'goals', 'debts', 'reports', 'settings'].includes(currentTab)) && (
               <span className="text-[11px] whitespace-nowrap font-black">امکانات</span>
             )}

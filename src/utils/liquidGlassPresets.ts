@@ -79,4 +79,21 @@ export const LIQUID_GLASS_PRESETS: Record<string, Partial<GlassConfig>> = {
     shadowSpread: 14,
     shadowOffsetY: 4,
   },
+
+  // Ultra-realistic Convex Liquid Glass Lens Pill (matching reference image)
+  ios27LiquidPill: {
+    blurAmount: 0.16,
+    refraction: 0.60,
+    chromAberration: 0.04,
+    edgeHighlight: 0.32,
+    specular: 0.28,
+    fresnel: 1.25,
+    cornerRadius: 30,
+    zRadius: 22,
+    button: true,
+    bevelMode: 0,
+    shadowOpacity: 0.20,
+    shadowSpread: 18,
+    shadowOffsetY: 6,
+  },
 };
