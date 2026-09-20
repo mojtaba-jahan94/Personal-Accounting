@@ -300,13 +300,18 @@ export const SettingsView: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           {/* Liquid Glass Toggle */}
-          <div className="p-4 rounded-2xl liquid-glass border border-slate-200/60 dark:border-white/10 flex items-center justify-between">
+          <div className="p-4 rounded-2xl liquid-glass-ios27 border border-slate-200/60 dark:border-white/10 flex items-center justify-between">
             <div>
-              <span className="text-xs font-bold text-slate-900 dark:text-white block">
-                افکت شیشه‌ای مایع (Liquid Glass)
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black text-slate-900 dark:text-white block">
+                  شیشه مایع فضایی (iOS 27 Liquid Glass)
+                </span>
+                <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400">
+                  WebGL
+                </span>
+              </div>
               <span className="text-[11px] text-slate-400">
-                بلور مات پس‌زمینه و بازتاب نوری مدرن
+                انکسار نوری عمیق، ابیراهی رنگی، بلور مات و بازتاب لبه‌های کریستالی
               </span>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">

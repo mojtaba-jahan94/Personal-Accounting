@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { formatCurrency } from '../../utils/formatters';
-import { Sun, Moon, Plus, Wallet, ArrowLeftRight, Smartphone, Download, MessageSquareText } from 'lucide-react';
+import { Sun, Moon, Plus, Wallet, ArrowLeftRight, Smartphone, MessageSquareText, Sparkles } from 'lucide-react';
 
 interface HeaderProps {
   onOpenTransactionModal: () => void;
@@ -18,105 +18,124 @@ export const Header: React.FC<HeaderProps> = ({
   const [showPwaTip, setShowPwaTip] = useState(false);
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-slate-200/80 dark:border-white/10 bg-white/85 dark:bg-slate-900/90 backdrop-blur-xl transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-3">
-        {/* Logo and Brand */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-600/25 ring-2 ring-white/50 dark:ring-white/10 active:scale-95 transition-transform">
-            <Wallet className="w-5 h-5 sm:w-6 sm:h-6" />
+    <header className="sticky top-2 sm:top-3 z-40 w-full px-3 sm:px-6 max-w-7xl mx-auto transition-all duration-300">
+      <div
+        data-glass
+        className="glass-dynamic-island specular-sheen px-3.5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-4 transition-all"
+      >
+        {/* Brand / Logo with Spatial Liquid Glass Icon */}
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+          <div className="relative group">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 ring-1 ring-white/60 dark:ring-white/20 active:scale-95 transition-transform">
+              <Wallet className="w-4 h-4 sm:w-5 sm:h-5 drop-shadow-sm" />
+            </div>
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl blur-xs opacity-0 group-hover:opacity-60 transition duration-300 pointer-events-none" />
           </div>
-          <div>
-            <h1 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
-              مدیر مالی هوشمند
-            </h1>
-            <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
-              حسابداری شخصی آفلاین
+
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5">
+              <h1 className="text-sm sm:text-base font-black text-slate-900 dark:text-white tracking-tight truncate">
+                مدیر مالی هوشمند
+              </h1>
+              <span className="hidden lg:inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+                iOS 27
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 hidden sm:block truncate">
+              حسابداری شخصی آفلاین و مدرن
             </p>
           </div>
         </div>
 
-        {/* Center Balance Capsule */}
-        <div className="hidden md:flex items-center gap-2.5 px-4 py-2 rounded-full bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-white/5 shadow-xs">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-bold">موجودی کل:</span>
+        {/* Center Dynamic Island Balance Capsule */}
+        <div className="hidden md:flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-slate-900/5 dark:bg-white/5 border border-white/40 dark:border-white/10 shadow-xs backdrop-blur-md hover:border-indigo-500/30 transition">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-xs shadow-emerald-500/50" />
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-bold">موجودی کل:</span>
           <span className="text-sm font-black text-indigo-600 dark:text-indigo-400 tracking-tight font-mono">
             {formatCurrency(totalBalance, currency)}
           </span>
         </div>
 
-        {/* Controls & Actions */}
-        <div className="flex items-center gap-2">
-          {/* Install PWA Guide Button */}
+        {/* Action Controls & Glass Pills */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* PWA Install Guide */}
           <button
             onClick={() => setShowPwaTip(!showPwaTip)}
-            title="نصب اپلیکیشن روی گوشی (PWA)"
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 hover:bg-indigo-500/20 rounded-full transition active:scale-95"
+            title="راهنمای نصب برنامه روی گوشی (PWA)"
+            className="glass-pill flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-bold text-indigo-600 dark:text-indigo-400"
           >
-            <Smartphone className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-            <span className="hidden md:inline">نصب برنامه</span>
+            <Smartphone className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            <span className="hidden xl:inline">نصب PWA</span>
           </button>
 
-          {/* SMS Assistant button */}
+          {/* SMS Bank Assistant */}
           <button
             onClick={onOpenSmsModal}
             title="دستیار هوشمند پیامک بانکی"
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-sky-600 dark:text-sky-400 bg-sky-500/10 hover:bg-sky-500/20 rounded-full transition active:scale-95"
+            className="glass-pill flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-bold text-sky-600 dark:text-sky-400 hover:text-sky-500"
           >
-            <MessageSquareText className="w-4 h-4 text-sky-500" />
+            <MessageSquareText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-500" />
             <span className="hidden md:inline">پیامک بانک</span>
           </button>
 
-          {/* Transfer button */}
+          {/* Transfer Button */}
           <button
             onClick={onOpenTransferModal}
-            title="انتقال وجه بین کارت‌ها"
-            className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition active:scale-95"
+            title="انتقال وجه بین کارت‌ها و حساب‌ها"
+            className="glass-pill hidden sm:flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200"
           >
-            <ArrowLeftRight className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            <ArrowLeftRight className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
             <span>انتقال</span>
           </button>
 
-          {/* New Transaction Button */}
+          {/* New Transaction Button (Vibrant Glow Pill) */}
           <button
             onClick={onOpenTransactionModal}
-            className="flex items-center gap-1.5 px-3.5 sm:px-4 py-2 text-xs font-black text-white bg-indigo-600 hover:bg-indigo-500 rounded-full shadow-md shadow-indigo-600/30 transition active:scale-95"
+            className="relative flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-black text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 rounded-full shadow-lg shadow-indigo-600/35 active:scale-95 transition-all ring-1 ring-white/30 group"
             title="ثبت تراکنش جدید"
           >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
+            <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3] group-hover:rotate-90 transition-transform duration-300" />
             <span className="hidden sm:inline">ثبت تراکنش</span>
           </button>
 
-          {/* Currency Switcher */}
+          {/* Currency Toggle Pill */}
           <button
             onClick={() => setCurrency(currency === 'toman' ? 'rial' : 'toman')}
-            className="px-3 py-2 text-xs font-bold rounded-full bg-slate-100/90 dark:bg-slate-800 border border-slate-200/60 dark:border-white/5 hover:bg-slate-200 dark:hover:bg-slate-700 transition text-slate-700 dark:text-slate-200 active:scale-95"
-            title="تغییر واحد پولی"
+            className="glass-pill px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-bold text-slate-700 dark:text-slate-200"
+            title="تغییر واحد پول (تومان / ریال)"
           >
             {currency === 'toman' ? 'تومان' : 'ریال'}
           </button>
 
-          {/* Theme Toggle */}
+          {/* Dark / Light Toggle */}
           <button
             onClick={toggleDarkMode}
-            className="p-2 rounded-full bg-slate-100/90 dark:bg-slate-800 border border-slate-200/60 dark:border-white/5 hover:bg-slate-200 dark:hover:bg-slate-700 transition text-slate-600 dark:text-slate-300 active:scale-95"
-            title="تغییر تم تاریک / روشن"
+            className="glass-pill p-2 sm:p-2.5 text-slate-600 dark:text-slate-300 flex items-center justify-center"
+            title="تغییر تم روز / شب"
           >
-            {darkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />}
+            {darkMode ? (
+              <Sun className="w-4 h-4 text-amber-400 animate-spin-slow" />
+            ) : (
+              <Moon className="w-4 h-4 text-indigo-600" />
+            )}
           </button>
         </div>
       </div>
 
-      {/* Quick PWA Tooltip Banner */}
+      {/* Floating PWA Tip Banner */}
       {showPwaTip && (
-        <div className="p-3 bg-gradient-to-r from-indigo-600 via-indigo-700 to-purple-700 text-white text-xs flex items-center justify-between px-4 sm:px-8 animate-in fade-in">
-          <div className="flex items-center gap-2">
-            <Smartphone className="w-4 h-4 shrink-0" />
-            <span>
-              💡 <b>قابلیت نصب روی گوشی:</b> در مرورگر Chrome یا Samsung گوشی، از منوی سه نقطه دکمه <b>«Install app» یا «Add to Home screen»</b> را بزنید تا برنامه بدون نوار آدرس مثل اپلیکیشن‌های بازار نصب شود!
+        <div className="mt-2 p-3 sm:p-4 rounded-2xl glass-dynamic-island text-slate-900 dark:text-white text-xs flex items-center justify-between gap-3 shadow-xl border border-indigo-500/30 animate-in slide-in-from-top-2 duration-200">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="p-1.5 rounded-xl bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 shrink-0">
+              <Smartphone className="w-4 h-4" />
+            </div>
+            <span className="leading-relaxed">
+              💡 <b>نصب برنامه وب روی موبایل (PWA):</b> در مرورگر کروم یا سامسونگ، از منوی سه‌نقطه دکمه <b>«Add to Home screen» یا «Install app»</b> را بزنید تا برنامه بدون نوار مرورگر به صورت تمام‌صفحه باز شود.
             </span>
           </div>
           <button
             onClick={() => setShowPwaTip(false)}
-            className="px-2 py-0.5 rounded bg-white/20 hover:bg-white/30 text-xs font-bold shrink-0 mr-2"
+            className="glass-pill px-3 py-1 text-xs font-bold shrink-0 text-slate-600 dark:text-slate-300"
           >
             بستن
           </button>
@@ -125,3 +144,4 @@ export const Header: React.FC<HeaderProps> = ({
     </header>
   );
 };
+export default Header;

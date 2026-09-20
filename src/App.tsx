@@ -117,17 +117,21 @@ const MainApp: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col transition-colors relative">
-      {/* Ambient Lighting Orbs */}
+      {/* iOS 27 Spatial Dynamic Ambient Lighting Orbs */}
       {themeConfig.ambientOrbs && (
-        <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-          <div className="absolute -top-32 -left-32 w-80 sm:w-96 h-80 sm:h-96 bg-indigo-500/15 dark:bg-indigo-600/20 rounded-full blur-3xl animate-float-optimized" />
+        <div data-dynamic className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+          <div className="ambient-orb absolute -top-24 -left-24 w-96 sm:w-[32rem] h-96 sm:h-[32rem] bg-indigo-500/20 dark:bg-indigo-600/25 rounded-full blur-[90px] animate-float-optimized" />
           <div
-            className="absolute top-1/3 -right-32 w-80 sm:w-96 h-80 sm:h-96 bg-purple-500/12 dark:bg-purple-600/15 rounded-full blur-3xl animate-float-optimized"
-            style={{ animationDelay: '2s' }}
+            className="ambient-orb absolute top-1/4 -right-24 w-96 sm:w-[30rem] h-96 sm:h-[30rem] bg-purple-500/18 dark:bg-purple-600/22 rounded-full blur-[100px] animate-float-alt"
+            style={{ animationDelay: '1.5s' }}
           />
           <div
-            className="absolute -bottom-32 left-1/4 w-80 sm:w-96 h-80 sm:h-96 bg-emerald-500/12 dark:bg-emerald-600/12 rounded-full blur-3xl animate-float-optimized"
-            style={{ animationDelay: '4s' }}
+            className="ambient-orb absolute -bottom-24 left-1/3 w-96 sm:w-[34rem] h-96 sm:h-[34rem] bg-emerald-500/15 dark:bg-emerald-600/18 rounded-full blur-[110px] animate-float-optimized"
+            style={{ animationDelay: '3.5s' }}
+          />
+          <div
+            className="ambient-orb absolute top-2/3 -left-20 w-80 h-80 bg-cyan-500/12 dark:bg-cyan-600/15 rounded-full blur-[80px] animate-float-alt"
+            style={{ animationDelay: '5s' }}
           />
         </div>
       )}

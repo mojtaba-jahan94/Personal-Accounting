@@ -21,7 +21,7 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   children,
   defaultExpanded = true,
   storageKey,
-  className = 'liquid-glass-card p-5 sm:p-6',
+  className = 'liquid-glass-ios27 p-5 sm:p-6',
   headerClassName = '',
 }) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(() => {
@@ -45,7 +45,7 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   };
 
   return (
-    <div className={`${className} transition-all duration-200`}>
+    <div data-glass className={`${className} transition-all duration-200`}>
       {/* Header */}
       <div
         className={`flex items-center justify-between cursor-pointer select-none ${

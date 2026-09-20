@@ -24,6 +24,8 @@ import {
   Layers,
 } from 'lucide-react';
 import { TabType } from '../layout/Sidebar';
+import { LiquidGlassContainer } from '../common/LiquidGlassContainer';
+import { LIQUID_GLASS_PRESETS } from '../../utils/liquidGlassPresets';
 
 interface DashboardViewProps {
   onSelectTab: (tab: TabType) => void;
@@ -61,12 +63,12 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       {/* Top Header & Customization Toolbar */}
       <div className="flex items-center justify-between gap-3 pt-1">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">داشبورد مالی</h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400">نمای کلی حساب‌ها و جریان نقدی</p>
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">داشبورد مالی</h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400">نمای کلی حساب‌ها، کارت‌ها و جریان نقدی</p>
         </div>
         <button
           onClick={() => setIsCustomizeOpen(true)}
-          className="flex items-center gap-2 px-3.5 py-2 rounded-2xl liquid-glass hover:bg-white/80 dark:hover:bg-slate-800 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-white/10 transition shadow-xs active:scale-95"
+          className="glass-pill flex items-center gap-2 px-3.5 py-2 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200"
           title="شخصی‌سازی و چیدمان بخش‌های پیشخوان"
         >
           <SlidersHorizontal className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
@@ -74,44 +76,53 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </button>
       </div>
 
-      {/* 1. Liquid Glass Hero Banner */}
+      {/* 1. iOS 27 Liquid Glass Hero Banner */}
       {dashboardConfig.showHero && (
-        <div className="relative overflow-hidden rounded-3xl liquid-glass border border-white/40 dark:border-white/10 p-6 sm:p-8 shadow-2xl">
-          <div className="absolute -right-20 -top-20 w-72 h-72 bg-indigo-500/20 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -left-20 -bottom-20 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
+        <LiquidGlassContainer defaultConfig={LIQUID_GLASS_PRESETS.ios27Hero}>
+          {/* Dynamic background aurora layers for WebGL shader refraction */}
+          <div data-dynamic className="absolute inset-0 pointer-events-none overflow-hidden rounded-3xl z-0">
+            <div className="absolute -right-16 -top-16 w-80 h-80 bg-indigo-500/25 dark:bg-indigo-600/30 rounded-full blur-3xl animate-float-optimized" />
+            <div className="absolute -left-16 -bottom-16 w-80 h-80 bg-purple-500/20 dark:bg-purple-600/25 rounded-full blur-3xl animate-float-alt" />
+            <div className="absolute top-1/2 left-1/3 w-60 h-60 bg-emerald-500/15 dark:bg-emerald-600/15 rounded-full blur-2xl" />
+          </div>
 
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-700 dark:text-indigo-300 text-xs font-bold mb-3">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>پیشخوان مالی هوشمند • مدیریت یکپارچه امور مالی</span>
+          <div
+            data-glass
+            className="relative z-10 overflow-hidden rounded-3xl liquid-glass-ios27 specular-sheen border border-white/60 dark:border-white/15 p-6 sm:p-8 shadow-2xl"
+          >
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-700 dark:text-indigo-300 text-xs font-black mb-3.5 backdrop-blur-md">
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-500 animate-pulse" />
+                  <span>پیشخوان مالی هوشمند • سیستم عامل مایع iOS 27</span>
+                </div>
+                <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white mb-2.5 tracking-tight leading-snug">
+                  وضعیت تراز مالی شما {netSavings >= 0 ? 'مطلوب و رو به رشد 📈' : 'نیازمند بهینه‌سازی ⚠️'} است
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed font-medium">
+                  مدیریت فوق‌هوشمند هزینه‌ها، رصد لحظه‌ای سقف بودجه ماهانه و هشدار چک‌های صیادی با بالاترین استاندارد امنیت و طراحی شیشه‌ای.
+                </p>
               </div>
-              <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white mb-2">
-                وضعیت تراز مالی شما {netSavings >= 0 ? 'مطلوب و رو به رشد' : 'نیازمند بهینه‌سازی'} است
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed">
-                مدیریت هوشمند هزینه‌ها، کنترل سقف بودجه ماهانه و یادآور چک‌های صیادی به صورت کاملاً آفلاین و امن.
-              </p>
-            </div>
 
-            <div className="flex flex-wrap gap-2.5">
-              <button
-                onClick={onOpenTransactionModal}
-                className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white font-black text-xs sm:text-sm shadow-lg shadow-indigo-600/30 active:scale-95 transition"
-              >
-                <Plus className="w-4 h-4 stroke-[3]" />
-                <span>ثبت تراکنش جدید</span>
-              </button>
-              <button
-                onClick={onOpenTransferModal}
-                className="flex items-center gap-2 px-4 py-3 rounded-2xl liquid-glass hover:bg-white/80 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 font-bold text-xs sm:text-sm transition"
-              >
-                <ArrowLeftRight className="w-4 h-4 text-indigo-500" />
-                <span>انتقال وجه</span>
-              </button>
+              <div className="flex flex-wrap gap-2.5">
+                <button
+                  onClick={onOpenTransactionModal}
+                  className="flex items-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-black text-xs sm:text-sm shadow-xl shadow-indigo-600/35 active:scale-95 transition-all ring-1 ring-white/30"
+                >
+                  <Plus className="w-4 h-4 stroke-[3]" />
+                  <span>ثبت تراکنش جدید</span>
+                </button>
+                <button
+                  onClick={onOpenTransferModal}
+                  className="glass-pill flex items-center gap-2 px-4 py-3 text-slate-800 dark:text-slate-100 font-bold text-xs sm:text-sm"
+                >
+                  <ArrowLeftRight className="w-4 h-4 text-indigo-500" />
+                  <span>انتقال وجه</span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </LiquidGlassContainer>
       )}
 
       {/* 2. 4 Stat Cards */}
