@@ -120,7 +120,7 @@ export const DEFAULT_DASHBOARD_CONFIG: DashboardSectionConfig = {
 };
 
 const DEFAULT_THEME_CONFIG: ThemeConfig = {
-  mode: 'dark',
+  mode: 'light',
   accent: 'indigo',
   customAccentHex: '#6366f1',
   amoledMode: false,

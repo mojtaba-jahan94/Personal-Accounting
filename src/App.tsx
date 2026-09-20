@@ -7,6 +7,7 @@ import { InstallPrompt } from './components/layout/InstallPrompt';
 import { DashboardView } from './components/dashboard/DashboardView';
 import { TransactionModal } from './components/transactions/TransactionModal';
 import { TransferModal } from './components/accounts/TransferModal';
+import { SilkWaveBackground } from './components/common/SilkWaveBackground';
 import { Transaction } from './types';
 
 // Code-split views for optimal bundle loading & performance
@@ -117,24 +118,8 @@ const MainApp: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col transition-colors relative">
-      {/* Liquid Azure / Oceanic Ribbons Background Layer (Matching Reference Photo) */}
-      <div data-dynamic className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-        {/* Upper Fluid Azure Ribbon */}
-        <div
-          className="ambient-orb absolute -top-20 -right-1/4 w-[140vw] sm:w-[100vw] h-[55vh] sm:h-[75vh] rounded-[45%] bg-gradient-to-tr from-blue-600/45 via-cyan-400/35 to-indigo-600/30 dark:from-blue-600/50 dark:via-cyan-400/35 dark:to-purple-600/40 blur-[60px] sm:blur-[95px] animate-float-optimized"
-          style={{ transform: 'rotate(-16deg)' }}
-        />
-        {/* Middle Vibrant Wave Ribbon */}
-        <div
-          className="ambient-orb absolute top-1/4 -left-1/4 w-[140vw] sm:w-[110vw] h-[60vh] sm:h-[80vh] rounded-[40%] bg-gradient-to-br from-indigo-600/30 via-sky-400/45 to-teal-400/30 dark:from-indigo-700/40 dark:via-sky-500/35 dark:to-cyan-400/25 blur-[70px] sm:blur-[105px] animate-float-alt"
-          style={{ transform: 'rotate(12deg)', animationDelay: '2s' }}
-        />
-        {/* Lower Oceanic Wave Pool */}
-        <div
-          className="ambient-orb absolute -bottom-24 left-1/4 w-[110vw] h-[55vh] sm:h-[70vh] rounded-[50%] bg-gradient-to-t from-cyan-500/30 via-blue-600/35 to-purple-600/25 dark:from-cyan-600/30 dark:via-blue-700/45 dark:to-purple-700/35 blur-[80px] sm:blur-[115px] animate-float-optimized"
-          style={{ animationDelay: '4s' }}
-        />
-      </div>
+      {/* 3D Fluid Silk Ribbon Background matching the reference photo */}
+      <SilkWaveBackground />
 
       <Header
         onOpenTransactionModal={() => handleOpenTransactionModal()}
