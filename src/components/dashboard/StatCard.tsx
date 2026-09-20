@@ -1,5 +1,6 @@
 import React from 'react';
 import { LucideIcon } from 'lucide-react';
+import { LIQUID_GLASS_PRESETS } from '../../utils/liquidGlassPresets';
 
 interface StatCardProps {
   title: string;
@@ -24,7 +25,8 @@ export const StatCard: React.FC<StatCardProps> = ({
   return (
     <div
       data-glass
-      className="liquid-glass-ios27 specular-sheen p-5 sm:p-6 relative overflow-hidden group hover:scale-[1.01] transition-all duration-200"
+      data-config={JSON.stringify(LIQUID_GLASS_PRESETS.crystalWidget)}
+      className="liquid-glass-crystal specular-sheen p-5 sm:p-6 relative overflow-hidden group hover:scale-[1.01] transition-all duration-200"
     >
       {/* Top rim specular highlight line */}
       <div className="absolute top-0 right-0 left-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/70 dark:via-white/25 to-transparent pointer-events-none" />

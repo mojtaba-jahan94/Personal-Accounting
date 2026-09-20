@@ -6,6 +6,7 @@ import { numberToWordsPersian } from '../../utils/formatters';
 import { getCategoryIcon } from '../../utils/categoryIcons';
 import { CategoryManagerModal } from '../categories/CategoryManagerModal';
 import { PersonManagerModal } from '../contacts/PersonManagerModal';
+import { LIQUID_GLASS_PRESETS } from '../../utils/liquidGlassPresets';
 import {
   X,
   ArrowDownLeft,
@@ -201,7 +202,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md" onClick={onClose} />
 
-        <div className="relative w-full max-w-lg liquid-glass-card p-5 sm:p-6 my-8 z-10 space-y-4">
+        <div
+          data-glass
+          data-config={JSON.stringify(LIQUID_GLASS_PRESETS.crystalWidget)}
+          className="relative w-full max-w-lg liquid-glass-crystal p-5 sm:p-6 my-4 sm:my-8 z-10 space-y-4"
+        >
           {/* Header */}
           <div className="flex items-center justify-between pb-3 border-b border-slate-200/50 dark:border-white/10">
             <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">

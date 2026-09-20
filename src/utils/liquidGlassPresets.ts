@@ -96,4 +96,24 @@ export const LIQUID_GLASS_PRESETS: Record<string, Partial<GlassConfig>> = {
     shadowSpread: 18,
     shadowOffsetY: 6,
   },
+
+  // Crystal Transparent Liquid Widget (matching music player reference image)
+  crystalWidget: {
+    blurAmount: 0.10,
+    refraction: 0.85,
+    chromAberration: 0.09,
+    edgeHighlight: 0.38,
+    specular: 0.34,
+    fresnel: 1.40,
+    cornerRadius: 32,
+    zRadius: 28,
+    opacity: 0.96,
+    saturation: 0.20,
+    tintStrength: 0.08,
+    shadowOpacity: 0.25,
+    shadowSpread: 26,
+    shadowOffsetY: 10,
+    button: false,
+    bevelMode: 0,
+  },
 };

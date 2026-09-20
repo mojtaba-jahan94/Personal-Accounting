@@ -5,6 +5,7 @@ import { formatCurrency, formatCardNumber, toPersianDigits } from '../../utils/f
 import { AccountModal } from './AccountModal';
 import { TransferModal } from './TransferModal';
 import { CollapsibleSection } from '../common/CollapsibleSection';
+import { LIQUID_GLASS_PRESETS } from '../../utils/liquidGlassPresets';
 import {
   CreditCard,
   Wallet,
@@ -104,11 +105,11 @@ export const AccountsView: React.FC = () => {
             return (
               <div
                 key={acc.id}
-                className="rounded-3xl p-6 text-white relative overflow-hidden shadow-lg flex flex-col justify-between min-h-[220px] transition-transform hover:-translate-y-1"
+                data-glass
+                data-config={JSON.stringify(LIQUID_GLASS_PRESETS.crystalWidget)}
+                className="liquid-glass-crystal rounded-3xl p-6 text-white relative overflow-hidden shadow-2xl flex flex-col justify-between min-h-[220px] transition-all hover:-translate-y-1"
                 style={{
-                  backgroundColor: acc.color || '#4f46e5',
-                  backgroundImage:
-                    'radial-gradient(circle at 100% 0%, rgba(255,255,255,0.2) 0%, transparent 60%)',
+                  background: `linear-gradient(135deg, ${acc.color || '#4f46e5'}60 0%, ${acc.color || '#4f46e5'}25 60%, rgba(255,255,255,0.12) 100%)`,
                 }}
               >
                 {/* Card Top */}

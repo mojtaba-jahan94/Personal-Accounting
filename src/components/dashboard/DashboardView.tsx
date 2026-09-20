@@ -88,7 +88,8 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
           <div
             data-glass
-            className="relative z-10 overflow-hidden rounded-3xl liquid-glass-ios27 specular-sheen border border-white/60 dark:border-white/15 p-6 sm:p-8 shadow-2xl"
+            data-config={JSON.stringify(LIQUID_GLASS_PRESETS.crystalWidget)}
+            className="relative z-10 overflow-hidden rounded-3xl liquid-glass-crystal specular-sheen border border-white/60 dark:border-white/15 p-6 sm:p-8 shadow-2xl"
           >
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
               <div>
@@ -236,21 +237,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           icon={<PieIcon className="w-5 h-5 text-indigo-500" />}
         >
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <div className="bg-slate-50/60 dark:bg-slate-900/40 rounded-2xl p-4 border border-slate-200/50 dark:border-white/5">
-              <div className="flex items-center justify-between mb-3">
+            <div className="liquid-glass-crystal rounded-3xl p-5 border border-white/60 dark:border-white/10 shadow-lg">
+              <div className="flex items-center justify-between mb-3.5">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">تفکیک مخارج بر اساس دسته‌بندی</h3>
-                  <p className="text-xs text-slate-500">پرتکرارترین هزینه‌های ثبت شده</p>
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white">تفکیک مخارج بر اساس دسته‌بندی</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">پرتکرارترین هزینه‌های ثبت شده</p>
                 </div>
               </div>
               <ExpenseChart type="pie" />
             </div>
 
-            <div className="bg-slate-50/60 dark:bg-slate-900/40 rounded-2xl p-4 border border-slate-200/50 dark:border-white/5">
-              <div className="flex items-center justify-between mb-3">
+            <div className="liquid-glass-crystal rounded-3xl p-5 border border-white/60 dark:border-white/10 shadow-lg">
+              <div className="flex items-center justify-between mb-3.5">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white">روند درآمد و هزینه</h3>
-                  <p className="text-xs text-slate-500">مقایسه دوره‌ای دخل و خرج</p>
+                  <h3 className="text-sm font-black text-slate-900 dark:text-white">روند درآمد و هزینه</h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">مقایسه دوره‌ای دخل و خرج</p>
                 </div>
               </div>
               <ExpenseChart type="bar" />

@@ -40,9 +40,6 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
     accounts,
     currency,
     deleteTransaction,
-    divideTransactionBy10,
-    multiplyTransactionBy10,
-    batchFixRialTransactions,
   } = useFinance();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -93,10 +90,6 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
     .reduce((sum, t) => sum + t.amount, 0);
 
   const filteredNet = filteredIncome - filteredExpense;
-
-  const suspectTransactions = transactions.filter(
-    tx => tx.amount >= 100000000
-  );
 
   const handleResetFilters = () => {
     setSearchTerm('');
@@ -384,36 +377,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
         icon={<ListOrdered className="w-5 h-5 text-indigo-500" />}
         defaultExpanded={true}
       >
-        {suspectTransactions.length > 0 && (
-          <div className="mb-4 p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-800 dark:text-amber-300 text-xs">
-            <div className="flex items-center gap-2.5">
-              <span className="text-lg">⚠️</span>
-              <div>
-                <span className="font-black block text-xs sm:text-sm">
-                  {toPersianDigits(suspectTransactions.length)} تراکنش مشکوک به ثبت با رقم ریالی (۱۰ برابر) یافت شد!
-                </span>
-                <span className="text-[11px] opacity-85">
-                  می‌توانید با یک کلیک مبالغ این تراکنش‌ها را اصلاح و به تومان تبدیل کنید (موجودی حساب‌ها نیز متناسباً اصلاح می‌شود).
-                </span>
-              </div>
-            </div>
-            <button
-              onClick={() => {
-                if (
-                  window.confirm(
-                    'آیا می‌خواهید تراکنش‌های با مبالغ مشکوک ریالی (۱۰ برابر) تصحیح شده و به تومان تبدیل شوند؟ موجودی حساب‌ها نیز اصلاح خواهد شد.'
-                  )
-                ) {
-                  const count = batchFixRialTransactions();
-                  alert(`${toPersianDigits(count)} تراکنش با موفقیت به تومان تبدیل و حساب‌ها اصلاح شدند.`);
-                }
-              }}
-              className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-black text-xs transition shadow-xs shrink-0 self-end sm:self-auto"
-            >
-              اصلاح هوشمند مبالغ (تبدیل به تومان)
-            </button>
-          </div>
-        )}
+
 
         {filtered.length === 0 ? (
           <div className="text-center py-16 px-4">
@@ -523,36 +487,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
                     </div>
 
                     <div className="flex items-center gap-1 text-slate-400">
-                      <button
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              `آیا می‌خواهید مبلغ این تراکنش (${tx.amount.toLocaleString('fa-IR')}) بر ۱۰ تقسیم شود (اصلاح ریال به تومان)؟ تفاوت به حساب مربوطه برگردانده خواهد شد.`
-                            )
-                          ) {
-                            divideTransactionBy10(tx.id);
-                          }
-                        }}
-                        title="تقسیم بر ۱۰ (اصلاح ثبت اشتباه ریالی به تومان)"
-                        className="px-2 py-1 rounded-lg hover:bg-amber-500/15 hover:text-amber-600 text-[11px] font-mono font-black border border-slate-200/80 dark:border-slate-700 transition"
-                      >
-                        ÷۱۰
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (
-                            window.confirm(
-                              `آیا می‌خواهید مبلغ این تراکنش (${tx.amount.toLocaleString('fa-IR')}) در ۱۰ ضرب شود؟`
-                            )
-                          ) {
-                            multiplyTransactionBy10(tx.id);
-                          }
-                        }}
-                        title="ضرب در ۱۰"
-                        className="px-2 py-1 rounded-lg hover:bg-indigo-500/15 hover:text-indigo-600 text-[11px] font-mono font-black border border-slate-200/80 dark:border-slate-700 transition"
-                      >
-                        ×۱۰
-                      </button>
+
                       {tx.receiptUrl && (
                         <button
                           onClick={() => setViewingReceipt(tx.receiptUrl!)}

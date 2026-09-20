@@ -117,24 +117,24 @@ const MainApp: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col transition-colors relative">
-      {/* iOS 27 Spatial Dynamic Ambient Lighting Orbs */}
-      {themeConfig.ambientOrbs && (
-        <div data-dynamic className="fixed inset-0 pointer-events-none overflow-hidden z-0">
-          <div className="ambient-orb absolute -top-24 -left-24 w-96 sm:w-[32rem] h-96 sm:h-[32rem] bg-indigo-500/20 dark:bg-indigo-600/25 rounded-full blur-[90px] animate-float-optimized" />
-          <div
-            className="ambient-orb absolute top-1/4 -right-24 w-96 sm:w-[30rem] h-96 sm:h-[30rem] bg-purple-500/18 dark:bg-purple-600/22 rounded-full blur-[100px] animate-float-alt"
-            style={{ animationDelay: '1.5s' }}
-          />
-          <div
-            className="ambient-orb absolute -bottom-24 left-1/3 w-96 sm:w-[34rem] h-96 sm:h-[34rem] bg-emerald-500/15 dark:bg-emerald-600/18 rounded-full blur-[110px] animate-float-optimized"
-            style={{ animationDelay: '3.5s' }}
-          />
-          <div
-            className="ambient-orb absolute top-2/3 -left-20 w-80 h-80 bg-cyan-500/12 dark:bg-cyan-600/15 rounded-full blur-[80px] animate-float-alt"
-            style={{ animationDelay: '5s' }}
-          />
-        </div>
-      )}
+      {/* Liquid Azure / Oceanic Ribbons Background Layer (Matching Reference Photo) */}
+      <div data-dynamic className="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        {/* Upper Fluid Azure Ribbon */}
+        <div
+          className="ambient-orb absolute -top-20 -right-1/4 w-[140vw] sm:w-[100vw] h-[55vh] sm:h-[75vh] rounded-[45%] bg-gradient-to-tr from-blue-600/45 via-cyan-400/35 to-indigo-600/30 dark:from-blue-600/50 dark:via-cyan-400/35 dark:to-purple-600/40 blur-[60px] sm:blur-[95px] animate-float-optimized"
+          style={{ transform: 'rotate(-16deg)' }}
+        />
+        {/* Middle Vibrant Wave Ribbon */}
+        <div
+          className="ambient-orb absolute top-1/4 -left-1/4 w-[140vw] sm:w-[110vw] h-[60vh] sm:h-[80vh] rounded-[40%] bg-gradient-to-br from-indigo-600/30 via-sky-400/45 to-teal-400/30 dark:from-indigo-700/40 dark:via-sky-500/35 dark:to-cyan-400/25 blur-[70px] sm:blur-[105px] animate-float-alt"
+          style={{ transform: 'rotate(12deg)', animationDelay: '2s' }}
+        />
+        {/* Lower Oceanic Wave Pool */}
+        <div
+          className="ambient-orb absolute -bottom-24 left-1/4 w-[110vw] h-[55vh] sm:h-[70vh] rounded-[50%] bg-gradient-to-t from-cyan-500/30 via-blue-600/35 to-purple-600/25 dark:from-cyan-600/30 dark:via-blue-700/45 dark:to-purple-700/35 blur-[80px] sm:blur-[115px] animate-float-optimized"
+          style={{ animationDelay: '4s' }}
+        />
+      </div>
 
       <Header
         onOpenTransactionModal={() => handleOpenTransactionModal()}

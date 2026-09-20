@@ -3,6 +3,7 @@ import { useFinance } from '../../context/FinanceContext';
 import { AccountType } from '../../types';
 import { getTodayJalali } from '../../utils/jalali';
 import { formatCurrency, numberToWordsPersian } from '../../utils/formatters';
+import { LIQUID_GLASS_PRESETS } from '../../utils/liquidGlassPresets';
 import {
   X,
   ArrowLeftRight,
@@ -126,11 +127,13 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
-
-      <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 my-8 z-10">
+      <div
+        data-glass
+        data-config={JSON.stringify(LIQUID_GLASS_PRESETS.crystalWidget)}
+        className="relative w-full max-w-lg liquid-glass-crystal rounded-3xl shadow-2xl p-5 sm:p-6 my-4 sm:my-8 z-10"
+      >
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+        <div className="flex items-center justify-between pb-3 border-b border-slate-200/50 dark:border-white/10">
           <div className="flex items-center gap-2.5">
             <div className="p-2.5 rounded-2xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 shadow-xs">
               <ArrowLeftRight className="w-5 h-5" />

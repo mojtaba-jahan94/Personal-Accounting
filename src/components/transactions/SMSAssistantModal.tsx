@@ -18,6 +18,7 @@ import { parseBankSMS } from '../../utils/smsParser';
 import { ParsedBankSMS } from '../../types';
 import { formatCurrency, toPersianDigits } from '../../utils/formatters';
 import { getTodayJalali } from '../../utils/jalali';
+import { LIQUID_GLASS_PRESETS } from '../../utils/liquidGlassPresets';
 
 interface SMSAssistantModalProps {
   isOpen: boolean;
@@ -142,8 +143,12 @@ export const SMSAssistantModal: React.FC<SMSAssistantModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn">
-      <div className="liquid-glass-card w-full max-w-xl p-6 relative max-h-[90vh] overflow-y-auto space-y-5 border border-white/20 shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-md animate-fadeIn">
+      <div
+        data-glass
+        data-config={JSON.stringify(LIQUID_GLASS_PRESETS.crystalWidget)}
+        className="liquid-glass-crystal w-full max-w-xl p-5 sm:p-6 relative max-h-[90vh] overflow-y-auto space-y-5 rounded-3xl shadow-2xl"
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-200/50 dark:border-white/10 pb-4">
           <div className="flex items-center gap-2.5">

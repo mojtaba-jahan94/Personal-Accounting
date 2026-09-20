@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { LIQUID_GLASS_PRESETS } from '../../utils/liquidGlassPresets';
 
 interface CollapsibleSectionProps {
   title: React.ReactNode;
@@ -21,7 +22,7 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   children,
   defaultExpanded = true,
   storageKey,
-  className = 'liquid-glass-ios27 p-5 sm:p-6',
+  className = 'liquid-glass-crystal p-5 sm:p-6 rounded-3xl',
   headerClassName = '',
 }) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(() => {
@@ -45,7 +46,11 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   };
 
   return (
-    <div data-glass className={`${className} transition-all duration-200`}>
+    <div
+      data-glass
+      data-config={JSON.stringify(LIQUID_GLASS_PRESETS.crystalWidget)}
+      className={`${className} transition-all duration-200`}
+    >
       {/* Header */}
       <div
         className={`flex items-center justify-between cursor-pointer select-none ${
