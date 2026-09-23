@@ -23,11 +23,11 @@ const SMSAssistantModal = lazy(() => import('./components/transactions/SMSAssist
 const ALL_TABS: TabType[] = [
   'dashboard',
   'transactions',
-  'budgets',
+  'reports',
   'accounts',
+  'budgets',
   'goals',
   'debts',
-  'reports',
   'settings',
 ];
 
@@ -113,6 +113,23 @@ const MainApp: React.FC = () => {
   };
 
   useEffect(() => {
+    // Preload views in idle time so switching tabs is instant without rendering or scroll lag
+    const preloadViews = () => {
+      import('./components/transactions/TransactionList');
+      import('./components/reports/ReportsView');
+      import('./components/accounts/AccountsView');
+      import('./components/budget/BudgetView');
+      import('./components/goals/GoalsView');
+      import('./components/debts/DebtsAndChequesView');
+      import('./components/settings/SettingsView');
+    };
+
+    if ('requestIdleCallback' in window) {
+      (window as any).requestIdleCallback(preloadViews);
+    } else {
+      setTimeout(preloadViews, 100);
+    }
+
     const params = new URLSearchParams(window.location.search);
     const sharedText = params.get('text') || params.get('title');
     if (sharedText) {

@@ -79,8 +79,8 @@ export const ExpenseChart: React.FC<ExpenseChartProps> = ({ type }) => {
     }
 
     return (
-      <div className="h-72 w-full">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="w-full">
+        <ResponsiveContainer width="100%" height={260} minHeight={240}>
           <PieChart>
             <Pie
               data={pieData}
@@ -123,8 +123,8 @@ export const ExpenseChart: React.FC<ExpenseChartProps> = ({ type }) => {
 
   // Bar Chart
   return (
-    <div className="h-72 w-full">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="w-full">
+      <ResponsiveContainer width="100%" height={260} minHeight={240}>
         <BarChart data={barData.length > 0 ? barData : [{ name: 'ماه جاری', درآمد: 0, هزینه: 0 }]}>
           <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
           <XAxis dataKey="name" tick={{ fill: textColor, fontSize: 11 }} />

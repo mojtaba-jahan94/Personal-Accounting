@@ -117,6 +117,15 @@ export const DEFAULT_DASHBOARD_CONFIG: DashboardSectionConfig = {
   showRecentTransactions: true,
   showBudgetProgress: true,
   showCheques: true,
+  sectionOrder: [
+    'showHero',
+    'showKpiCards',
+    'showAccounts',
+    'showExpenseChart',
+    'showRecentTransactions',
+    'showBudgetProgress',
+    'showCheques',
+  ],
 };
 
 const DEFAULT_THEME_CONFIG: ThemeConfig = {

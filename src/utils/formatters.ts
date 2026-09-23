@@ -147,12 +147,16 @@ function chunkToWords(num: number): string {
 }
 
 export function numberToWordsPersian(num: number, currency: Currency = 'toman'): string {
-  const actualNum = currency === 'rial' ? num * 10 : num;
-  if (actualNum === 0) return `صفر ${currency === 'toman' ? 'تومان' : 'ریال'}`;
-  if (actualNum < 0) return 'منفی ' + numberToWordsPersian(Math.abs(num), currency);
+  if (!num || isNaN(num) || num === 0) {
+    return `صفر ${currency === 'toman' ? 'تومان' : 'ریال'}`;
+  }
+  if (num < 0) {
+    return 'منفی ' + numberToWordsPersian(Math.abs(num), currency);
+  }
 
+  const actualNum = Math.floor(Math.abs(num));
   const chunks: number[] = [];
-  let temp = Math.floor(actualNum);
+  let temp = actualNum;
   while (temp > 0) {
     chunks.push(temp % 1000);
     temp = Math.floor(temp / 1000);
@@ -164,7 +168,12 @@ export function numberToWordsPersian(num: number, currency: Currency = 'toman'):
     if (chunk > 0) {
       const chunkWord = chunkToWords(chunk);
       const scale = scales[i];
-      words.push(scale ? `${chunkWord} ${scale}` : chunkWord);
+      // For exactly 1000 to 1999, 'یک هزار' or 'هزار'
+      if (scale === 'هزار' && chunk === 1 && actualNum < 2000) {
+        words.push('هزار');
+      } else {
+        words.push(scale ? `${chunkWord} ${scale}` : chunkWord);
+      }
     }
   }
 

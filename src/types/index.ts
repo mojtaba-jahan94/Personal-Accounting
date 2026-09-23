@@ -124,6 +124,15 @@ export type AmbientGlow = 'off' | 'subtle' | 'vibrant';
 export type LightStyle = 'pure_white' | 'frost' | 'warm_cream' | 'soft_slate';
 export type BackgroundStyle = 'clean_minimal' | 'subtle_mesh' | 'dot_matrix' | 'soft_aurora' | 'pure_solid';
 
+export type DashboardSectionKey =
+  | 'showHero'
+  | 'showKpiCards'
+  | 'showAccounts'
+  | 'showExpenseChart'
+  | 'showRecentTransactions'
+  | 'showBudgetProgress'
+  | 'showCheques';
+
 export interface DashboardSectionConfig {
   showHero: boolean;
   showKpiCards: boolean;
@@ -132,6 +141,7 @@ export interface DashboardSectionConfig {
   showRecentTransactions: boolean;
   showBudgetProgress: boolean;
   showCheques: boolean;
+  sectionOrder?: DashboardSectionKey[];
 }
 
 export interface ThemeConfig {

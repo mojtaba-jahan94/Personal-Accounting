@@ -35,9 +35,9 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
   const moreItems: { id: TabType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
     { id: 'accounts', label: 'حساب‌ها و کارت‌ها', icon: CreditCard },
+    { id: 'budgets', label: 'بودجه‌بندی ماهانه', icon: PieChart },
     { id: 'goals', label: 'اهداف و پس‌انداز', icon: Target },
     { id: 'debts', label: 'بدهی، طلب و چک', icon: FileCheck2 },
-    { id: 'reports', label: 'گزارش و تحلیل', icon: BarChart3 },
     { id: 'settings', label: 'تنظیمات و ظاهر', icon: Settings },
   ];
 
@@ -157,17 +157,17 @@ export const BottomNav: React.FC<BottomNavProps> = ({
             <Plus className="w-5 h-5 stroke-[2.5]" />
           </button>
 
-          {/* Budgets */}
+          {/* Reports & Analytics */}
           <button
-            onClick={() => onSelectTab('budgets')}
+            onClick={() => onSelectTab('reports')}
             className={`flex items-center gap-1.5 py-1.5 px-3 rounded-full transition-all duration-150 active:scale-95 ${
-              currentTab === 'budgets'
+              currentTab === 'reports'
                 ? 'bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 font-bold shadow-xs'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
-            <PieChart className="w-4 h-4 shrink-0" />
-            {currentTab === 'budgets' && <span className="text-[11px] whitespace-nowrap">بودجه</span>}
+            <BarChart3 className="w-4 h-4 shrink-0" />
+            {currentTab === 'reports' && <span className="text-[11px] whitespace-nowrap">گزارش‌ها</span>}
           </button>
 
           {/* More Menu */}

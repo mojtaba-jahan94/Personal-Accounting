@@ -247,8 +247,8 @@ export const ReportsView: React.FC = () => {
                 هزینه‌ای در این بازه ثبت نشده است
               </div>
             ) : (
-              <div className="h-56 w-full">
-                <ResponsiveContainer width="100%" height="100%">
+              <div className="w-full">
+                <ResponsiveContainer width="100%" height={230} minHeight={210}>
                   <PieChart>
                     <Pie
                       data={pieData}
@@ -284,8 +284,8 @@ export const ReportsView: React.FC = () => {
             <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-3">
               مقایسه ورودی و خروجی دوره
             </h4>
-            <div className="h-56 w-full">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="w-full">
+              <ResponsiveContainer width="100%" height={230} minHeight={210}>
                 <BarChart
                   data={[
                     { name: 'درآمدها', amount: currentIncomeTotal, fill: '#10b981' },

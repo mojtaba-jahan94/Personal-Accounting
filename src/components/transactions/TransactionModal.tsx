@@ -308,13 +308,13 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 </span>
               </div>
               {numAmount > 0 && (
-                <div className="mt-1.5 px-1 space-y-0.5">
-                  <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium leading-relaxed">
-                    به حروف: {numberToWordsPersian(numAmount, inputUnit)}
+                <div className="mt-2 p-2.5 rounded-xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/30 space-y-1">
+                  <p className="text-xs text-indigo-700 dark:text-indigo-300 font-bold leading-relaxed">
+                    به حروف: <span className="font-extrabold">{numberToWordsPersian(numAmount, inputUnit)}</span>
                   </p>
-                  <p className="text-[11px] text-slate-400 font-mono">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                     {inputUnit === 'rial'
-                      ? `معادل ذخیره در سیستم: ${(Math.round(numAmount / 10)).toLocaleString('fa-IR')} تومان`
+                      ? `معادل تومانی در حساب‌ها: ${(Math.round(numAmount / 10)).toLocaleString('fa-IR')} تومان (${numberToWordsPersian(Math.round(numAmount / 10), 'toman')})`
                       : `معادل ریالی: ${(Math.round(numAmount * 10)).toLocaleString('fa-IR')} ریال`}
                   </p>
                 </div>
