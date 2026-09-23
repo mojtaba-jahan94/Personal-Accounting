@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { AccountType } from '../../types';
 import { getTodayJalali } from '../../utils/jalali';
-import { formatCurrency, numberToWordsPersian } from '../../utils/formatters';
+import { formatCurrency, numberToWordsPersian, parseAmount, sanitizeAmountInput, formatAmountInput } from '../../utils/formatters';
 import { LIQUID_GLASS_PRESETS } from '../../utils/liquidGlassPresets';
 import {
   X,
@@ -83,8 +83,8 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
   const fromAcc = accounts.find(a => a.id === fromAccountId);
   const toAcc = accounts.find(a => a.id === toAccountId);
 
-  const numAmount = parseFloat(amount) || 0;
-  const numFee = parseFloat(fee) || 0;
+  const numAmount = parseAmount(amount);
+  const numFee = parseAmount(fee);
   const numAmountToman = currency === 'rial' ? Math.round(numAmount / 10) : numAmount;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -258,17 +258,17 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
                 مبلغ انتقال ({currency === 'toman' ? 'تومان' : 'ریال'})
               </label>
               <input
-                type="number"
-                min="0"
+                type="text"
+                inputMode="decimal"
                 required
                 value={amount}
-                onChange={e => setAmount(e.target.value)}
+                onChange={e => setAmount(formatAmountInput(sanitizeAmountInput(e.target.value)))}
                 placeholder="0"
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-black font-mono outline-none focus:border-indigo-500 transition"
               />
               {numAmount > 0 && (
                 <span className="text-[11px] text-indigo-600 dark:text-indigo-400 block mt-1">
-                  {numberToWordsPersian(numAmountToman)} تومان
+                  {numberToWordsPersian(numAmountToman)}
                 </span>
               )}
             </div>
@@ -278,10 +278,10 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
                 کارمزد انتقال ({currency === 'toman' ? 'تومان' : 'ریال'})
               </label>
               <input
-                type="number"
-                min="0"
+                type="text"
+                inputMode="decimal"
                 value={fee}
-                onChange={e => setFee(e.target.value)}
+                onChange={e => setFee(formatAmountInput(sanitizeAmountInput(e.target.value)))}
                 placeholder="0"
                 className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-bold font-mono outline-none focus:border-indigo-500 transition"
               />

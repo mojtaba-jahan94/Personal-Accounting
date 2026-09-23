@@ -22,7 +22,7 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   children,
   defaultExpanded = true,
   storageKey,
-  className = 'liquid-glass-crystal p-5 sm:p-6 rounded-3xl',
+  className = 'liquid-glass p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs',
   headerClassName = '',
 }) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(() => {
@@ -47,8 +47,6 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
 
   return (
     <div
-      data-glass
-      data-config={JSON.stringify(LIQUID_GLASS_PRESETS.crystalWidget)}
       className={`${className} transition-all duration-200`}
     >
       {/* Header */}

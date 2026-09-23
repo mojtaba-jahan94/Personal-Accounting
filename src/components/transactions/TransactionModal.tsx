@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { Transaction, TransactionType } from '../../types';
 import { getTodayJalali } from '../../utils/jalali';
-import { numberToWordsPersian } from '../../utils/formatters';
+import { numberToWordsPersian, parseAmount, sanitizeAmountInput, formatAmountInput } from '../../utils/formatters';
 import { getCategoryIcon } from '../../utils/categoryIcons';
 import { CategoryManagerModal } from '../categories/CategoryManagerModal';
 import { PersonManagerModal } from '../contacts/PersonManagerModal';
@@ -59,14 +59,15 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       setType(initialTransaction.type);
       const isRial = currency === 'rial';
       setInputUnit(currency);
-      setAmount(isRial ? (initialTransaction.amount * 10).toString() : initialTransaction.amount.toString());
+      const rawAmt = isRial ? initialTransaction.amount * 10 : initialTransaction.amount;
+      setAmount(formatAmountInput(rawAmt.toString()));
       setDate(initialTransaction.date);
       setDescription(initialTransaction.description);
       setCategoryId(initialTransaction.categoryId);
       setAccountId(initialTransaction.accountId);
       setToAccountId(initialTransaction.toAccountId || '');
       const txFee = initialTransaction.fee || 0;
-      setFee(txFee ? (isRial ? (txFee * 10).toString() : txFee.toString()) : '0');
+      setFee(txFee ? formatAmountInput(isRial ? (txFee * 10).toString() : txFee.toString()) : '0');
       setTags(initialTransaction.tags || []);
       setReceiptUrl(initialTransaction.receiptUrl);
       setPersonId(initialTransaction.personId || '');
@@ -130,21 +131,21 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const handleUnitToggle = (newUnit: 'toman' | 'rial') => {
     if (newUnit === inputUnit) return;
     setInputUnit(newUnit);
-    const val = parseFloat(amount);
-    if (!isNaN(val) && val > 0) {
+    const val = parseAmount(amount);
+    if (val > 0) {
       if (newUnit === 'rial') {
-        setAmount(Math.round(val * 10).toString());
+        setAmount(formatAmountInput(Math.round(val * 10).toString()));
       } else {
-        setAmount(Math.round(val / 10).toString());
+        setAmount(formatAmountInput(Math.round(val / 10).toString()));
       }
     }
     if (type === 'transfer') {
-      const feeVal = parseFloat(fee);
-      if (!isNaN(feeVal) && feeVal > 0) {
+      const feeVal = parseAmount(fee);
+      if (feeVal > 0) {
         if (newUnit === 'rial') {
-          setFee(Math.round(feeVal * 10).toString());
+          setFee(formatAmountInput(Math.round(feeVal * 10).toString()));
         } else {
-          setFee(Math.round(feeVal / 10).toString());
+          setFee(formatAmountInput(Math.round(feeVal / 10).toString()));
         }
       }
     }
@@ -152,8 +153,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const numAmount = parseFloat(amount);
-    if (isNaN(numAmount) || numAmount <= 0) {
+    const numAmount = parseAmount(amount);
+    if (numAmount <= 0) {
       alert('لطفاً مبلغ معتبری وارد کنید.');
       return;
     }
@@ -167,7 +168,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     }
 
     const canonicalAmount = inputUnit === 'rial' ? Math.round(numAmount / 10) : numAmount;
-    const rawFee = parseFloat(fee) || 0;
+    const rawFee = parseAmount(fee);
     const canonicalFee = (type === 'transfer' && inputUnit === 'rial') ? Math.round(rawFee / 10) : rawFee;
 
     const txData = {
@@ -195,7 +196,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   };
 
   const filteredCategories = categories.filter(c => c.type === (type === 'income' ? 'income' : 'expense'));
-  const numAmount = parseFloat(amount) || 0;
+  const numAmount = parseAmount(amount);
 
   return (
     <>
@@ -294,13 +295,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               </div>
               <div className="relative">
                 <input
-                  type="number"
-                  min="0"
-                  step="any"
+                  type="text"
+                  inputMode="decimal"
                   required
                   value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  placeholder={inputUnit === 'toman' ? 'مثلاً: 250000 تومان' : 'مثلاً: 2500000 ریال'}
+                  onChange={(e) => setAmount(formatAmountInput(sanitizeAmountInput(e.target.value)))}
+                  placeholder={inputUnit === 'toman' ? 'مثلاً: 250,000 تومان' : 'مثلاً: 2,500,000 ریال'}
                   className="w-full px-4 py-3 rounded-2xl bg-white/70 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-lg font-black text-slate-900 dark:text-white outline-none font-mono"
                 />
                 <span className="absolute left-3.5 top-3.5 text-xs text-slate-400 font-bold">
@@ -506,7 +506,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                         if (d) {
                           const rem = Math.max(0, d.amount - d.paidAmount);
                           if (!amount || amount === '0') {
-                            setAmount(rem.toString());
+                            setAmount(formatAmountInput(rem.toString()));
                           }
                           if (!description) {
                             setDescription(

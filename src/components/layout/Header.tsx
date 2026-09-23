@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { formatCurrency } from '../../utils/formatters';
-import { Sun, Moon, Plus, Wallet, ArrowLeftRight, Smartphone, MessageSquareText, Sparkles } from 'lucide-react';
+import { Sun, Moon, Plus, Wallet, ArrowLeftRight, Smartphone, MessageSquareText } from 'lucide-react';
 
 interface HeaderProps {
   onOpenTransactionModal: () => void;
@@ -20,61 +20,52 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <header className="sticky top-2 sm:top-3 z-40 w-full px-3 sm:px-6 max-w-7xl mx-auto transition-all duration-300">
       <div
-        data-glass
-        className="glass-dynamic-island specular-sheen px-3.5 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-4 transition-all"
+        className="glass-capsule-bar px-3.5 sm:px-5 py-2 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-4"
       >
-        {/* Brand / Logo with Spatial Liquid Glass Icon */}
+        {/* Brand / Logo */}
         <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
-          <div className="relative group">
-            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25 ring-1 ring-white/60 dark:ring-white/20 active:scale-95 transition-transform">
-              <Wallet className="w-4 h-4 sm:w-5 sm:h-5 drop-shadow-sm" />
-            </div>
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl blur-xs opacity-0 group-hover:opacity-60 transition duration-300 pointer-events-none" />
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-indigo-600 dark:bg-indigo-500 flex items-center justify-center text-white shadow-xs">
+            <Wallet className="w-4 h-4" />
           </div>
 
           <div className="min-w-0">
-            <div className="flex items-center gap-1.5">
-              <h1 className="text-sm sm:text-base font-black text-slate-900 dark:text-white tracking-tight truncate">
-                مدیر مالی هوشمند
-              </h1>
-              <span className="hidden lg:inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-black bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
-                iOS 27
-              </span>
-            </div>
+            <h1 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white tracking-tight truncate">
+              مدیر مالی هوشمند
+            </h1>
             <p className="text-[10px] text-slate-500 dark:text-slate-400 hidden sm:block truncate">
-              حسابداری شخصی آفلاین و مدرن
+              حسابداری شخصی آفلاین
             </p>
           </div>
         </div>
 
-        {/* Center Dynamic Island Balance Capsule */}
-        <div className="hidden md:flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-slate-900/5 dark:bg-white/5 border border-white/40 dark:border-white/10 shadow-xs backdrop-blur-md hover:border-indigo-500/30 transition">
-          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-xs shadow-emerald-500/50" />
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-bold">موجودی کل:</span>
-          <span className="text-sm font-black text-indigo-600 dark:text-indigo-400 tracking-tight font-mono">
+        {/* Center Minimal Balance Capsule */}
+        <div className="hidden md:flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200/70 dark:border-white/5 transition">
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">موجودی کل:</span>
+          <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white tracking-tight font-mono">
             {formatCurrency(totalBalance, currency)}
           </span>
         </div>
 
-        {/* Action Controls & Glass Pills */}
+        {/* Action Controls */}
         <div className="flex items-center gap-1.5 sm:gap-2">
           {/* PWA Install Guide */}
           <button
             onClick={() => setShowPwaTip(!showPwaTip)}
             title="راهنمای نصب برنامه روی گوشی (PWA)"
-            className="glass-pill flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-bold text-indigo-600 dark:text-indigo-400"
+            className="glass-pill flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"
           >
-            <Smartphone className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-            <span className="hidden xl:inline">نصب PWA</span>
+            <Smartphone className="w-3.5 h-3.5" />
+            <span className="hidden xl:inline">نصب</span>
           </button>
 
           {/* SMS Bank Assistant */}
           <button
             onClick={onOpenSmsModal}
-            title="دستیار هوشمند پیامک بانکی"
-            className="glass-pill flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-bold text-sky-600 dark:text-sky-400 hover:text-sky-500"
+            title="دستیار پیامک بانکی"
+            className="glass-pill flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"
           >
-            <MessageSquareText className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-500" />
+            <MessageSquareText className="w-3.5 h-3.5 text-indigo-500" />
             <span className="hidden md:inline">پیامک بانک</span>
           </button>
 
@@ -82,26 +73,26 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={onOpenTransferModal}
             title="انتقال وجه بین کارت‌ها و حساب‌ها"
-            className="glass-pill hidden sm:flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-slate-700 dark:text-slate-200"
+            className="glass-pill hidden sm:flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400"
           >
-            <ArrowLeftRight className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+            <ArrowLeftRight className="w-3.5 h-3.5 text-indigo-500" />
             <span>انتقال</span>
           </button>
 
-          {/* New Transaction Button (Vibrant Glow Pill) */}
+          {/* New Transaction Button (Primary Accent) */}
           <button
             onClick={onOpenTransactionModal}
-            className="relative flex items-center gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 text-xs font-black text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 rounded-full shadow-lg shadow-indigo-600/35 active:scale-95 transition-all ring-1 ring-white/30 group"
+            className="flex items-center gap-1 px-3 sm:px-3.5 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 rounded-full shadow-sm active:scale-95 transition-all"
             title="ثبت تراکنش جدید"
           >
-            <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3] group-hover:rotate-90 transition-transform duration-300" />
+            <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
             <span className="hidden sm:inline">ثبت تراکنش</span>
           </button>
 
           {/* Currency Toggle Pill */}
           <button
             onClick={() => setCurrency(currency === 'toman' ? 'rial' : 'toman')}
-            className="glass-pill px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-bold text-slate-700 dark:text-slate-200"
+            className="glass-pill px-2.5 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-300"
             title="تغییر واحد پول (تومان / ریال)"
           >
             {currency === 'toman' ? 'تومان' : 'ریال'}
@@ -110,13 +101,13 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Dark / Light Toggle */}
           <button
             onClick={toggleDarkMode}
-            className="glass-pill p-2 sm:p-2.5 text-slate-600 dark:text-slate-300 flex items-center justify-center"
+            className="glass-pill p-1.5 sm:p-2 text-slate-600 dark:text-slate-300 flex items-center justify-center"
             title="تغییر تم روز / شب"
           >
             {darkMode ? (
-              <Sun className="w-4 h-4 text-amber-400 animate-spin-slow" />
+              <Sun className="w-4 h-4 text-amber-400" />
             ) : (
-              <Moon className="w-4 h-4 text-indigo-600" />
+              <Moon className="w-4 h-4 text-slate-700" />
             )}
           </button>
         </div>
@@ -124,13 +115,13 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Floating PWA Tip Banner */}
       {showPwaTip && (
-        <div className="mt-2 p-3 sm:p-4 rounded-2xl glass-dynamic-island text-slate-900 dark:text-white text-xs flex items-center justify-between gap-3 shadow-xl border border-indigo-500/30 animate-in slide-in-from-top-2 duration-200">
+        <div className="mt-2 p-3 sm:p-3.5 rounded-2xl bg-white/95 dark:bg-slate-900/95 text-slate-900 dark:text-white text-xs flex items-center justify-between gap-3 shadow-lg border border-slate-200 dark:border-slate-800 animate-in slide-in-from-top-2 duration-200">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="p-1.5 rounded-xl bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 shrink-0">
+            <div className="p-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 shrink-0">
               <Smartphone className="w-4 h-4" />
             </div>
             <span className="leading-relaxed">
-              💡 <b>نصب برنامه وب روی موبایل (PWA):</b> در مرورگر کروم یا سامسونگ، از منوی سه‌نقطه دکمه <b>«Add to Home screen» یا «Install app»</b> را بزنید تا برنامه بدون نوار مرورگر به صورت تمام‌صفحه باز شود.
+              💡 <b>نصب برنامه وب روی موبایل (PWA):</b> در مرورگر موبایل، از منوی سه‌نقطه دکمه <b>«Add to Home screen» یا «Install app»</b> را بزنید تا برنامه بدون نوار آدرس مرورگر به صورت تمام‌صفحه باز شود.
             </span>
           </div>
           <button
@@ -144,4 +135,5 @@ export const Header: React.FC<HeaderProps> = ({
     </header>
   );
 };
+
 export default Header;

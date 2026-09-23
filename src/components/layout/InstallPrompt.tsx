@@ -47,7 +47,7 @@ export const InstallPrompt: React.FC = () => {
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) {
-      // If browser doesn't support beforeinstallprompt or on iOS, show guide
+      // If browser doesn't support beforeinstallprompt or manual install needed, show guide
       setShowGuide(true);
       return;
     }
@@ -72,17 +72,17 @@ export const InstallPrompt: React.FC = () => {
       {/* Floating Bottom Banner on Mobile / Tablet */}
       {isVisible && (
         <div className="fixed bottom-20 sm:bottom-6 right-4 left-4 sm:left-auto sm:right-6 sm:max-w-md z-40 animate-in slide-in-from-bottom duration-300">
-          <div className="liquid-glass p-4 rounded-3xl shadow-2xl border border-indigo-200/50 dark:border-indigo-500/30 flex items-center justify-between gap-3">
+          <div className="liquid-glass p-4 rounded-2xl shadow-xl border border-indigo-200/50 dark:border-indigo-500/30 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white flex items-center justify-center shrink-0 shadow-md shadow-indigo-500/30">
-                <Smartphone className="w-6 h-6" />
+              <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                <Smartphone className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">
-                  نصب اپلیکیشن روی گوشی
+                <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                  نصب برنامه حسابداری
                 </h4>
-                <p className="text-[11px] text-slate-500 dark:text-slate-300">
-                  دسترسی آفلاین و اجرای سریع مثل برنامه‌های اندروید
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                  دسترسی سریع و اجرای آفلاین روی گوشی
                 </p>
               </div>
             </div>

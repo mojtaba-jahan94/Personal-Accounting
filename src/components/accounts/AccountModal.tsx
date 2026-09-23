@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { Account, AccountType } from '../../types';
 import { X, Check, CreditCard } from 'lucide-react';
-import { formatCardNumber } from '../../utils/formatters';
+import { formatCardNumber, parseAmount, sanitizeAmountInput, formatAmountInput } from '../../utils/formatters';
 
 interface AccountModalProps {
   isOpen: boolean;
@@ -42,7 +42,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
       setName(initialAccount.name);
       setType(initialAccount.type);
       const displayBalance = currency === 'rial' ? initialAccount.balance * 10 : initialAccount.balance;
-      setBalance(displayBalance.toString());
+      setBalance(formatAmountInput(displayBalance.toString()));
       setBankName(initialAccount.bankName || '');
       setCardNumber(initialAccount.cardNumber || '');
       setShaba(initialAccount.shaba || '');
@@ -69,7 +69,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
       return;
     }
 
-    const rawBalance = parseFloat(balance) || 0;
+    const rawBalance = parseAmount(balance);
     const savedBalance = currency === 'rial' ? Math.round(rawBalance / 10) : rawBalance;
 
     const accData = {
@@ -161,10 +161,10 @@ export const AccountModal: React.FC<AccountModalProps> = ({
               موجودی اولیه ({currency === 'toman' ? 'تومان' : 'ریال'})
             </label>
             <input
-              type="number"
-              step="any"
+              type="text"
+              inputMode="decimal"
               value={balance}
-              onChange={(e) => setBalance(e.target.value)}
+              onChange={(e) => setBalance(formatAmountInput(sanitizeAmountInput(e.target.value)))}
               placeholder="0"
               className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold font-mono outline-none"
             />

@@ -13,7 +13,7 @@ interface LiquidGlassContainerProps {
 export const LiquidGlassContainer: React.FC<LiquidGlassContainerProps> = ({
   children,
   className = '',
-  defaultConfig = LIQUID_GLASS_PRESETS.ios27Card,
+  defaultConfig = LIQUID_GLASS_PRESETS.glassCard,
   enabled = true,
 }) => {
   const rootRef = useRef<HTMLDivElement>(null);

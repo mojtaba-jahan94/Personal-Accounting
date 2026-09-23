@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { Debt, DebtType } from '../../types';
 import { getTodayJalali } from '../../utils/jalali';
-import { numberToWordsPersian } from '../../utils/formatters';
+import { numberToWordsPersian, parseAmount, sanitizeAmountInput, formatAmountInput } from '../../utils/formatters';
 import { PersonManagerModal } from '../contacts/PersonManagerModal';
 import { X, Check, Users, UserPlus, Phone, Calendar, Tag } from 'lucide-react';
 
@@ -39,8 +39,8 @@ export const DebtModal: React.FC<DebtModalProps> = ({
       setCategory(initialDebt.category || 'personal');
       const displayAmount = currency === 'rial' ? initialDebt.amount * 10 : initialDebt.amount;
       const displayPaid = currency === 'rial' ? initialDebt.paidAmount * 10 : initialDebt.paidAmount;
-      setAmount(displayAmount.toString());
-      setPaidAmount(displayPaid.toString());
+      setAmount(formatAmountInput(displayAmount.toString()));
+      setPaidAmount(formatAmountInput(displayPaid.toString()));
       setDueDate(initialDebt.dueDate);
       setDescription(initialDebt.description || '');
     } else {
@@ -58,7 +58,7 @@ export const DebtModal: React.FC<DebtModalProps> = ({
 
   if (!isOpen) return null;
 
-  const numAmount = parseFloat(amount) || 0;
+  const numAmount = parseAmount(amount);
 
   const handleSelectPerson = (pid: string) => {
     if (pid === 'new') {
@@ -82,7 +82,7 @@ export const DebtModal: React.FC<DebtModalProps> = ({
       return;
     }
 
-    const rawPaid = parseFloat(paidAmount) || 0;
+    const rawPaid = parseAmount(paidAmount);
     const savedAmount = currency === 'rial' ? Math.round(numAmount / 10) : numAmount;
     const savedPaid = currency === 'rial' ? Math.round(rawPaid / 10) : rawPaid;
 
@@ -257,11 +257,11 @@ export const DebtModal: React.FC<DebtModalProps> = ({
                   کل مبلغ ({currency === 'toman' ? 'تومان' : 'ریال'}) *
                 </label>
                 <input
-                  type="number"
-                  min="0"
+                  type="text"
+                  inputMode="decimal"
                   required
                   value={amount}
-                  onChange={e => setAmount(e.target.value)}
+                  onChange={e => setAmount(formatAmountInput(sanitizeAmountInput(e.target.value)))}
                   placeholder="0"
                   className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold outline-none focus:border-indigo-500"
                 />
@@ -272,10 +272,10 @@ export const DebtModal: React.FC<DebtModalProps> = ({
                   مبلغ تسویه‌شده تا الان ({currency === 'toman' ? 'تومان' : 'ریال'})
                 </label>
                 <input
-                  type="number"
-                  min="0"
+                  type="text"
+                  inputMode="decimal"
                   value={paidAmount}
-                  onChange={e => setPaidAmount(e.target.value)}
+                  onChange={e => setPaidAmount(formatAmountInput(sanitizeAmountInput(e.target.value)))}
                   placeholder="0"
                   className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono outline-none focus:border-indigo-500"
                 />

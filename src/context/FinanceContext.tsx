@@ -127,7 +127,14 @@ const DEFAULT_THEME_CONFIG: ThemeConfig = {
   liquidGlass: true,
   performanceMode: false,
   lightStyle: 'frost',
+  backgroundStyle: 'clean_minimal',
+  spotlight1Color: '#6366f1',
+  spotlight2Color: '#06b6d4',
   glassIntensity: 'medium',
+  glassOpacity: 0.85,
+  glassBlur: 14,
+  glassRefraction: 0.5,
+  glassSaturation: 160,
   ambientOrbs: true,
   ambientGlow: 'subtle',
   animationSpeed: 'fast',
@@ -238,6 +245,12 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     root.setAttribute('data-radius', themeConfig.borderRadius || 'smooth');
     root.setAttribute('data-glow', themeConfig.ambientGlow || 'subtle');
     root.setAttribute('data-light-style', themeConfig.lightStyle || 'frost');
+
+    // Dynamic Glassmorphism Variables
+    root.style.setProperty('--glass-bg-opacity', String(themeConfig.glassOpacity ?? 0.86));
+    root.style.setProperty('--glass-blur', `${themeConfig.glassBlur ?? 14}px`);
+    root.style.setProperty('--glass-refraction', String(themeConfig.glassRefraction ?? 0.5));
+    root.style.setProperty('--glass-saturate', `${themeConfig.glassSaturation ?? 160}%`);
 
     // Dynamic Custom Accent Color if selected
     if (themeConfig.accent === 'custom' && themeConfig.customAccentHex) {

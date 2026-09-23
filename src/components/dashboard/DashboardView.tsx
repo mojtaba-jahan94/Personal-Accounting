@@ -24,8 +24,6 @@ import {
   Layers,
 } from 'lucide-react';
 import { TabType } from '../layout/Sidebar';
-import { LiquidGlassContainer } from '../common/LiquidGlassContainer';
-import { LIQUID_GLASS_PRESETS } from '../../utils/liquidGlassPresets';
 
 interface DashboardViewProps {
   onSelectTab: (tab: TabType) => void;
@@ -76,40 +74,38 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         </button>
       </div>
 
-      {/* 1. iOS 27 Liquid Glass Hero Banner */}
+      {/* 1. Minimal Financial Status Insight Banner */}
       {dashboardConfig.showHero && (
         <div
-          data-glass
-          data-config={JSON.stringify(LIQUID_GLASS_PRESETS.crystalWidget)}
-          className="relative z-10 overflow-hidden rounded-[36px] liquid-glass-crystal specular-sheen border border-white/70 dark:border-white/20 p-6 sm:p-8 shadow-2xl"
+          className="relative z-10 overflow-hidden rounded-2xl liquid-glass border border-slate-200/80 dark:border-slate-800 p-5 sm:p-6 shadow-xs"
         >
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
             <div>
-              <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-700 dark:text-indigo-300 text-xs font-black mb-3.5 backdrop-blur-md">
-                <Sparkles className="w-3.5 h-3.5 text-indigo-500 animate-pulse" />
-                <span>پیشخوان مالی هوشمند • کریستال شیشه‌ای iOS 27</span>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 text-xs font-bold mb-2.5">
+                <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+                <span>خلاصه هوشمند وضعیت مالی</span>
               </div>
-              <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white mb-2.5 tracking-tight leading-snug">
+              <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white mb-1.5 tracking-tight">
                 وضعیت تراز مالی شما {netSavings >= 0 ? 'مطلوب و رو به رشد 📈' : 'نیازمند بهینه‌سازی ⚠️'} است
               </h2>
-              <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-200 max-w-xl leading-relaxed font-medium">
-                مدیریت فوق‌هوشمند هزینه‌ها، رصد لحظه‌ای سقف بودجه ماهانه و هشدار چک‌های صیادی با بالاترین استاندارد امنیت و طراحی شیشه‌ای.
+              <p className="text-xs text-slate-600 dark:text-slate-300 max-w-xl leading-relaxed">
+                مدیریت هزینه‌ها، رصد سقف بودجه ماهانه و یادآوری چک‌ها با امنیت کامل و رابط کاربری مینیمال.
               </p>
             </div>
 
-            <div className="flex flex-wrap gap-2.5">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={onOpenTransactionModal}
-                className="flex items-center gap-2 px-5 py-3 rounded-full bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-black text-xs sm:text-sm shadow-xl shadow-indigo-600/35 active:scale-95 transition-all ring-2 ring-white/60"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs active:scale-95 transition-all"
               >
-                <Plus className="w-4 h-4 stroke-[3]" />
+                <Plus className="w-4 h-4 stroke-[2.5]" />
                 <span>ثبت تراکنش جدید</span>
               </button>
               <button
                 onClick={onOpenTransferModal}
-                className="liquid-glass-pill-lens flex items-center gap-2 px-4 py-3 text-slate-900 dark:text-slate-100 font-bold text-xs sm:text-sm"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs transition active:scale-95"
               >
-                <ArrowLeftRight className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                <ArrowLeftRight className="w-4 h-4 text-indigo-500" />
                 <span>انتقال وجه</span>
               </button>
             </div>
@@ -228,7 +224,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           icon={<PieIcon className="w-5 h-5 text-indigo-500" />}
         >
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <div className="liquid-glass-crystal rounded-3xl p-5 border border-white/60 dark:border-white/10 shadow-lg">
+            <div className="liquid-glass rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs">
               <div className="flex items-center justify-between mb-3.5">
                 <div>
                   <h3 className="text-sm font-black text-slate-900 dark:text-white">تفکیک مخارج بر اساس دسته‌بندی</h3>
@@ -238,7 +234,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <ExpenseChart type="pie" />
             </div>
 
-            <div className="liquid-glass-crystal rounded-3xl p-5 border border-white/60 dark:border-white/10 shadow-lg">
+            <div className="liquid-glass rounded-2xl p-5 border border-slate-200/80 dark:border-slate-800 shadow-xs">
               <div className="flex items-center justify-between mb-3.5">
                 <div>
                   <h3 className="text-sm font-black text-slate-900 dark:text-white">روند درآمد و هزینه</h3>
@@ -391,7 +387,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
             {/* Pending Cheques Alert */}
             {dashboardConfig.showCheques && pendingCheques.length > 0 && (
-              <div className="liquid-glass-card p-5 border-amber-300/50 dark:border-amber-500/30 bg-amber-500/10 rounded-3xl">
+              <div className="liquid-glass-card p-4 sm:p-5 border-amber-300/50 dark:border-amber-500/30 bg-amber-500/5 rounded-2xl">
                 <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-black text-xs mb-2">
                   <AlertTriangle className="w-4 h-4" />
                   <span>یادآور چک‌های سررسید نزدیک</span>

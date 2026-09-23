@@ -10,7 +10,6 @@ import {
   Settings,
   ShieldCheck,
 } from 'lucide-react';
-import { LIQUID_GLASS_PRESETS } from '../../utils/liquidGlassPresets';
 
 export type TabType =
   | 'dashboard'
@@ -41,31 +40,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
     { id: 'budgets', label: 'بودجه‌بندی ماهانه', icon: PieChart },
     { id: 'goals', label: 'اهداف و پس‌انداز', icon: Target },
     { id: 'debts', label: 'بدهی، طلب و چک', icon: FileCheck2 },
-    { id: 'reports', label: 'گزارش‌ها و نمودارها', icon: BarChart3 },
-    { id: 'settings', label: 'تنظیمات و استودیو', icon: Settings },
+    { id: 'reports', label: 'گزارش‌ها و تحلیل', icon: BarChart3 },
+    { id: 'settings', label: 'تنظیمات و ظاهر', icon: Settings },
   ];
 
   return (
     <aside
-      data-glass
-      className="hidden lg:flex flex-col w-64 shrink-0 p-4 m-4 mr-0 rounded-3xl glass-dock border border-white/50 dark:border-white/10 shadow-2xl self-start sticky top-20 min-h-[calc(100vh-6.5rem)] transition-all"
+      className="hidden lg:flex flex-col w-60 shrink-0 p-3 m-3 mr-0 rounded-2xl glass-dock border border-slate-200/80 dark:border-slate-800 shadow-xs self-start sticky top-16 min-h-[calc(100vh-5rem)] transition-all"
     >
-      {/* iOS 27 App Status Capsule */}
-      <div className="px-3.5 py-2 mb-3.5 rounded-full liquid-glass-pill-lens flex items-center justify-between">
+      {/* App Status Indicator */}
+      <div className="px-3 py-2 mb-2 rounded-xl bg-slate-100/60 dark:bg-slate-800/40 border border-slate-200/60 dark:border-white/5 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="relative flex items-center justify-center">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping absolute opacity-75" />
-            <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-xs shadow-emerald-500/50" />
-          </div>
-          <span className="text-[11px] font-black text-slate-800 dark:text-slate-100">مدیریت مالی هوشمند</span>
+          <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-xs shadow-emerald-500/40" />
+          <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">سیستم آنلاین و امن</span>
         </div>
-        <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
-          iOS 27
-        </span>
+        <span className="text-[10px] font-mono font-bold text-slate-400">v1.2</span>
       </div>
 
-      {/* Navigation Liquid Glass Lens Pills */}
-      <div className="space-y-2">
+      {/* Navigation Links */}
+      <div className="space-y-1">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = currentTab === item.id;
@@ -73,27 +66,25 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
             <button
               key={item.id}
               onClick={() => onSelectTab(item.id)}
-              data-glass
-              data-config={JSON.stringify(LIQUID_GLASS_PRESETS.ios27LiquidPill)}
-              className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-xs font-black transition-all duration-200 liquid-glass-pill-lens ${
+              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs transition-all duration-150 relative ${
                 isActive
-                  ? 'active text-slate-950 dark:text-white shadow-lg'
-                  : 'text-slate-700 dark:text-slate-200 hover:text-indigo-600 dark:hover:text-indigo-300'
+                  ? 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-bold border border-indigo-100 dark:border-indigo-900/40 shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/80 dark:hover:bg-slate-800/50 font-medium'
               }`}
             >
               <div
-                className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
+                className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
                   isActive
-                    ? 'bg-gradient-to-tr from-indigo-600 to-purple-600 text-white shadow-sm ring-1 ring-white/50'
-                    : 'bg-black/5 dark:bg-white/10 text-slate-600 dark:text-slate-300'
+                    ? 'bg-indigo-600 dark:bg-indigo-500 text-white shadow-xs'
+                    : 'bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400'
                 }`}
               >
-                <Icon className="w-3.5 h-3.5 drop-shadow-xs" />
+                <Icon className="w-3.5 h-3.5" />
               </div>
               <span className="truncate tracking-tight">{item.label}</span>
 
               {isActive && (
-                <div className="mr-auto w-1.5 h-3.5 rounded-full bg-indigo-600 dark:bg-white shadow-xs animate-pulse" />
+                <div className="mr-auto w-1 h-3 rounded-full bg-indigo-600 dark:bg-indigo-400" />
               )}
             </button>
           );
@@ -101,16 +92,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
       </div>
 
       {/* Privacy Capsule at Bottom */}
-      <div className="mt-auto p-3.5 rounded-2xl bg-white/40 dark:bg-white/5 border border-white/50 dark:border-white/5 space-y-1 backdrop-blur-md">
-        <div className="flex items-center gap-1.5 text-xs font-black text-slate-800 dark:text-slate-200">
-          <ShieldCheck className="w-4 h-4 text-emerald-500" />
+      <div className="mt-auto p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-white/5 space-y-1">
+        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
+          <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
           <span>حریم خصوصی کامل</span>
         </div>
-        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-medium">
-          تمامی اطلاعات شما به صورت کاملاً امن فقط در دستگاه خودتان ذخیره می‌شود.
+        <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">
+          داده‌های شما فقط به صورت محلی در مرورگر خودتان نگهداری می‌شود.
         </p>
       </div>
     </aside>
   );
 };
+
 export default Sidebar;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { Goal } from '../../types';
-import { numberToWordsPersian } from '../../utils/formatters';
+import { numberToWordsPersian, parseAmount, sanitizeAmountInput, formatAmountInput } from '../../utils/formatters';
 import { X, Check, Target } from 'lucide-react';
 
 interface GoalModalProps {
@@ -32,8 +32,8 @@ export const GoalModal: React.FC<GoalModalProps> = ({
       setTitle(initialGoal.title);
       const displayTarget = currency === 'rial' ? initialGoal.targetAmount * 10 : initialGoal.targetAmount;
       const displayCurrent = currency === 'rial' ? initialGoal.currentAmount * 10 : initialGoal.currentAmount;
-      setTargetAmount(displayTarget.toString());
-      setCurrentAmount(displayCurrent.toString());
+      setTargetAmount(formatAmountInput(displayTarget.toString()));
+      setCurrentAmount(formatAmountInput(displayCurrent.toString()));
       setDeadline(initialGoal.deadline || '');
       setCategory(initialGoal.category || '');
       setIcon(initialGoal.icon || PRESET_GOAL_ICONS[0]);
@@ -51,7 +51,7 @@ export const GoalModal: React.FC<GoalModalProps> = ({
 
   if (!isOpen) return null;
 
-  const numTarget = parseFloat(targetAmount) || 0;
+  const numTarget = parseAmount(targetAmount);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +61,7 @@ export const GoalModal: React.FC<GoalModalProps> = ({
     }
 
     const savedTarget = currency === 'rial' ? Math.round(numTarget / 10) : numTarget;
-    const rawCurrent = parseFloat(currentAmount) || 0;
+    const rawCurrent = parseAmount(currentAmount);
     const savedCurrent = currency === 'rial' ? Math.round(rawCurrent / 10) : rawCurrent;
 
     const goalData = {
@@ -121,12 +121,12 @@ export const GoalModal: React.FC<GoalModalProps> = ({
                 مبلغ هدف ({currency === 'toman' ? 'تومان' : 'ریال'})
               </label>
               <input
-                type="number"
-                min="0"
+                type="text"
+                inputMode="decimal"
                 required
                 value={targetAmount}
-                onChange={(e) => setTargetAmount(e.target.value)}
-                placeholder="50000000"
+                onChange={(e) => setTargetAmount(formatAmountInput(sanitizeAmountInput(e.target.value)))}
+                placeholder="50,000,000"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold outline-none"
               />
             </div>
@@ -136,10 +136,10 @@ export const GoalModal: React.FC<GoalModalProps> = ({
                 موجودی فعلی پس‌انداز ({currency === 'toman' ? 'تومان' : 'ریال'})
               </label>
               <input
-                type="number"
-                min="0"
+                type="text"
+                inputMode="decimal"
                 value={currentAmount}
-                onChange={(e) => setCurrentAmount(e.target.value)}
+                onChange={(e) => setCurrentAmount(formatAmountInput(sanitizeAmountInput(e.target.value)))}
                 placeholder="0"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono outline-none"
               />

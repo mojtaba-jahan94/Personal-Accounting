@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { Cheque, ChequeType, ChequeStatus } from '../../types';
 import { getTodayJalali } from '../../utils/jalali';
-import { numberToWordsPersian } from '../../utils/formatters';
+import { numberToWordsPersian, parseAmount, sanitizeAmountInput, formatAmountInput } from '../../utils/formatters';
 import { X, Check, FileCheck2 } from 'lucide-react';
 
 interface ChequeModalProps {
@@ -32,7 +32,7 @@ export const ChequeModal: React.FC<ChequeModalProps> = ({
     if (initialCheque) {
       setType(initialCheque.type);
       const displayAmount = currency === 'rial' ? initialCheque.amount * 10 : initialCheque.amount;
-      setAmount(displayAmount.toString());
+      setAmount(formatAmountInput(displayAmount.toString()));
       setDueDate(initialCheque.dueDate);
       setBankName(initialCheque.bankName);
       setChequeNumber(initialCheque.chequeNumber);
@@ -55,7 +55,7 @@ export const ChequeModal: React.FC<ChequeModalProps> = ({
 
   if (!isOpen) return null;
 
-  const numAmount = parseFloat(amount) || 0;
+  const numAmount = parseAmount(amount);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,11 +150,11 @@ export const ChequeModal: React.FC<ChequeModalProps> = ({
                 مبلغ چک ({currency === 'toman' ? 'تومان' : 'ریال'})
               </label>
               <input
-                type="number"
-                min="0"
+                type="text"
+                inputMode="decimal"
                 required
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={(e) => setAmount(formatAmountInput(sanitizeAmountInput(e.target.value)))}
                 placeholder="0"
                 className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold outline-none"
               />

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { Debt } from '../../types';
-import { formatCurrency, numberToWordsPersian, toPersianDigits } from '../../utils/formatters';
+import { formatCurrency, numberToWordsPersian, toPersianDigits, parseAmount, sanitizeAmountInput, formatAmountInput } from '../../utils/formatters';
 import { getTodayJalali } from '../../utils/jalali';
 import { getAccountTypeMeta } from '../accounts/TransferModal';
 import {
@@ -36,7 +36,7 @@ export const PayDebtModal: React.FC<PayDebtModalProps> = ({ isOpen, onClose, deb
     if (debt) {
       const remainingToman = Math.max(0, debt.amount - debt.paidAmount);
       const remainingDisplay = currency === 'rial' ? remainingToman * 10 : remainingToman;
-      setAmount(remainingDisplay > 0 ? remainingDisplay.toString() : '');
+      setAmount(remainingDisplay > 0 ? formatAmountInput(remainingDisplay.toString()) : '');
       setDate(getTodayJalali());
       const defaultAcc = accounts.find(a => a.isDefault) || accounts[0];
       setAccountId(defaultAcc ? defaultAcc.id : '');
@@ -52,13 +52,13 @@ export const PayDebtModal: React.FC<PayDebtModalProps> = ({ isOpen, onClose, deb
 
   const isDebt = debt.type === 'debt'; // بدهی ما به دیگران
   const remainingAmount = Math.max(0, debt.amount - debt.paidAmount);
-  const numAmount = parseFloat(amount) || 0;
+  const numAmount = parseAmount(amount);
   const selectedAccount = accounts.find(a => a.id === accountId);
 
   const handleQuickPercent = (pct: number) => {
     const remainingDisplay = currency === 'rial' ? remainingAmount * 10 : remainingAmount;
     const val = Math.round((remainingDisplay * pct) / 100);
-    setAmount(val.toString());
+    setAmount(formatAmountInput(val.toString()));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -202,12 +202,11 @@ export const PayDebtModal: React.FC<PayDebtModalProps> = ({ isOpen, onClose, deb
               </div>
 
               <input
-                type="number"
+                type="text"
+                inputMode="decimal"
                 required
-                min="1"
-                step="any"
                 value={amount}
-                onChange={e => setAmount(e.target.value)}
+                onChange={e => setAmount(formatAmountInput(sanitizeAmountInput(e.target.value)))}
                 placeholder="مبلغ مورد نظر را وارد کنید"
                 className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-mono font-bold outline-none focus:border-indigo-500"
               />

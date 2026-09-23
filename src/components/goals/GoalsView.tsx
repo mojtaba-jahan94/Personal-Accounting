@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { Goal } from '../../types';
-import { formatCurrency, toPersianDigits } from '../../utils/formatters';
+import { formatCurrency, toPersianDigits, parseAmount, sanitizeAmountInput, formatAmountInput } from '../../utils/formatters';
 import { GoalModal } from './GoalModal';
 import { CollapsibleSection } from '../common/CollapsibleSection';
 import confetti from 'canvas-confetti';
@@ -38,8 +38,8 @@ export const GoalsView: React.FC = () => {
   const handleDepositSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!depositGoal) return;
-    const num = parseFloat(depositAmount);
-    if (isNaN(num) || num <= 0) {
+    const num = parseAmount(depositAmount);
+    if (num <= 0) {
       alert('لطفاً مبلغ معتبری وارد کنید.');
       return;
     }
@@ -240,11 +240,11 @@ export const GoalsView: React.FC = () => {
                   مبلغ واریزی ({currency === 'toman' ? 'تومان' : 'ریال'})
                 </label>
                 <input
-                  type="number"
-                  min="0"
+                  type="text"
+                  inputMode="decimal"
                   required
                   value={depositAmount}
-                  onChange={(e) => setDepositAmount(e.target.value)}
+                  onChange={(e) => setDepositAmount(formatAmountInput(sanitizeAmountInput(e.target.value)))}
                   placeholder="مبلغ واریز..."
                   className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-bold outline-none"
                 />

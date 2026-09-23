@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { Budget } from '../../types';
 import { getCurrentJalaliMonth } from '../../utils/jalali';
-import { numberToWordsPersian } from '../../utils/formatters';
+import { numberToWordsPersian, parseAmount, sanitizeAmountInput, formatAmountInput } from '../../utils/formatters';
 import { X, Check, PieChart } from 'lucide-react';
 
 interface BudgetModalProps {
@@ -28,7 +28,7 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
     if (initialBudget) {
       setCategoryId(initialBudget.categoryId);
       const displayAmount = currency === 'rial' ? initialBudget.amount * 10 : initialBudget.amount;
-      setAmount(displayAmount.toString());
+      setAmount(formatAmountInput(displayAmount.toString()));
       setMonth(initialBudget.month);
     } else {
       setCategoryId(expenseCategories[0]?.id || '');
@@ -39,7 +39,7 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
 
   if (!isOpen) return null;
 
-  const numAmount = parseFloat(amount) || 0;
+  const numAmount = parseAmount(amount);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,12 +108,12 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
               سقف بودجه ماهانه ({currency === 'toman' ? 'تومان' : 'ریال'})
             </label>
             <input
-              type="number"
-              min="0"
+              type="text"
+              inputMode="decimal"
               required
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="مثلاً: 3000000"
+              onChange={(e) => setAmount(formatAmountInput(sanitizeAmountInput(e.target.value)))}
+              placeholder="مثلاً: 3,000,000"
               className="w-full px-3.5 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-base font-black outline-none font-mono"
             />
             {numAmount > 0 && (

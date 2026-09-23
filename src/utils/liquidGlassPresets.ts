@@ -1,118 +1,118 @@
 import type { GlassConfig } from '@ybouane/liquidglass';
 
 /**
- * iOS 27 & Spatial Glass Presets for LiquidGlass WebGL effect
+ * Modern Glassmorphism Presets for UI elements
  */
 export const LIQUID_GLASS_PRESETS: Record<string, Partial<GlassConfig>> = {
-  // Ultra-modern Hero Banner with deep refraction and chromatic dispersion
-  ios27Hero: {
-    blurAmount: 0.28,
-    refraction: 0.65,
-    chromAberration: 0.06,
-    edgeHighlight: 0.18,
-    specular: 0.14,
-    fresnel: 1.1,
-    cornerRadius: 32,
-    zRadius: 28,
-    tintStrength: 0.08,
-    shadowOpacity: 0.22,
-    shadowSpread: 24,
-    shadowOffsetY: 8,
+  // Modern Hero Banner
+  heroBanner: {
+    blurAmount: 0.20,
+    refraction: 0.40,
+    chromAberration: 0.02,
+    edgeHighlight: 0.15,
+    specular: 0.12,
+    fresnel: 1.0,
+    cornerRadius: 20,
+    zRadius: 20,
+    tintStrength: 0.05,
+    shadowOpacity: 0.15,
+    shadowSpread: 18,
+    shadowOffsetY: 6,
   },
 
-  // Apple VisionOS / iOS 27 Frosted Widget Card
-  ios27Card: {
-    blurAmount: 0.35,
-    refraction: 0.45,
-    chromAberration: 0.04,
+  // Frosted Widget Card
+  glassCard: {
+    blurAmount: 0.25,
+    refraction: 0.35,
+    chromAberration: 0.02,
+    edgeHighlight: 0.12,
+    specular: 0.10,
+    fresnel: 0.9,
+    cornerRadius: 20,
+    zRadius: 18,
+    shadowOpacity: 0.12,
+    shadowSpread: 16,
+    shadowOffsetY: 4,
+  },
+
+  // Floating Header Capsule
+  glassHeader: {
+    blurAmount: 0.20,
+    refraction: 0.40,
+    chromAberration: 0.02,
+    edgeHighlight: 0.18,
+    specular: 0.15,
+    fresnel: 1.0,
+    cornerRadius: 32,
+    zRadius: 20,
+    shadowOpacity: 0.20,
+    shadowSpread: 18,
+    shadowOffsetY: 4,
+  },
+
+  // Floating Bottom Dock & Sidebar
+  glassDock: {
+    blurAmount: 0.25,
+    refraction: 0.35,
+    chromAberration: 0.02,
     edgeHighlight: 0.14,
     specular: 0.10,
     fresnel: 0.95,
     cornerRadius: 24,
     zRadius: 20,
     shadowOpacity: 0.20,
-    shadowSpread: 18,
+    shadowSpread: 16,
     shadowOffsetY: 6,
   },
 
-  // Floating Dynamic Island & Top Pill
-  ios27DynamicIsland: {
-    blurAmount: 0.22,
-    refraction: 0.55,
-    chromAberration: 0.05,
-    edgeHighlight: 0.22,
+  // Interactive Glass Button
+  glassButton: {
+    blurAmount: 0.15,
+    refraction: 0.40,
+    chromAberration: 0.02,
+    edgeHighlight: 0.20,
     specular: 0.18,
-    fresnel: 1.15,
-    cornerRadius: 40,
-    zRadius: 22,
-    shadowOpacity: 0.35,
-    shadowSpread: 22,
-    shadowOffsetY: 6,
-  },
-
-  // Floating Bottom Dock & Sidebar
-  ios27Dock: {
-    blurAmount: 0.30,
-    refraction: 0.50,
-    chromAberration: 0.04,
-    edgeHighlight: 0.16,
-    specular: 0.12,
-    fresnel: 1.0,
-    cornerRadius: 30,
-    zRadius: 24,
-    shadowOpacity: 0.28,
-    shadowSpread: 20,
-    shadowOffsetY: 8,
-  },
-
-  // Tactile Interactive Glass Button
-  ios27Button: {
-    blurAmount: 0.18,
-    refraction: 0.50,
-    chromAberration: 0.05,
-    edgeHighlight: 0.25,
-    specular: 0.20,
     button: true,
-    cornerRadius: 20,
-    zRadius: 14,
-    shadowOpacity: 0.25,
+    cornerRadius: 16,
+    zRadius: 12,
+    shadowOpacity: 0.18,
+    shadowSpread: 12,
+    shadowOffsetY: 3,
+  },
+
+  // Liquid Glass Pill
+  glassPill: {
+    blurAmount: 0.14,
+    refraction: 0.45,
+    chromAberration: 0.02,
+    edgeHighlight: 0.24,
+    specular: 0.20,
+    fresnel: 1.1,
+    cornerRadius: 24,
+    zRadius: 18,
+    button: true,
+    bevelMode: 0,
+    shadowOpacity: 0.15,
     shadowSpread: 14,
     shadowOffsetY: 4,
   },
 
-  // Ultra-realistic Convex Liquid Glass Lens Pill (matching reference image)
-  ios27LiquidPill: {
-    blurAmount: 0.16,
-    refraction: 0.60,
-    chromAberration: 0.04,
-    edgeHighlight: 0.32,
-    specular: 0.28,
-    fresnel: 1.25,
-    cornerRadius: 30,
-    zRadius: 22,
-    button: true,
-    bevelMode: 0,
-    shadowOpacity: 0.20,
-    shadowSpread: 18,
-    shadowOffsetY: 6,
-  },
-
-  // Crystal Transparent Liquid Widget (matching music player reference image)
+  // Clean Crystal Widget
   crystalWidget: {
-    blurAmount: 0.10,
-    refraction: 0.85,
-    chromAberration: 0.09,
-    edgeHighlight: 0.38,
-    specular: 0.34,
-    fresnel: 1.40,
-    cornerRadius: 32,
-    zRadius: 28,
-    opacity: 0.96,
-    saturation: 0.20,
-    tintStrength: 0.08,
-    shadowOpacity: 0.25,
-    shadowSpread: 26,
-    shadowOffsetY: 10,
+    blurAmount: 0.18,
+    refraction: 0.50,
+    chromAberration: 0.03,
+    edgeHighlight: 0.22,
+    specular: 0.20,
+    fresnel: 1.1,
+    cornerRadius: 20,
+    zRadius: 20,
+    opacity: 0.92,
+    saturation: 0.10,
+    tintStrength: 0.05,
+    shadowOpacity: 0.18,
+    shadowSpread: 20,
+    shadowOffsetY: 6,
     button: false,
     bevelMode: 0,
   },

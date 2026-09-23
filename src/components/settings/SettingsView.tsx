@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useFinance } from '../../context/FinanceContext';
-import { AccentColor, BorderRadius, LightStyle } from '../../types';
+import { AccentColor, BorderRadius, LightStyle, BackgroundStyle } from '../../types';
 import {
   Moon,
   Sun,
@@ -38,6 +38,14 @@ const LIGHT_STYLES: { id: LightStyle; name: string; desc: string; color: string 
   { id: 'frost', name: 'شیشه‌ای یخی', desc: 'استایل مات آبی-یخی با بلور', color: '#ecf3fc' },
   { id: 'warm_cream', name: 'کرم کاغذی گرم', desc: 'بسیار ملایم برای چشم در روز', color: '#f7f3e6' },
   { id: 'soft_slate', name: 'خاکستری مدرن', desc: 'استایل برنامه‌های مالی فین‌تک', color: '#e2e8f0' },
+];
+
+const BACKGROUND_STYLES: { id: BackgroundStyle; name: string; desc: string; previewClass: string }[] = [
+  { id: 'clean_minimal', name: 'مینیمال تمیز (پیش‌فرض)', desc: 'یکدست و بسیار آرامش‌بخش بدون شلوغی', previewClass: 'from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900' },
+  { id: 'subtle_mesh', name: 'مش گرادینت لطیف', desc: 'هاله‌های نوری ملایم در گوشه‌ها', previewClass: 'from-indigo-100 via-sky-100 to-slate-100 dark:from-indigo-950 dark:via-purple-950 dark:to-slate-900' },
+  { id: 'dot_matrix', name: 'میکروگرید نقطه‌ای', desc: 'طرح نقاط منظم و مهندسی‌شده', previewClass: 'from-slate-200 to-slate-300 dark:from-slate-800 dark:to-slate-800' },
+  { id: 'soft_aurora', name: 'شفق قطبی پاستلی', desc: 'امواج لطیف و رویایی رنگین‌کمان محو', previewClass: 'from-purple-100 via-indigo-100 to-emerald-100 dark:from-purple-950 dark:via-indigo-950 dark:to-emerald-950' },
+  { id: 'pure_solid', name: 'فلت ساده (تک‌رنگ)', desc: 'بدون هیچ افکت یا محوشدگی نوری', previewClass: 'from-slate-200 to-slate-200 dark:from-slate-900 dark:to-slate-900' },
 ];
 
 export const SettingsView: React.FC = () => {
@@ -238,7 +246,149 @@ export const SettingsView: React.FC = () => {
         )}
       </div>
 
-      {/* 2. Accent Color Palette */}
+      {/* 2. Background Style Customization Card */}
+      <div className="liquid-glass-card p-5 sm:p-6 space-y-4">
+        <div className="flex items-center gap-2.5 pb-3 border-b border-slate-200/50 dark:border-white/10">
+          <div className="p-2 rounded-xl bg-sky-500/15 text-sky-600 dark:text-sky-400">
+            <Layers className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-black text-slate-900 dark:text-white">
+              سبک و طرح پس‌زمینه
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              انتخاب طرح و افکت دلخواه برای پس‌زمینه برنامه با پیش‌نمایش آنی
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {BACKGROUND_STYLES.map(bg => {
+            const isSelected = (themeConfig.backgroundStyle || 'clean_minimal') === bg.id;
+            return (
+              <button
+                key={bg.id}
+                onClick={() => updateThemeConfig({ backgroundStyle: bg.id })}
+                className={`p-3.5 rounded-2xl border text-right transition-all flex items-center justify-between gap-3 ${
+                  isSelected
+                    ? 'border-indigo-600 bg-white/95 dark:bg-slate-800 shadow-sm ring-2 ring-indigo-500/20'
+                    : 'liquid-glass border-slate-200/60 dark:border-white/10 hover:border-slate-300'
+                }`}
+              >
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-4 h-4 rounded-full bg-gradient-to-tr ${bg.previewClass} border border-slate-300 dark:border-slate-600 shrink-0 shadow-2xs`} />
+                    <h4 className="text-xs font-bold text-slate-900 dark:text-white truncate">{bg.name}</h4>
+                  </div>
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 truncate">{bg.desc}</p>
+                </div>
+                {isSelected && (
+                  <div className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3 stroke-[3]" />
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+        {/* Dual Spotlights Controls */}
+        <div className="pt-4 border-t border-slate-200/50 dark:border-white/10 space-y-3.5">
+          <div>
+            <h4 className="text-xs font-black text-slate-900 dark:text-white flex items-center gap-1.5">
+              <span>اسپات‌لایت‌های نوری پس‌زمینه (Dual Ambient Spotlights)</span>
+            </h4>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+              تنظیم مستقل رنگ نورافکن‌های نوری پس‌زمینه در بالا و پایین صفحه
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Spotlight 1 */}
+            <div className="p-3.5 rounded-2xl bg-slate-50/70 dark:bg-slate-850/60 border border-slate-200/70 dark:border-white/5 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                  <div
+                    className="w-3.5 h-3.5 rounded-full border border-slate-300 dark:border-slate-600 shadow-2xs"
+                    style={{ backgroundColor: themeConfig.spotlight1Color || '#6366f1' }}
+                  />
+                  <span>نورافکن ۱ (بالای صفحه)</span>
+                </span>
+                <label className="flex items-center gap-1 text-[11px] text-indigo-600 dark:text-indigo-400 font-bold cursor-pointer">
+                  <span>انتخاب دقیق</span>
+                  <input
+                    type="color"
+                    value={themeConfig.spotlight1Color || '#6366f1'}
+                    onChange={e => updateThemeConfig({ spotlight1Color: e.target.value })}
+                    className="w-6 h-6 rounded-lg cursor-pointer border-0 p-0 bg-transparent"
+                  />
+                </label>
+              </div>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {['#6366f1', '#06b6d4', '#10b981', '#f43f5e', '#f59e0b', '#a855f7', '#3b82f6', '#ffffff'].map(color => (
+                  <button
+                    key={color}
+                    type="button"
+                    onClick={() => updateThemeConfig({ spotlight1Color: color })}
+                    className={`w-7 h-7 rounded-xl border transition-transform hover:scale-110 flex items-center justify-center ${
+                      (themeConfig.spotlight1Color || '#6366f1') === color
+                        ? 'ring-2 ring-indigo-500 scale-105 border-white'
+                        : 'border-slate-300 dark:border-slate-600'
+                    }`}
+                    style={{ backgroundColor: color }}
+                  >
+                    {(themeConfig.spotlight1Color || '#6366f1') === color && (
+                      <Check className={`w-3.5 h-3.5 ${color === '#ffffff' ? 'text-black' : 'text-white'} stroke-[3]`} />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Spotlight 2 */}
+            <div className="p-3.5 rounded-2xl bg-slate-50/70 dark:bg-slate-850/60 border border-slate-200/70 dark:border-white/5 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                  <div
+                    className="w-3.5 h-3.5 rounded-full border border-slate-300 dark:border-slate-600 shadow-2xs"
+                    style={{ backgroundColor: themeConfig.spotlight2Color || '#06b6d4' }}
+                  />
+                  <span>نورافکن ۲ (پایین صفحه)</span>
+                </span>
+                <label className="flex items-center gap-1 text-[11px] text-indigo-600 dark:text-indigo-400 font-bold cursor-pointer">
+                  <span>انتخاب دقیق</span>
+                  <input
+                    type="color"
+                    value={themeConfig.spotlight2Color || '#06b6d4'}
+                    onChange={e => updateThemeConfig({ spotlight2Color: e.target.value })}
+                    className="w-6 h-6 rounded-lg cursor-pointer border-0 p-0 bg-transparent"
+                  />
+                </label>
+              </div>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {['#06b6d4', '#6366f1', '#10b981', '#f43f5e', '#f59e0b', '#a855f7', '#ec4899', '#64748b'].map(color => (
+                  <button
+                    key={color}
+                    type="button"
+                    onClick={() => updateThemeConfig({ spotlight2Color: color })}
+                    className={`w-7 h-7 rounded-xl border transition-transform hover:scale-110 flex items-center justify-center ${
+                      (themeConfig.spotlight2Color || '#06b6d4') === color
+                        ? 'ring-2 ring-indigo-500 scale-105 border-white'
+                        : 'border-slate-300 dark:border-slate-600'
+                    }`}
+                    style={{ backgroundColor: color }}
+                  >
+                    {(themeConfig.spotlight2Color || '#06b6d4') === color && (
+                      <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Accent Color Palette */}
       <div className="liquid-glass-card p-5 sm:p-6 space-y-4">
         <div className="flex items-center gap-2.5 pb-3 border-b border-slate-200/50 dark:border-white/10">
           <div className="p-2 rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400">
@@ -280,36 +430,146 @@ export const SettingsView: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. Performance & Effects Controls */}
-      <div className="liquid-glass-card p-5 sm:p-6 space-y-4">
+      {/* 4. Advanced Glassmorphism & Visual Effects */}
+      <div className="liquid-glass-card p-5 sm:p-6 space-y-5">
         <div className="flex items-center gap-2.5 pb-3 border-b border-slate-200/50 dark:border-white/10">
           <div className="p-2 rounded-xl bg-sky-500/15 text-sky-600 dark:text-sky-400">
             <Gauge className="w-5 h-5" />
           </div>
           <div>
             <h3 className="text-base font-black text-slate-900 dark:text-white">
-              جلوه‌های بصری و کارایی
+              تنظیمات شیشه و افکت‌های بصری (Glassmorphism)
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              کنترل افکت‌های بلور شیشه‌ای، حالت پرسرعت و میزان گردی گوشه‌ها
+              کنترل اختصاصی شفافیت، شکست نور، شدت بلور و اشباع رنگ کارت‌ها
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        {/* Sliders for Transparency & Refraction */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Glass Transparency */}
+          <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-850/60 border border-slate-200/70 dark:border-white/5 space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-slate-800 dark:text-slate-200">شفافیت شیشه (پوشش پس‌زمینه)</span>
+              <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                {Math.round((themeConfig.glassOpacity ?? 0.86) * 100)}٪
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0.30"
+              max="0.98"
+              step="0.02"
+              value={themeConfig.glassOpacity ?? 0.86}
+              onChange={e => updateThemeConfig({ glassOpacity: parseFloat(e.target.value) })}
+              className="w-full accent-indigo-600 cursor-pointer"
+            />
+            <div className="flex justify-between text-[10px] text-slate-400">
+              <span>بسیار شیشه‌ای (شفاف)</span>
+              <span>مات و محکم</span>
+            </div>
+          </div>
+
+          {/* Light Refraction & Edge Highlight */}
+          <div className="p-4 rounded-2xl bg-slate-50/70 dark:bg-slate-850/60 border border-slate-200/70 dark:border-white/5 space-y-2">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-bold text-slate-800 dark:text-slate-200">شکست نور و بازتاب لبه‌ها</span>
+              <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                {Math.round((themeConfig.glassRefraction ?? 0.5) * 100)}٪
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0.1"
+              max="1.0"
+              step="0.05"
+              value={themeConfig.glassRefraction ?? 0.5}
+              onChange={e => updateThemeConfig({ glassRefraction: parseFloat(e.target.value) })}
+              className="w-full accent-indigo-600 cursor-pointer"
+            />
+            <div className="flex justify-between text-[10px] text-slate-400">
+              <span>بازتاب ملایم</span>
+              <span>درخشش لبه کریستالی</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Stepped Pills for Blur & Saturation */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Blur Intensity */}
+          <div className="space-y-2">
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+              میزان ماتی بلور (Blur):
+            </span>
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { val: 8, label: '۸px' },
+                { val: 14, label: '۱۴px' },
+                { val: 22, label: '۲۲px' },
+                { val: 32, label: '۳۲px' },
+              ].map(b => {
+                const isSelected = (themeConfig.glassBlur ?? 14) === b.val;
+                return (
+                  <button
+                    key={b.val}
+                    type="button"
+                    onClick={() => updateThemeConfig({ glassBlur: b.val })}
+                    className={`py-2 rounded-xl text-xs font-bold border transition ${
+                      isSelected
+                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                        : 'liquid-glass text-slate-700 dark:text-slate-300 border-slate-200/60 dark:border-white/10'
+                    }`}
+                  >
+                    {b.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Saturation */}
+          <div className="space-y-2">
+            <span className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+              اشباع رنگ زیر شیشه (Saturation):
+            </span>
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { val: 100, label: '۱۰۰٪' },
+                { val: 140, label: '۱۴۰٪' },
+                { val: 180, label: '۱۸۰٪' },
+                { val: 220, label: '۲۲۰٪' },
+              ].map(s => {
+                const isSelected = (themeConfig.glassSaturation ?? 160) === s.val;
+                return (
+                  <button
+                    key={s.val}
+                    type="button"
+                    onClick={() => updateThemeConfig({ glassSaturation: s.val })}
+                    className={`py-2 rounded-xl text-xs font-bold border transition ${
+                      isSelected
+                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-xs'
+                        : 'liquid-glass text-slate-700 dark:text-slate-300 border-slate-200/60 dark:border-white/10'
+                    }`}
+                  >
+                    {s.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Toggles: Glass On/Off & Performance */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2 border-t border-slate-200/50 dark:border-white/10">
           {/* Liquid Glass Toggle */}
-          <div className="p-4 rounded-2xl liquid-glass-ios27 border border-slate-200/60 dark:border-white/10 flex items-center justify-between">
+          <div className="p-4 rounded-2xl liquid-glass border border-slate-200/60 dark:border-white/10 flex items-center justify-between">
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-black text-slate-900 dark:text-white block">
-                  شیشه مایع فضایی (iOS 27 Liquid Glass)
-                </span>
-                <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-400">
-                  WebGL
-                </span>
-              </div>
+              <span className="text-xs font-bold text-slate-900 dark:text-white block">
+                فعال‌بودن افکت شیشه (Glassmorphism)
+              </span>
               <span className="text-[11px] text-slate-400">
-                انکسار نوری عمیق، ابیراهی رنگی، بلور مات و بازتاب لبه‌های کریستالی
+                خاموش‌کردن برای داشتن سطوح کاملاً سالید و ساده
               </span>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">
@@ -327,10 +587,10 @@ export const SettingsView: React.FC = () => {
           <div className="p-4 rounded-2xl liquid-glass border border-slate-200/60 dark:border-white/10 flex items-center justify-between">
             <div>
               <span className="text-xs font-bold text-slate-900 dark:text-white block">
-                حالت پرسرعت (گوشی‌های میان‌رده)
+                حالت پرسرعت (دستگاه‌های میان‌رده)
               </span>
               <span className="text-[11px] text-slate-400">
-                حذف سایه‌ها و انیمیشن‌های سنگین جهت اسکرول روان
+                حذف سایه‌ها و انیمیشن‌ها جهت اسکرول فوق‌سریع
               </span>
             </div>
             <label className="relative inline-flex items-center cursor-pointer">

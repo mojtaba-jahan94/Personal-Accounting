@@ -122,6 +122,7 @@ export type AnimationSpeed = 'fast' | 'normal' | 'none';
 export type BorderRadius = 'sharp' | 'smooth' | 'round';
 export type AmbientGlow = 'off' | 'subtle' | 'vibrant';
 export type LightStyle = 'pure_white' | 'frost' | 'warm_cream' | 'soft_slate';
+export type BackgroundStyle = 'clean_minimal' | 'subtle_mesh' | 'dot_matrix' | 'soft_aurora' | 'pure_solid';
 
 export interface DashboardSectionConfig {
   showHero: boolean;
@@ -141,7 +142,14 @@ export interface ThemeConfig {
   liquidGlass: boolean; // Toggle Liquid Glass on/off
   performanceMode: boolean; // Ultra-light mode for mid-range phones
   lightStyle: LightStyle; // Light Mode Customization
+  backgroundStyle?: BackgroundStyle; // Customizable Background Style
+  spotlight1Color?: string; // Independent Color for Spotlight 1
+  spotlight2Color?: string; // Independent Color for Spotlight 2
   glassIntensity: GlassIntensity;
+  glassOpacity?: number; // 0.2 to 1.0 (Transparency)
+  glassBlur?: number; // 4 to 32 (Blur intensity in px)
+  glassRefraction?: number; // 0.1 to 1.0 (Refraction highlight strength)
+  glassSaturation?: number; // 100 to 220 (Color saturation percentage)
   ambientOrbs: boolean;
   ambientGlow?: AmbientGlow;
   animationSpeed: AnimationSpeed;

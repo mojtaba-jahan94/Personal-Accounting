@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect, Suspense, lazy, useRef, useCallback } from 'react';
 import { FinanceProvider, useFinance } from './context/FinanceContext';
 import { Header } from './components/layout/Header';
 import { Sidebar, TabType } from './components/layout/Sidebar';
@@ -7,7 +7,7 @@ import { InstallPrompt } from './components/layout/InstallPrompt';
 import { DashboardView } from './components/dashboard/DashboardView';
 import { TransactionModal } from './components/transactions/TransactionModal';
 import { TransferModal } from './components/accounts/TransferModal';
-import { SilkWaveBackground } from './components/common/SilkWaveBackground';
+import { MinimalBackground } from './components/common/MinimalBackground';
 import { Transaction } from './types';
 
 // Code-split views for optimal bundle loading & performance
@@ -19,6 +19,17 @@ const DebtsAndChequesView = lazy(() => import('./components/debts/DebtsAndCheque
 const ReportsView = lazy(() => import('./components/reports/ReportsView').then(m => ({ default: m.ReportsView })));
 const SettingsView = lazy(() => import('./components/settings/SettingsView').then(m => ({ default: m.SettingsView })));
 const SMSAssistantModal = lazy(() => import('./components/transactions/SMSAssistantModal').then(m => ({ default: m.SMSAssistantModal })));
+
+const ALL_TABS: TabType[] = [
+  'dashboard',
+  'transactions',
+  'budgets',
+  'accounts',
+  'goals',
+  'debts',
+  'reports',
+  'settings',
+];
 
 const ViewLoadingFallback: React.FC = () => (
   <div className="flex items-center justify-center min-h-[300px] w-full">
@@ -32,10 +43,74 @@ const ViewLoadingFallback: React.FC = () => (
 const MainApp: React.FC = () => {
   const { themeConfig } = useFinance();
   const [currentTab, setCurrentTab] = useState<TabType>('dashboard');
+  const [slideDirection, setSlideDirection] = useState<'forward' | 'backward' | 'default'>('default');
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
   const [isSmsModalOpen, setIsSmsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
+
+  // Directional tab switching with smooth transition
+  const handleSelectTab = useCallback((newTab: TabType) => {
+    if (newTab === currentTab) return;
+    const oldIndex = ALL_TABS.indexOf(currentTab);
+    const newIndex = ALL_TABS.indexOf(newTab);
+    if (oldIndex !== -1 && newIndex !== -1) {
+      setSlideDirection(newIndex > oldIndex ? 'forward' : 'backward');
+    } else {
+      setSlideDirection('default');
+    }
+    setCurrentTab(newTab);
+  }, [currentTab]);
+
+  const handleSwipeNext = useCallback(() => {
+    const currentIndex = ALL_TABS.indexOf(currentTab);
+    if (currentIndex !== -1 && currentIndex < ALL_TABS.length - 1) {
+      handleSelectTab(ALL_TABS[currentIndex + 1]);
+    }
+  }, [currentTab, handleSelectTab]);
+
+  const handleSwipePrev = useCallback(() => {
+    const currentIndex = ALL_TABS.indexOf(currentTab);
+    if (currentIndex > 0) {
+      handleSelectTab(ALL_TABS[currentIndex - 1]);
+    }
+  }, [currentTab, handleSelectTab]);
+
+  // Touch swipe gesture handlers for full-page sliding
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const target = e.target as HTMLElement | null;
+    if (
+      target &&
+      target.closest('input[type="range"], .overflow-x-auto, [data-no-swipe], dialog')
+    ) {
+      touchStartX.current = null;
+      touchStartY.current = null;
+      return;
+    }
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+    const deltaY = e.changedTouches[0].clientY - touchStartY.current;
+    touchStartX.current = null;
+    touchStartY.current = null;
+
+    if (Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.3) {
+      if (deltaX < 0) {
+        // RTL swipe right-to-left: next page
+        handleSwipeNext();
+      } else {
+        // RTL swipe left-to-right: previous page
+        handleSwipePrev();
+      }
+    }
+  };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -56,7 +131,7 @@ const MainApp: React.FC = () => {
       case 'dashboard':
         return (
           <DashboardView
-            onSelectTab={setCurrentTab}
+            onSelectTab={handleSelectTab}
             onOpenTransactionModal={() => handleOpenTransactionModal()}
             onOpenTransferModal={() => setIsTransferModalOpen(true)}
           />
@@ -108,7 +183,7 @@ const MainApp: React.FC = () => {
       default:
         return (
           <DashboardView
-            onSelectTab={setCurrentTab}
+            onSelectTab={handleSelectTab}
             onOpenTransactionModal={() => handleOpenTransactionModal()}
             onOpenTransferModal={() => setIsTransferModalOpen(true)}
           />
@@ -116,10 +191,17 @@ const MainApp: React.FC = () => {
     }
   };
 
+  const animationClass =
+    slideDirection === 'forward'
+      ? 'animate-view-slide-forward'
+      : slideDirection === 'backward'
+      ? 'animate-view-slide-backward'
+      : 'animate-view-transition';
+
   return (
     <div className="min-h-screen flex flex-col transition-colors relative">
-      {/* 3D Fluid Silk Ribbon Background matching the reference photo */}
-      <SilkWaveBackground />
+      {/* Minimal clean ambient background */}
+      <MinimalBackground />
 
       <Header
         onOpenTransactionModal={() => handleOpenTransactionModal()}
@@ -128,17 +210,25 @@ const MainApp: React.FC = () => {
       />
 
       <div className="flex-1 flex max-w-7xl w-full mx-auto relative z-10">
-        <Sidebar currentTab={currentTab} onSelectTab={setCurrentTab} />
+        <Sidebar currentTab={currentTab} onSelectTab={handleSelectTab} />
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 pb-24 lg:pb-12">
-          {renderCurrentView()}
+        <main
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 pb-28 lg:pb-12 overflow-x-hidden touch-pan-y"
+        >
+          <div key={currentTab} className={`w-full ${animationClass}`}>
+            {renderCurrentView()}
+          </div>
         </main>
       </div>
 
       <BottomNav
         currentTab={currentTab}
-        onSelectTab={setCurrentTab}
+        onSelectTab={handleSelectTab}
         onOpenTransactionModal={() => handleOpenTransactionModal()}
+        onSwipeNext={handleSwipeNext}
+        onSwipePrev={handleSwipePrev}
       />
 
       <InstallPrompt />

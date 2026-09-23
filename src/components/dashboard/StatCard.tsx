@@ -1,6 +1,5 @@
 import React from 'react';
 import { LucideIcon } from 'lucide-react';
-import { LIQUID_GLASS_PRESETS } from '../../utils/liquidGlassPresets';
 
 interface StatCardProps {
   title: string;
@@ -24,44 +23,39 @@ export const StatCard: React.FC<StatCardProps> = ({
 }) => {
   return (
     <div
-      data-glass
-      data-config={JSON.stringify(LIQUID_GLASS_PRESETS.crystalWidget)}
-      className="liquid-glass-crystal specular-sheen p-5 sm:p-6 relative overflow-hidden group hover:scale-[1.01] transition-all duration-200"
+      className="p-4 sm:p-5 rounded-2xl liquid-glass border border-slate-200/80 dark:border-slate-800 shadow-xs hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200 relative overflow-hidden"
     >
-      {/* Top rim specular highlight line */}
-      <div className="absolute top-0 right-0 left-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/70 dark:via-white/25 to-transparent pointer-events-none" />
-
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 whitespace-nowrap truncate">
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-1 whitespace-nowrap truncate">
             {title}
           </p>
-          <h3 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 dark:text-white tracking-tight whitespace-nowrap truncate font-mono">
+          <h3 className="text-lg sm:text-xl lg:text-2xl font-black text-slate-900 dark:text-white tracking-tight whitespace-nowrap truncate font-mono">
             {amount}
           </h3>
           {subtext && (
-            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 whitespace-nowrap truncate font-medium">
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1 whitespace-nowrap truncate">
               {subtext}
             </p>
           )}
         </div>
 
-        {/* Floating Spatial Icon Pod */}
+        {/* Clean Minimal Icon Pod */}
         <div
-          className={`p-3 sm:p-3.5 rounded-2xl ${colorClass} text-white shadow-lg shadow-indigo-500/20 shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 ring-1 ring-white/30`}
+          className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl ${colorClass} text-white shadow-xs flex items-center justify-center shrink-0`}
         >
-          <Icon className="w-5 h-5 sm:w-6 sm:h-6 drop-shadow-sm" />
+          <Icon className="w-5 h-5" />
         </div>
       </div>
 
       {badge && (
-        <div className="mt-4 pt-3 border-t border-slate-200/50 dark:border-white/10 flex items-center justify-between text-xs">
-          <span className="text-slate-500 dark:text-slate-400 text-[11px] font-medium">وضعیت تراز:</span>
+        <div className="mt-3.5 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-xs">
+          <span className="text-slate-400 dark:text-slate-500 text-[11px]">وضعیت تراز:</span>
           <span
-            className={`font-black px-2.5 py-0.5 rounded-full text-[11px] backdrop-blur-md ${
+            className={`font-bold px-2 py-0.5 rounded-full text-[10px] ${
               badge.isPositive
-                ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shadow-xs'
-                : 'bg-rose-500/15 text-rose-700 dark:text-rose-300 border border-rose-500/30 shadow-xs'
+                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40'
+                : 'bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800/40'
             }`}
           >
             {badge.text}
@@ -71,4 +65,5 @@ export const StatCard: React.FC<StatCardProps> = ({
     </div>
   );
 };
+
 export default StatCard;

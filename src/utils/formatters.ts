@@ -22,6 +22,68 @@ export function normalizeDigits(str: string): string {
   return out;
 }
 
+/**
+ * Parse a user-entered amount string into a number.
+ * Handles Persian/Arabic digits, thousand separators (`,` and `٬`), and whitespace.
+ * Returns 0 if the input is invalid.
+ */
+export function parseAmount(str: string): number {
+  if (!str) return 0;
+  // 1. Normalize Persian/Arabic digits to English
+  let normalized = normalizeDigits(str);
+  // 2. Remove thousand separators and whitespace
+  normalized = normalized.replace(/[,٬\s]/g, '');
+  // 3. Parse
+  const num = parseFloat(normalized);
+  return isNaN(num) ? 0 : num;
+}
+
+/**
+ * Sanitize user input for amount fields.
+ * Allows only digits (English/Persian/Arabic), a single decimal point, and minus sign at the start.
+ * Normalizes Persian/Arabic digits to English.
+ */
+export function sanitizeAmountInput(str: string): string {
+  if (!str) return '';
+  // Normalize digits first
+  let normalized = normalizeDigits(str);
+  // Remove everything except digits, dot, minus, comma
+  normalized = normalized.replace(/[^0-9.\-]/g, '');
+  // Only allow minus at the very start
+  const hasMinus = normalized.startsWith('-');
+  normalized = normalized.replace(/-/g, '');
+  // Only allow one decimal point
+  const parts = normalized.split('.');
+  if (parts.length > 2) {
+    normalized = parts[0] + '.' + parts.slice(1).join('');
+  }
+  return (hasMinus ? '-' : '') + normalized;
+}
+
+/**
+ * Format a raw numeric string with thousand separators for display in input fields.
+ * Preserves the decimal part as-is (for user typing).
+ */
+export function formatAmountInput(str: string): string {
+  if (!str) return '';
+  // Sanitize first
+  const sanitized = sanitizeAmountInput(str);
+  if (!sanitized || sanitized === '-') return sanitized;
+  
+  const hasMinus = sanitized.startsWith('-');
+  const abs = hasMinus ? sanitized.slice(1) : sanitized;
+  
+  // Split integer and decimal parts
+  const dotIndex = abs.indexOf('.');
+  const intPart = dotIndex >= 0 ? abs.slice(0, dotIndex) : abs;
+  const decPart = dotIndex >= 0 ? abs.slice(dotIndex) : '';
+  
+  // Add thousand separators to integer part
+  const formatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  
+  return (hasMinus ? '-' : '') + formatted + decPart;
+}
+
 export function toPersianDigits(n: number | string): string {
   if (n === null || n === undefined) return '';
   const farsiDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
