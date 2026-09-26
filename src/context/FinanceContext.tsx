@@ -17,6 +17,80 @@ import {
 import { DEFAULT_ACCOUNTS, DEFAULT_CATEGORIES, DEFAULT_PERSONS, getDemoData } from '../utils/sampleData';
 import { getTodayJalali } from '../utils/jalali';
 
+export interface AccountTransactionsBreakdown {
+  income: number;
+  expense: number;
+  netDelta: number;
+  txCount: number;
+}
+
+/**
+ * Pure ledger calculation: Account Balance = Initial Balance + Net Transactions Delta
+ */
+export function calculateAccountBalance(
+  account: { id: string; initialBalance?: number; balance?: number },
+  transactions: Transaction[]
+): number {
+  const initial = typeof account.initialBalance === 'number'
+    ? account.initialBalance
+    : (typeof account.balance === 'number' ? account.balance : 0);
+
+  let netDelta = 0;
+  for (const tx of transactions) {
+    const fee = tx.fee || 0;
+    if (tx.type === 'income' && tx.accountId === account.id) {
+      netDelta += tx.amount;
+    } else if (tx.type === 'expense' && tx.accountId === account.id) {
+      netDelta -= (tx.amount + fee);
+    } else if (tx.type === 'transfer') {
+      if (tx.accountId === account.id) {
+        netDelta -= (tx.amount + fee);
+      }
+      if (tx.toAccountId === account.id) {
+        netDelta += tx.amount;
+      }
+    }
+  }
+
+  return initial + netDelta;
+}
+
+export function getAccountBreakdown(
+  accountId: string,
+  transactions: Transaction[]
+): AccountTransactionsBreakdown {
+  let income = 0;
+  let expense = 0;
+  let txCount = 0;
+
+  for (const tx of transactions) {
+    const fee = tx.fee || 0;
+    if (tx.type === 'income' && tx.accountId === accountId) {
+      income += tx.amount;
+      txCount++;
+    } else if (tx.type === 'expense' && tx.accountId === accountId) {
+      expense += (tx.amount + fee);
+      txCount++;
+    } else if (tx.type === 'transfer') {
+      if (tx.accountId === accountId) {
+        expense += (tx.amount + fee);
+        txCount++;
+      }
+      if (tx.toAccountId === accountId) {
+        income += tx.amount;
+        txCount++;
+      }
+    }
+  }
+
+  return {
+    income,
+    expense,
+    netDelta: income - expense,
+    txCount,
+  };
+}
+
 interface FinanceContextType {
   accounts: Account[];
   transactions: Transaction[];
@@ -42,6 +116,8 @@ interface FinanceContextType {
   addAccount: (acc: Omit<Account, 'id'>) => void;
   updateAccount: (acc: Account) => void;
   deleteAccount: (id: string) => void;
+  reconcileAccountBalance: (accountId: string, targetCurrentBalance: number) => void;
+  getAccountTransactionsDelta: (accountId: string) => AccountTransactionsBreakdown;
 
   addCategory: (cat: Omit<Category, 'id'>) => void;
   updateCategory: (cat: Category) => void;
@@ -151,11 +227,6 @@ const DEFAULT_THEME_CONFIG: ThemeConfig = {
 };
 
 export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [accounts, setAccounts] = useState<Account[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.ACCOUNTS);
-    return saved ? JSON.parse(saved) : DEFAULT_ACCOUNTS;
-  });
-
   const [categories, setCategories] = useState<Category[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.CATEGORIES);
     return saved ? JSON.parse(saved) : DEFAULT_CATEGORIES;
@@ -167,6 +238,36 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const demo = getDemoData();
     return demo.transactions;
   });
+
+  const [accountsBase, setAccountsBase] = useState<Account[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.ACCOUNTS);
+    const rawAccs: Account[] = saved ? JSON.parse(saved) : DEFAULT_ACCOUNTS;
+    const savedTxs = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS);
+    const txs: Transaction[] = savedTxs ? JSON.parse(savedTxs) : getDemoData().transactions;
+
+    return rawAccs.map(acc => {
+      if (typeof acc.initialBalance === 'number') {
+        return acc;
+      }
+      const b = getAccountBreakdown(acc.id, txs);
+      const curr = typeof acc.balance === 'number' ? acc.balance : 0;
+      return {
+        ...acc,
+        initialBalance: curr - b.netDelta,
+      };
+    });
+  });
+
+  const accounts = useMemo(() => {
+    return accountsBase.map(acc => {
+      const computedBalance = calculateAccountBalance(acc, transactions);
+      return {
+        ...acc,
+        initialBalance: typeof acc.initialBalance === 'number' ? acc.initialBalance : computedBalance,
+        balance: computedBalance,
+      };
+    });
+  }, [accountsBase, transactions]);
 
   const [budgets, setBudgets] = useState<Budget[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.BUDGETS);
@@ -357,28 +458,6 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const id = 'tx-' + Date.now();
     const newTx: Transaction = { ...tx, id };
 
-    setAccounts(prev =>
-      prev.map(acc => {
-        if (newTx.type === 'expense' && acc.id === newTx.accountId) {
-          const fee = newTx.fee || 0;
-          return { ...acc, balance: acc.balance - (newTx.amount + fee) };
-        }
-        if (newTx.type === 'income' && acc.id === newTx.accountId) {
-          return { ...acc, balance: acc.balance + newTx.amount };
-        }
-        if (newTx.type === 'transfer') {
-          if (acc.id === newTx.accountId) {
-            const fee = newTx.fee || 0;
-            return { ...acc, balance: acc.balance - (newTx.amount + fee) };
-          }
-          if (acc.id === newTx.toAccountId) {
-            return { ...acc, balance: acc.balance + newTx.amount };
-          }
-        }
-        return acc;
-      })
-    );
-
     setTransactions(prev => [newTx, ...prev]);
 
     // If transaction is linked to a debt, automatically update the debt balance & history
@@ -415,49 +494,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const oldTx = transactions.find(t => t.id === updatedTx.id);
     if (!oldTx) return;
 
-    setAccounts(prev => {
-      let accs = [...prev];
-      // 1. Revert old
-      accs = accs.map(acc => {
-        if (oldTx.type === 'expense' && acc.id === oldTx.accountId) {
-          return { ...acc, balance: acc.balance + (oldTx.amount + (oldTx.fee || 0)) };
-        }
-        if (oldTx.type === 'income' && acc.id === oldTx.accountId) {
-          return { ...acc, balance: acc.balance - oldTx.amount };
-        }
-        if (oldTx.type === 'transfer') {
-          if (acc.id === oldTx.accountId) {
-            return { ...acc, balance: acc.balance + (oldTx.amount + (oldTx.fee || 0)) };
-          }
-          if (acc.id === oldTx.toAccountId) {
-            return { ...acc, balance: acc.balance - oldTx.amount };
-          }
-        }
-        return acc;
-      });
-
-      // 2. Apply new
-      accs = accs.map(acc => {
-        if (updatedTx.type === 'expense' && acc.id === updatedTx.accountId) {
-          return { ...acc, balance: acc.balance - (updatedTx.amount + (updatedTx.fee || 0)) };
-        }
-        if (updatedTx.type === 'income' && acc.id === updatedTx.accountId) {
-          return { ...acc, balance: acc.balance + updatedTx.amount };
-        }
-        if (updatedTx.type === 'transfer') {
-          if (acc.id === updatedTx.accountId) {
-            return { ...acc, balance: acc.balance - (updatedTx.amount + (updatedTx.fee || 0)) };
-          }
-          if (acc.id === updatedTx.toAccountId) {
-            return { ...acc, balance: acc.balance + updatedTx.amount };
-          }
-        }
-        return acc;
-      });
-      return accs;
-    });
-
-    // 3. Sync debt updates
+    // Sync debt updates
     if (oldTx.debtId || updatedTx.debtId) {
       setDebts(prev =>
         prev.map(d => {
@@ -527,26 +564,6 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const deleteTransaction = (id: string) => {
     const tx = transactions.find(t => t.id === id);
     if (tx) {
-      setAccounts(prev =>
-        prev.map(acc => {
-          if (tx.type === 'expense' && acc.id === tx.accountId) {
-            return { ...acc, balance: acc.balance + (tx.amount + (tx.fee || 0)) };
-          }
-          if (tx.type === 'income' && acc.id === tx.accountId) {
-            return { ...acc, balance: acc.balance - tx.amount };
-          }
-          if (tx.type === 'transfer') {
-            if (acc.id === tx.accountId) {
-              return { ...acc, balance: acc.balance + (tx.amount + (tx.fee || 0)) };
-            }
-            if (acc.id === tx.toAccountId) {
-              return { ...acc, balance: acc.balance - tx.amount };
-            }
-          }
-          return acc;
-        })
-      );
-
       if (tx.debtId) {
         setDebts(prev =>
           prev.map(d => {
@@ -574,29 +591,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const newAmount = Math.round(oldAmount / 10);
     const diff = oldAmount - newAmount;
 
-    const oldFee = tx.fee || 0;
     const newFee = tx.fee ? Math.round(tx.fee / 10) : undefined;
-    const feeDiff = oldFee - (newFee || 0);
-
-    setAccounts(prev =>
-      prev.map(acc => {
-        if (tx.type === 'expense' && acc.id === tx.accountId) {
-          return { ...acc, balance: acc.balance + diff };
-        }
-        if (tx.type === 'income' && acc.id === tx.accountId) {
-          return { ...acc, balance: acc.balance - diff };
-        }
-        if (tx.type === 'transfer') {
-          if (acc.id === tx.accountId) {
-            return { ...acc, balance: acc.balance + diff + feeDiff };
-          }
-          if (acc.id === tx.toAccountId) {
-            return { ...acc, balance: acc.balance - diff };
-          }
-        }
-        return acc;
-      })
-    );
 
     if (tx.debtId) {
       setDebts(prev =>
@@ -626,29 +621,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const newAmount = Math.round(oldAmount * 10);
     const diff = newAmount - oldAmount;
 
-    const oldFee = tx.fee || 0;
     const newFee = tx.fee ? Math.round(tx.fee * 10) : undefined;
-    const feeDiff = (newFee || 0) - oldFee;
-
-    setAccounts(prev =>
-      prev.map(acc => {
-        if (tx.type === 'expense' && acc.id === tx.accountId) {
-          return { ...acc, balance: acc.balance - diff };
-        }
-        if (tx.type === 'income' && acc.id === tx.accountId) {
-          return { ...acc, balance: acc.balance + diff };
-        }
-        if (tx.type === 'transfer') {
-          if (acc.id === tx.accountId) {
-            return { ...acc, balance: acc.balance - (diff + feeDiff) };
-          }
-          if (acc.id === tx.toAccountId) {
-            return { ...acc, balance: acc.balance + diff };
-          }
-        }
-        return acc;
-      })
-    );
 
     if (tx.debtId) {
       setDebts(prev =>
@@ -673,7 +646,6 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const batchFixRialTransactions = (): number => {
     let fixedCount = 0;
-    const accountDeltas = new Map<string, number>();
     const debtDeltas = new Map<string, number>();
 
     const updatedTransactions = transactions.map(tx => {
@@ -681,24 +653,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         fixedCount++;
         const newAmount = Math.round(tx.amount / 10);
         const diff = tx.amount - newAmount;
-        const oldFee = tx.fee || 0;
         const newFee = tx.fee ? Math.round(tx.fee / 10) : undefined;
-        const feeDiff = oldFee - (newFee || 0);
-
-        if (tx.type === 'expense') {
-          const currentDelta = accountDeltas.get(tx.accountId) || 0;
-          accountDeltas.set(tx.accountId, currentDelta + diff + feeDiff);
-        } else if (tx.type === 'income') {
-          const currentDelta = accountDeltas.get(tx.accountId) || 0;
-          accountDeltas.set(tx.accountId, currentDelta - diff);
-        } else if (tx.type === 'transfer') {
-          const fromDelta = accountDeltas.get(tx.accountId) || 0;
-          accountDeltas.set(tx.accountId, fromDelta + diff + feeDiff);
-          if (tx.toAccountId) {
-            const toDelta = accountDeltas.get(tx.toAccountId) || 0;
-            accountDeltas.set(tx.toAccountId, toDelta - diff);
-          }
-        }
 
         if (tx.debtId) {
           const currentDebtDiff = debtDeltas.get(tx.debtId) || 0;
@@ -712,15 +667,6 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     if (fixedCount > 0) {
       setTransactions(updatedTransactions);
-
-      if (accountDeltas.size > 0) {
-        setAccounts(prev =>
-          prev.map(acc => {
-            const delta = accountDeltas.get(acc.id);
-            return delta ? { ...acc, balance: acc.balance + delta } : acc;
-          })
-        );
-      }
 
       if (debtDeltas.size > 0) {
         setDebts(prev =>
@@ -744,7 +690,13 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const convertAllDataCurrency = (factor: 0.1 | 10) => {
-    setAccounts(prev => prev.map(a => ({ ...a, balance: Math.round(a.balance * factor) })));
+    setAccountsBase(prev =>
+      prev.map(a => ({
+        ...a,
+        initialBalance: typeof a.initialBalance === 'number' ? Math.round(a.initialBalance * factor) : 0,
+        balance: Math.round(a.balance * factor),
+      }))
+    );
     setTransactions(prev =>
       prev.map(t => ({
         ...t,
@@ -773,17 +725,47 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Account Actions
   const addAccount = (acc: Omit<Account, 'id'>) => {
-    const newAcc: Account = { ...acc, id: 'acc-' + Date.now() };
-    setAccounts(prev => [...prev, newAcc]);
+    const initBal = typeof acc.initialBalance === 'number' ? acc.initialBalance : (acc.balance ?? 0);
+    const newAcc: Account = {
+      ...acc,
+      id: 'acc-' + Date.now(),
+      initialBalance: initBal,
+      balance: initBal,
+    };
+    setAccountsBase(prev => [...prev, newAcc]);
   };
 
   const updateAccount = (acc: Account) => {
-    setAccounts(prev => prev.map(a => (a.id === acc.id ? acc : a)));
+    setAccountsBase(prev =>
+      prev.map(a => {
+        if (a.id === acc.id) {
+          const initBal = typeof acc.initialBalance === 'number' ? acc.initialBalance : (a.initialBalance ?? 0);
+          return {
+            ...acc,
+            initialBalance: initBal,
+          };
+        }
+        return a;
+      })
+    );
   };
 
   const deleteAccount = (id: string) => {
-    setAccounts(prev => prev.filter(a => a.id !== id));
+    setAccountsBase(prev => prev.filter(a => a.id !== id));
   };
+
+  const reconcileAccountBalance = (accountId: string, targetCurrentBalance: number) => {
+    const breakdown = getAccountBreakdown(accountId, transactions);
+    const newInitial = targetCurrentBalance - breakdown.netDelta;
+    setAccountsBase(prev =>
+      prev.map(a => (a.id === accountId ? { ...a, initialBalance: newInitial } : a))
+    );
+  };
+
+  const getAccountTransactionsDelta = useCallback(
+    (accountId: string) => getAccountBreakdown(accountId, transactions),
+    [transactions]
+  );
 
   // Category Actions
   const addCategory = (cat: Omit<Category, 'id'>) => {
@@ -833,9 +815,6 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       prev.map(g => (g.id === id ? { ...g, currentAmount: g.currentAmount + amount } : g))
     );
     if (accountId) {
-      setAccounts(prev =>
-        prev.map(a => (a.id === accountId ? { ...a, balance: a.balance - amount } : a))
-      );
       const txId = 'tx-' + Date.now();
       const newTx: Transaction = {
         id: txId,
@@ -917,20 +896,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     setTransactions(prev => [newTx, ...prev]);
 
-    // 2. Adjust account balance
-    setAccounts(prev =>
-      prev.map(acc => {
-        if (acc.id === params.accountId) {
-          return {
-            ...acc,
-            balance: isDebtPay ? acc.balance - params.amount : acc.balance + params.amount,
-          };
-        }
-        return acc;
-      })
-    );
-
-    // 3. Update debt and payment history
+    // 2. Update debt and payment history
     const accName = accounts.find(a => a.id === params.accountId)?.name;
     setDebts(prev =>
       prev.map(d => {
@@ -996,7 +962,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Demo data and Backup
   const loadDemoData = useCallback(() => {
     const demo = getDemoData();
-    setAccounts(demo.accounts);
+    setAccountsBase(demo.accounts);
     setTransactions(demo.transactions);
     setBudgets(demo.budgets);
     setGoals(demo.goals);
@@ -1027,7 +993,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const importDataJSON = useCallback((jsonStr: string): boolean => {
     try {
       const data = JSON.parse(jsonStr);
-      if (data.accounts) setAccounts(data.accounts);
+      if (data.accounts) setAccountsBase(data.accounts);
       if (data.transactions) setTransactions(data.transactions);
       if (data.categories) setCategories(data.categories);
       if (data.budgets) setBudgets(data.budgets);
@@ -1052,7 +1018,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setDebts([]);
     setCheques([]);
     setPersons([]);
-    setAccounts(DEFAULT_ACCOUNTS.map(a => ({ ...a, balance: 0 })));
+    setAccountsBase(DEFAULT_ACCOUNTS.map(a => ({ ...a, initialBalance: 0, balance: 0 })));
   }, []);
 
   // Memoized Computations for high performance
@@ -1094,6 +1060,8 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     addAccount,
     updateAccount,
     deleteAccount,
+    reconcileAccountBalance,
+    getAccountTransactionsDelta,
     addCategory,
     updateCategory,
     deleteCategory,
@@ -1144,6 +1112,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     totalBalance,
     totalIncome,
     totalExpense,
+    getAccountTransactionsDelta,
   ]);
 
   return (

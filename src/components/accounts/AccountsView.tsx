@@ -159,9 +159,14 @@ export const AccountsView: React.FC = () => {
                 <div className="pt-3 border-t border-white/20 flex items-center justify-between">
                   <div>
                     <span className="text-[10px] opacity-75 block">موجودی فعلی:</span>
-                    <span className="text-lg font-black tracking-tight font-mono">
+                    <span className="text-lg font-black tracking-tight font-mono block">
                       {formatCurrency(acc.balance, currency)}
                     </span>
+                    {typeof acc.initialBalance === 'number' && acc.initialBalance !== acc.balance && (
+                      <span className="text-[10px] opacity-70 font-mono block">
+                        مانده اولیه: {formatCurrency(acc.initialBalance, currency)}
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-1.5">

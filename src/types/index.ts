@@ -15,6 +15,7 @@ export interface Account {
   name: string;
   type: AccountType;
   balance: number;
+  initialBalance?: number;
   bankName?: string;
   cardNumber?: string;
   shaba?: string;

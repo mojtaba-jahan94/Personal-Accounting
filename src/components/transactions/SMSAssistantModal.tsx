@@ -46,13 +46,14 @@ export const SMSAssistantModal: React.FC<SMSAssistantModalProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const { accounts, categories, currency, addTransaction } = useFinance();
+  const { accounts, categories, currency, addTransaction, reconcileAccountBalance } = useFinance();
 
   const [rawText, setRawText] = useState('');
   const [parsed, setParsed] = useState<ParsedBankSMS | null>(null);
   const [selectedAccountId, setSelectedAccountId] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState('');
   const [description, setDescription] = useState('');
+  const [syncBalanceWithBank, setSyncBalanceWithBank] = useState<boolean>(false);
   const [clipboardError, setClipboardError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -132,6 +133,10 @@ export const SMSAssistantModal: React.FC<SMSAssistantModalProps> = ({
       accountId: accId,
     });
 
+    if (syncBalanceWithBank && parsed.balanceToman !== undefined) {
+      reconcileAccountBalance(accId, parsed.balanceToman);
+    }
+
     if (onSuccess) {
       onSuccess(`تراکنش ${formatCurrency(parsed.amountToman, currency)} با موفقیت ثبت شد.`);
     }
@@ -139,6 +144,7 @@ export const SMSAssistantModal: React.FC<SMSAssistantModalProps> = ({
     // Reset and close
     setRawText('');
     setParsed(null);
+    setSyncBalanceWithBank(false);
     onClose();
   };
 
@@ -286,11 +292,24 @@ export const SMSAssistantModal: React.FC<SMSAssistantModalProps> = ({
                 </div>
 
                 {parsed.balanceToman !== undefined && (
-                  <div className="p-2.5 rounded-xl bg-white/40 dark:bg-white/5 space-y-0.5 col-span-2">
-                    <span className="text-[10px] text-slate-400 block">مانده حساب اعلامی:</span>
-                    <span className="font-bold text-slate-700 dark:text-slate-300 font-mono">
-                      {formatCurrency(parsed.balanceToman, currency)}
-                    </span>
+                  <div className="p-3 rounded-xl bg-white/60 dark:bg-white/5 space-y-2 col-span-2 border border-slate-200/60 dark:border-white/10">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 block">مانده حساب اعلامی در پیامک:</span>
+                      <span className="font-bold text-slate-800 dark:text-slate-200 font-mono">
+                        {formatCurrency(parsed.balanceToman, currency)}
+                      </span>
+                    </div>
+                    <label className="flex items-center gap-2 cursor-pointer select-none pt-1 border-t border-slate-200/50 dark:border-white/10">
+                      <input
+                        type="checkbox"
+                        checked={syncBalanceWithBank}
+                        onChange={e => setSyncBalanceWithBank(e.target.checked)}
+                        className="w-3.5 h-3.5 rounded text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <span className="text-[11px] text-slate-700 dark:text-slate-300 font-medium">
+                        تراز کردن مانده این حساب در سیستم با مانده اعلامی بانک
+                      </span>
+                    </label>
                   </div>
                 )}
               </div>

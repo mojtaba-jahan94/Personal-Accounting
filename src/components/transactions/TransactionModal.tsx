@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { Transaction, TransactionType } from '../../types';
 import { getTodayJalali } from '../../utils/jalali';
-import { numberToWordsPersian, parseAmount, sanitizeAmountInput, formatAmountInput } from '../../utils/formatters';
+import { numberToWordsPersian, parseAmount, sanitizeAmountInput, formatAmountInput, formatCurrency } from '../../utils/formatters';
 import { getCategoryIcon } from '../../utils/categoryIcons';
 import { CategoryManagerModal } from '../categories/CategoryManagerModal';
 import { PersonManagerModal } from '../contacts/PersonManagerModal';
@@ -19,6 +19,8 @@ import {
   Users,
   Link2,
   Plus,
+  Wallet,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface TransactionModalProps {
@@ -198,6 +200,44 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const filteredCategories = categories.filter(c => c.type === (type === 'income' ? 'income' : 'expense'));
   const numAmount = parseAmount(amount);
 
+  const selectedAcc = accounts.find(a => a.id === accountId);
+  const selectedToAcc = accounts.find(a => a.id === toAccountId);
+
+  const numCanonical = inputUnit === 'rial' ? Math.round(numAmount / 10) : numAmount;
+  const rawFee = parseAmount(fee);
+  const feeCanonical = (type === 'transfer' && inputUnit === 'rial') ? Math.round(rawFee / 10) : rawFee;
+
+  let baseFromBal = selectedAcc ? selectedAcc.balance : 0;
+  let baseToBal = selectedToAcc ? selectedToAcc.balance : 0;
+
+  if (initialTransaction && selectedAcc) {
+    if (initialTransaction.accountId === selectedAcc.id) {
+      if (initialTransaction.type === 'expense') baseFromBal += (initialTransaction.amount + (initialTransaction.fee || 0));
+      else if (initialTransaction.type === 'income') baseFromBal -= initialTransaction.amount;
+      else if (initialTransaction.type === 'transfer') baseFromBal += (initialTransaction.amount + (initialTransaction.fee || 0));
+    } else if (initialTransaction.type === 'transfer' && initialTransaction.toAccountId === selectedAcc.id) {
+      baseFromBal -= initialTransaction.amount;
+    }
+  }
+
+  if (initialTransaction && selectedToAcc) {
+    if (initialTransaction.accountId === selectedToAcc.id) {
+      if (initialTransaction.type === 'expense') baseToBal += (initialTransaction.amount + (initialTransaction.fee || 0));
+      else if (initialTransaction.type === 'income') baseToBal -= initialTransaction.amount;
+      else if (initialTransaction.type === 'transfer') baseToBal += (initialTransaction.amount + (initialTransaction.fee || 0));
+    } else if (initialTransaction.type === 'transfer' && initialTransaction.toAccountId === selectedToAcc.id) {
+      baseToBal -= initialTransaction.amount;
+    }
+  }
+
+  const postFromBal = type === 'expense'
+    ? baseFromBal - numCanonical
+    : type === 'income'
+    ? baseFromBal + numCanonical
+    : baseFromBal - (numCanonical + feeCanonical);
+
+  const postToBal = baseToBal + numCanonical;
+
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
@@ -375,7 +415,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 >
                   {accounts.map(acc => (
                     <option key={acc.id} value={acc.id}>
-                      {acc.name} ({acc.bankName || 'کیف پول'})
+                      {acc.name} ({acc.bankName || 'کیف پول'}) • موجودی: {formatCurrency(acc.balance, currency)}
                     </option>
                   ))}
                 </select>
@@ -395,7 +435,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                       .filter(a => a.id !== accountId)
                       .map(acc => (
                         <option key={acc.id} value={acc.id}>
-                          {acc.name} ({acc.bankName || 'کیف پول'})
+                          {acc.name} ({acc.bankName || 'کیف پول'}) • موجودی: {formatCurrency(acc.balance, currency)}
                         </option>
                       ))}
                   </select>
@@ -426,6 +466,49 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 </div>
               )}
             </div>
+
+            {/* Live Balance Change Preview */}
+            {selectedAcc && numCanonical > 0 && (
+              <div className="p-3 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                    <Wallet className="w-3.5 h-3.5 text-indigo-500" />
+                    <span>تغییر موجودی {type === 'transfer' ? 'حساب مبدأ' : 'حساب'}:</span>
+                  </span>
+                  <div className="flex items-center gap-1.5 font-mono">
+                    <span className="text-slate-500 dark:text-slate-400 line-through text-[11px]">
+                      {formatCurrency(baseFromBal, currency)}
+                    </span>
+                    <span className="text-slate-400 font-sans">⭢</span>
+                    <span className={`font-bold ${postFromBal < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                      {formatCurrency(postFromBal, currency)}
+                    </span>
+                  </div>
+                </div>
+
+                {type === 'transfer' && selectedToAcc && (
+                  <div className="flex items-center justify-between pt-1 border-t border-indigo-100/60 dark:border-indigo-900/40">
+                    <span className="font-semibold text-slate-700 dark:text-slate-300">تغییر موجودی حساب مقصد:</span>
+                    <div className="flex items-center gap-1.5 font-mono">
+                      <span className="text-slate-500 dark:text-slate-400 line-through text-[11px]">
+                        {formatCurrency(baseToBal, currency)}
+                      </span>
+                      <span className="text-slate-400 font-sans">⭢</span>
+                      <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                        {formatCurrency(postToBal, currency)}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {postFromBal < 0 && (
+                  <div className="flex items-center gap-1.5 text-[11px] text-rose-600 dark:text-rose-400 pt-0.5">
+                    <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                    <span>توجه: پس از ثبت این تراکنش، موجودی حساب منفی خواهد شد.</span>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Description */}
             <div>
