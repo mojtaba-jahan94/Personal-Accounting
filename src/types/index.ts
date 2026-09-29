@@ -236,7 +236,7 @@ export interface MarketPriceItem {
   source: string; // "نوبیتکس و بازار", "کانال تلگرام", "سایت tgju.org", "تنظیم دستی"
   isCustomManual?: boolean;
   isEnabled?: boolean; // Default true only for 'usd' and 'gold_18k', false for others
-  displayCurrency?: 'toman' | 'rial'; // Custom unit display override per item
+  displayCurrency?: DisplayCurrencyUnit; // Custom unit display override per item
 }
 
 export type PriceSourceMode = 'default_markets' | 'telegram' | 'custom_api';

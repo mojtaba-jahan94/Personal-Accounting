@@ -197,6 +197,19 @@ export const AssetsView: React.FC = () => {
   );
 
   // Helper for displaying prices with either Toman or Rial
+  const getItemDisplayUnit = (item: MarketPriceItem): 'toman' | 'rial' => {
+    if (item.displayCurrency && item.displayCurrency !== 'app_default') {
+      return item.displayCurrency;
+    }
+    if (item.symbol === 'gold_18k' && priceSourceConfig.goldDisplayUnit && priceSourceConfig.goldDisplayUnit !== 'app_default') {
+      return priceSourceConfig.goldDisplayUnit;
+    }
+    if (item.symbol === 'usd' && priceSourceConfig.dollarDisplayUnit && priceSourceConfig.dollarDisplayUnit !== 'app_default') {
+      return priceSourceConfig.dollarDisplayUnit;
+    }
+    return displayUnit;
+  };
+
   const formatPriceWithUnit = (priceToman: number, itemUnit?: 'toman' | 'rial') => {
     const activeUnit = itemUnit || displayUnit;
     if (activeUnit === 'rial') {
@@ -295,7 +308,7 @@ export const AssetsView: React.FC = () => {
                 const change = item.change24h ?? 0;
                 const formatted = formatPriceWithUnit(
                   item.priceToman,
-                  item.displayCurrency || displayUnit
+                  getItemDisplayUnit(item)
                 );
 
                 return (
@@ -1096,7 +1109,7 @@ export const AssetsView: React.FC = () => {
                     const isDedicated = item.symbol === 'usd' || item.symbol === 'gold_18k';
                     const formatted = formatPriceWithUnit(
                       item.priceToman,
-                      item.displayCurrency || displayUnit
+                      getItemDisplayUnit(item)
                     );
 
                     return (
@@ -1172,7 +1185,11 @@ export const AssetsView: React.FC = () => {
                           {isDedicated ? (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-300 font-bold border border-amber-500/20 text-[10px]">
                               <Sparkles className="w-2.5 h-2.5" />
-                              <span>سورس اختصاصی ({priceSourceConfig.goldDollarSourceType === 'telegram' ? 'تلگرام' : 'سایت'})</span>
+                              <span>
+                                {item.symbol === 'gold_18k'
+                                  ? `کانال طلا (${priceSourceConfig.goldSourceType === 'telegram' ? 'تلگرام' : 'سایت'})`
+                                  : `کانال دلار (${priceSourceConfig.dollarSourceType === 'telegram' ? 'تلگرام' : 'سایت'})`}
+                              </span>
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px]">
@@ -1188,14 +1205,14 @@ export const AssetsView: React.FC = () => {
                             onClick={() =>
                               setMarketPriceDisplayUnit(
                                 item.symbol,
-                                (item.displayCurrency || displayUnit) === 'rial' ? 'toman' : 'rial'
+                                getItemDisplayUnit(item) === 'rial' ? 'toman' : 'rial'
                               )
                             }
                             className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-amber-500/10 hover:text-amber-600 text-slate-600 dark:text-slate-300 text-[11px] font-bold transition border border-slate-200 dark:border-slate-700"
                             title="تغییر واحد نمایش بین تومان و ریال برای این قلم"
                           >
                             <ArrowRightLeft className="w-2.5 h-2.5" />
-                            <span>{(item.displayCurrency || displayUnit) === 'rial' ? 'ریال' : 'تومان'}</span>
+                            <span>{getItemDisplayUnit(item) === 'rial' ? 'ریال' : 'تومان'}</span>
                           </button>
                         </td>
 

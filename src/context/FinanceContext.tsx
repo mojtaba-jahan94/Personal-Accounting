@@ -470,6 +470,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const parsed = JSON.parse(saved);
         return {
           ...DEFAULT_PRICE_SOURCE_CONFIG,
+          ...parsed,
           dollarTelegramChannel:
             parsed.dollarTelegramChannel ||
             parsed.goldDollarTelegramChannel ||
@@ -503,8 +504,6 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
             parsed.goldDisplayUnit ||
             parsed.goldDollarDisplayUnit ||
             DEFAULT_PRICE_SOURCE_CONFIG.goldDisplayUnit,
-
-          ...parsed,
         };
       } catch {
         return DEFAULT_PRICE_SOURCE_CONFIG;
@@ -1324,6 +1323,20 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       localStorage.setItem(STORAGE_KEYS.PRICE_SOURCE_CONFIG, JSON.stringify(next));
       return next;
     });
+
+    if (cfg.dollarDisplayUnit || cfg.goldDisplayUnit) {
+      setMarketPrices(prev =>
+        prev.map(item => {
+          if (item.symbol === 'usd' && cfg.dollarDisplayUnit) {
+            return { ...item, displayCurrency: cfg.dollarDisplayUnit };
+          }
+          if (item.symbol === 'gold_18k' && cfg.goldDisplayUnit) {
+            return { ...item, displayCurrency: cfg.goldDisplayUnit };
+          }
+          return item;
+        })
+      );
+    }
   }, []);
 
   const applyTelegramPricesFromText = useCallback(
@@ -1362,7 +1375,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       symbols: res.matchedItems.map(m => m.name),
       message: `${res.matchedItems.length} نرخ از متن تلگرام با موفقیت استخراج و اعمال شد.`,
     };
-  }, []);
+  }, [priceSourceConfig]);
 
   // Auto-refresh interval for market prices if enabled
   useEffect(() => {
