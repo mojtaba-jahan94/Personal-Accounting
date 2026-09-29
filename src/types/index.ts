@@ -247,16 +247,30 @@ export interface PriceSourceConfig {
   sourceMode: PriceSourceMode;
   autoRefreshMinutes: number; // 0 = manual, 1, 5, 15, 30
 
-  // Dedicated source settings for US Dollar & 18k Gold
-  goldDollarSourceType: 'telegram' | 'website' | 'auto';
-  goldDollarTelegramChannel: string; // e.g. "@tgju_org", "t.me/s/...", etc.
-  goldDollarWebsiteUrl: string; // e.g. custom site for dollar & gold
-  goldDollarSourceUnit: SourceCurrencyUnit; // فلان کانال قیمت‌های اعلامیش به تومنه یا ریال
-  goldDollarDisplayUnit: DisplayCurrencyUnit; // ولی به ریال نشون بده یا برعکس (تومان یا ریال)
+  // Dedicated source settings for US Dollar (دلار آمریکا)
+  dollarSourceType: 'telegram' | 'website' | 'auto';
+  dollarTelegramChannel: string; // e.g. "@dollar_channel", "t.me/s/..."
+  dollarWebsiteUrl: string; // e.g. custom site for dollar
+  dollarSourceUnit: SourceCurrencyUnit; // واحد اعلامی سورس دلار (تومان / ریال)
+  dollarDisplayUnit: DisplayCurrencyUnit; // واحد نمایش دلار در برنامه (تومان / ریال)
+
+  // Dedicated source settings for 18k Gold (طلای ۱۸ عیار)
+  goldSourceType: 'telegram' | 'website' | 'auto';
+  goldTelegramChannel: string; // e.g. "@tala_channel", "t.me/s/..."
+  goldWebsiteUrl: string; // e.g. custom site for gold
+  goldSourceUnit: SourceCurrencyUnit; // واحد اعلامی سورس طلا (تومان / ریال)
+  goldDisplayUnit: DisplayCurrencyUnit; // واحد نمایش طلا در برنامه (تومان / ریال)
 
   // General Market Source for other prices (coins, euro, etc.)
   generalMarketSourceUrl: string; // پیش‌فرض tgju.org با قابلیت تغییر
   generalSourceUnit: SourceCurrencyUnit;
+
+  // Legacy/Fallback aliases
+  goldDollarSourceType?: 'telegram' | 'website' | 'auto';
+  goldDollarTelegramChannel?: string;
+  goldDollarWebsiteUrl?: string;
+  goldDollarSourceUnit?: SourceCurrencyUnit;
+  goldDollarDisplayUnit?: DisplayCurrencyUnit;
 
   // Telegram bot / general settings
   telegramChannelOrUrl?: string; // legacy/fallback

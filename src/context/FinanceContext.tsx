@@ -17,6 +17,7 @@ import {
   AssetTransaction,
   MarketPriceItem,
   PriceSourceConfig,
+  SourceCurrencyUnit,
 } from '../types';
 import { DEFAULT_ACCOUNTS, DEFAULT_CATEGORIES, DEFAULT_PERSONS, getDemoData } from '../utils/sampleData';
 import { getTodayJalali } from '../utils/jalali';
@@ -280,7 +281,10 @@ interface FinanceContextType {
   setMarketPriceDisplayUnit: (symbol: string, unit: 'toman' | 'rial') => void;
   refreshMarketPrices: () => Promise<{ success: boolean; message: string }>;
   updatePriceSourceConfig: (cfg: Partial<PriceSourceConfig>) => void;
-  applyTelegramPricesFromText: (text: string) => { count: number; symbols: string[]; message: string };
+  applyTelegramPricesFromText: (
+    text: string,
+    overrideUnit?: SourceCurrencyUnit
+  ) => { count: number; symbols: string[]; message: string };
 
   // Computed values
   totalBalance: number;
@@ -463,7 +467,45 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const saved = localStorage.getItem(STORAGE_KEYS.PRICE_SOURCE_CONFIG);
     if (saved) {
       try {
-        return { ...DEFAULT_PRICE_SOURCE_CONFIG, ...JSON.parse(saved) };
+        const parsed = JSON.parse(saved);
+        return {
+          ...DEFAULT_PRICE_SOURCE_CONFIG,
+          dollarTelegramChannel:
+            parsed.dollarTelegramChannel ||
+            parsed.goldDollarTelegramChannel ||
+            DEFAULT_PRICE_SOURCE_CONFIG.dollarTelegramChannel,
+          dollarWebsiteUrl:
+            parsed.dollarWebsiteUrl ||
+            parsed.goldDollarWebsiteUrl ||
+            DEFAULT_PRICE_SOURCE_CONFIG.dollarWebsiteUrl,
+          dollarSourceUnit:
+            parsed.dollarSourceUnit ||
+            parsed.goldDollarSourceUnit ||
+            DEFAULT_PRICE_SOURCE_CONFIG.dollarSourceUnit,
+          dollarDisplayUnit:
+            parsed.dollarDisplayUnit ||
+            parsed.goldDollarDisplayUnit ||
+            DEFAULT_PRICE_SOURCE_CONFIG.dollarDisplayUnit,
+
+          goldTelegramChannel:
+            parsed.goldTelegramChannel ||
+            parsed.goldDollarTelegramChannel ||
+            DEFAULT_PRICE_SOURCE_CONFIG.goldTelegramChannel,
+          goldWebsiteUrl:
+            parsed.goldWebsiteUrl ||
+            parsed.goldDollarWebsiteUrl ||
+            DEFAULT_PRICE_SOURCE_CONFIG.goldWebsiteUrl,
+          goldSourceUnit:
+            parsed.goldSourceUnit ||
+            parsed.goldDollarSourceUnit ||
+            DEFAULT_PRICE_SOURCE_CONFIG.goldSourceUnit,
+          goldDisplayUnit:
+            parsed.goldDisplayUnit ||
+            parsed.goldDollarDisplayUnit ||
+            DEFAULT_PRICE_SOURCE_CONFIG.goldDisplayUnit,
+
+          ...parsed,
+        };
       } catch {
         return DEFAULT_PRICE_SOURCE_CONFIG;
       }
@@ -1284,8 +1326,14 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     });
   }, []);
 
-  const applyTelegramPricesFromText = useCallback((text: string) => {
-    const res = parseTelegramMarketText(text, priceSourceConfig.goldDollarSourceUnit);
+  const applyTelegramPricesFromText = useCallback(
+    (text: string, overrideUnit?: SourceCurrencyUnit) => {
+      const unitToUse =
+        overrideUnit ||
+        priceSourceConfig.dollarSourceUnit ||
+        priceSourceConfig.goldDollarSourceUnit ||
+        'auto';
+      const res = parseTelegramMarketText(text, unitToUse);
     if (!res.success || res.matchedItems.length === 0) {
       return { count: 0, symbols: [], message: 'هیچ قیمت معتبری در متن شناسایی نشد.' };
     }

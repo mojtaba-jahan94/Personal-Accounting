@@ -360,11 +360,7 @@ export const AssetsView: React.FC = () => {
               <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[11px] font-bold">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                 <span>
-                  {priceSourceConfig.sourceMode === 'telegram'
-                    ? `سورس تلگرام ${priceSourceConfig.telegramChannelOrUrl}`
-                    : priceSourceConfig.sourceMode === 'custom_api'
-                    ? 'سورس سفارشی وب'
-                    : 'نرخ لحظه‌ای بازار و نوبیتکس'}
+                  کانال دلار: {priceSourceConfig.dollarTelegramChannel || '@tgju_org'} | کانال طلا: {priceSourceConfig.goldTelegramChannel || '@tgju_org'}
                 </span>
               </div>
             </div>
@@ -1349,44 +1345,68 @@ export const AssetsView: React.FC = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-              {/* Card 1: Dedicated Dollar & Gold */}
-              <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+              {/* Card 1: Dedicated Dollar */}
+              <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-amber-700 dark:text-amber-300 font-bold flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                    سورس اختصاصی دلار و طلا:
+                  <span className="text-emerald-700 dark:text-emerald-300 font-bold flex items-center gap-1.5">
+                    <DollarSign className="w-3.5 h-3.5 text-emerald-500" />
+                    سورس دلار آمریکا (USD):
                   </span>
-                  <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold text-[10px]">
-                    {priceSourceConfig.goldDollarSourceType === 'telegram' ? 'کانال تلگرام' : 'وب‌سایت اختصاصی'}
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-bold text-[10px]">
+                    {priceSourceConfig.dollarSourceType === 'telegram' ? 'کانال تلگرام' : 'وب‌سایت'}
                   </span>
                 </div>
                 <div className="font-mono font-bold text-slate-900 dark:text-white text-xs truncate dir-ltr text-right">
-                  {priceSourceConfig.goldDollarSourceType === 'telegram'
-                    ? priceSourceConfig.goldDollarTelegramChannel || '@tala_dollar_live'
-                    : priceSourceConfig.goldDollarWebsiteUrl || 'پیش‌فرض'}
+                  {priceSourceConfig.dollarTelegramChannel || '@tgju_org'}
                 </div>
-                <div className="text-[11px] text-slate-500 dark:text-slate-400 space-y-0.5 pt-1 border-t border-amber-500/10">
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 space-y-0.5 pt-1 border-t border-emerald-500/10">
                   <div className="flex justify-between">
-                    <span>واحد اعلامی سورس:</span>
+                    <span>واحد کانال:</span>
                     <span className="font-bold text-slate-700 dark:text-slate-300">
-                      {priceSourceConfig.goldDollarSourceUnit === 'toman'
-                        ? 'تومان'
-                        : priceSourceConfig.goldDollarSourceUnit === 'rial'
-                        ? 'ریال'
-                        : 'تشخیص خودکار'}
+                      {priceSourceConfig.dollarSourceUnit === 'rial' ? 'ریال' : 'تومان'}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span>واحد نمایش در برنامه:</span>
-                    <span className="font-bold text-amber-600 dark:text-amber-400">
-                      {priceSourceConfig.goldDollarDisplayUnit === 'rial' ? 'ریال' : 'تومان'}
+                    <span>نمایش در برنامه:</span>
+                    <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                      {priceSourceConfig.dollarDisplayUnit === 'rial' ? 'ریال' : 'تومان'}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Card 2: General Source (tgju.org) */}
+              {/* Card 2: Dedicated Gold 18k */}
+              <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-amber-700 dark:text-amber-300 font-bold flex items-center gap-1.5">
+                    <Gem className="w-3.5 h-3.5 text-amber-500" />
+                    سورس طلای ۱۸ عیار:
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold text-[10px]">
+                    {priceSourceConfig.goldSourceType === 'telegram' ? 'کانال تلگرام' : 'وب‌سایت'}
+                  </span>
+                </div>
+                <div className="font-mono font-bold text-slate-900 dark:text-white text-xs truncate dir-ltr text-right">
+                  {priceSourceConfig.goldTelegramChannel || '@tgju_org'}
+                </div>
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 space-y-0.5 pt-1 border-t border-amber-500/10">
+                  <div className="flex justify-between">
+                    <span>واحد کانال:</span>
+                    <span className="font-bold text-slate-700 dark:text-slate-300">
+                      {priceSourceConfig.goldSourceUnit === 'rial' ? 'ریال' : 'تومان'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>نمایش در برنامه:</span>
+                    <span className="font-bold text-amber-600 dark:text-amber-400">
+                      {priceSourceConfig.goldDisplayUnit === 'rial' ? 'ریال' : 'تومان'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 3: General Source (tgju.org) */}
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-slate-600 dark:text-slate-300 font-bold flex items-center gap-1.5">
@@ -1394,21 +1414,21 @@ export const AssetsView: React.FC = () => {
                     سورس عمومی سایر نرخ‌ها:
                   </span>
                   <span className="px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-600 dark:text-sky-300 font-bold text-[10px]">
-                    قابل تغییر
+                    سایر اقلام
                   </span>
                 </div>
                 <div className="font-mono text-slate-900 dark:text-white text-xs truncate dir-ltr text-right">
                   {priceSourceConfig.generalMarketSourceUrl || 'https://www.tgju.org'}
                 </div>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-200/50 dark:border-slate-700/50 leading-relaxed">
-                  این سورس برای سایر اقلام (سکه، انس طلا، یورو و...) استفاده می‌شود و فقط زمانی که هر قلم را فعال کنید استعلام می‌گردد.
+                  سایر اقلام (سکه، انس، یورو و...) تنها در صورت روشن شدن از این سایت استعلام می‌شوند.
                 </p>
               </div>
 
-              {/* Card 3: Personalization & Refresh Status */}
+              {/* Card 4: Personalization & Refresh Status */}
               <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-600 dark:text-slate-300 font-bold">وضعیت شخصی‌سازی:</span>
+                  <span className="text-slate-600 dark:text-slate-300 font-bold">وضعیت اقلام سبد:</span>
                   <span className="font-mono font-black text-amber-600 dark:text-amber-400 text-xs">
                     {enabledMarketPrices.length} از {marketPrices.length} فعال
                   </span>
@@ -1445,10 +1465,10 @@ export const AssetsView: React.FC = () => {
             <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-300 space-y-1">
               <span className="font-bold flex items-center gap-1.5">
                 <Info className="w-4 h-4 text-amber-500" />
-                قابلیت‌های شخصی‌سازی سورس و تبدیل نرخ:
+                قابلیت‌های کانال‌های مجزا و تبدیل نرخ:
               </span>
               <p className="leading-relaxed text-[11px]">
-                اگر کانال یا سایت مظنه شما قیمت‌ها را به <strong>تومان</strong> اعلام می‌کند ولی ترجیح می‌دهید در برنامه به <strong>ریال</strong> نمایش یابد (یا برعکس)، سیستم به‌صورت بلادرنگ تبدیل ریاضی (ضرب یا تقسیم بر ۱۰) را انجام می‌دهد. همچنین می‌توانید هر زمان متن پیام مظنه کانال تلگرام را با کلیک بر روی دکمه «پیست پیام تلگرام» وارد کنید تا بدون نیاز به اتصال مستقیم اینترنتی به‌روز شود.
+                شما می‌توانید برای <strong>دلار آمریکا</strong> و <strong>طلای ۱۸ عیار</strong> دو کانال تلگرامی مجزا با واحدهای اعلامی متفاوت (یکی به تومان و دیگری به ریال) تعریف کنید و نحوه نمایش هر کدام را در برنامه شخصی‌سازی نمایید.
               </p>
             </div>
           </div>
@@ -1487,7 +1507,7 @@ export const AssetsView: React.FC = () => {
       <TelegramPasteModal
         isOpen={isTelegramModalOpen}
         onClose={() => setIsTelegramModalOpen(false)}
-        onApplyRates={(text) => applyTelegramPricesFromText(text)}
+        onApplyRates={(text, unit) => applyTelegramPricesFromText(text, unit)}
       />
 
       <PriceSourceSettingsModal

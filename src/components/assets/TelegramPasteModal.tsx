@@ -3,10 +3,15 @@ import { X, Send, CheckCircle2, AlertCircle, Sparkles, Copy, ArrowRight } from '
 import { parseTelegramMarketText, ParsedItemResult } from '../../services/marketPriceService';
 import { formatNumber } from '../../utils/formatters';
 
+import { SourceCurrencyUnit } from '../../types';
+
 interface TelegramPasteModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onApplyRates: (text: string) => { count: number; symbols: string[]; message: string };
+  onApplyRates: (
+    text: string,
+    overrideUnit?: SourceCurrencyUnit
+  ) => { count: number; symbols: string[]; message: string };
 }
 
 export const TelegramPasteModal: React.FC<TelegramPasteModalProps> = ({
@@ -17,7 +22,7 @@ export const TelegramPasteModal: React.FC<TelegramPasteModalProps> = ({
   if (!isOpen) return null;
 
   const [rawText, setRawText] = useState('');
-  const [sourceUnit, setSourceUnit] = useState<'toman' | 'rial' | 'auto'>('auto');
+  const [sourceUnit, setSourceUnit] = useState<SourceCurrencyUnit>('auto');
   const [feedback, setFeedback] = useState<string | null>(null);
 
   const parsed = parseTelegramMarketText(rawText, sourceUnit);
@@ -36,7 +41,7 @@ export const TelegramPasteModal: React.FC<TelegramPasteModalProps> = ({
 
   const handleApply = () => {
     if (!rawText.trim()) return;
-    const res = onApplyRates(rawText);
+    const res = onApplyRates(rawText, sourceUnit);
     setFeedback(res.message);
     if (res.count > 0) {
       setTimeout(() => {

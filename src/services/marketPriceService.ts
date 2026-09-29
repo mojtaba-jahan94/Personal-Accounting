@@ -171,16 +171,30 @@ export const DEFAULT_PRICE_SOURCE_CONFIG: PriceSourceConfig = {
   sourceMode: 'default_markets',
   autoRefreshMinutes: 5,
 
-  // Dedicated source for Dollar & Gold
+  // Dedicated source for Dollar (دلار آمریکا)
+  dollarSourceType: 'telegram',
+  dollarTelegramChannel: '@tgju_org',
+  dollarWebsiteUrl: 'https://www.tgju.org',
+  dollarSourceUnit: 'toman',
+  dollarDisplayUnit: 'toman',
+
+  // Dedicated source for 18k Gold (طلای ۱۸ عیار)
+  goldSourceType: 'telegram',
+  goldTelegramChannel: '@tgju_org',
+  goldWebsiteUrl: 'https://www.tgju.org',
+  goldSourceUnit: 'toman',
+  goldDisplayUnit: 'toman',
+
+  // General source for other items (سکه، انس، یورو و...)
+  generalMarketSourceUrl: 'https://www.tgju.org',
+  generalSourceUnit: 'toman',
+
+  // Legacy/Fallback aliases
   goldDollarSourceType: 'telegram',
   goldDollarTelegramChannel: '@tgju_org',
   goldDollarWebsiteUrl: 'https://www.tgju.org',
-  goldDollarSourceUnit: 'toman', // فلان کانال قیمت‌های اعلامیش به تومنه
-  goldDollarDisplayUnit: 'toman', // نمایش به تومان یا ریال در برنامه
-
-  // General source for other items (سکه، انس، یورو و...)
-  generalMarketSourceUrl: 'https://www.tgju.org', // پیش‌فرض tgju.org با قابلیت تغییر
-  generalSourceUnit: 'toman',
+  goldDollarSourceUnit: 'toman',
+  goldDollarDisplayUnit: 'toman',
 
   telegramChannelOrUrl: '@tgju_org',
   customApiUrl: '',
@@ -471,55 +485,84 @@ export async function fetchLiveMarketRates(
   let goldDollarUpdated = false;
   let otherRatesUpdated = false;
 
-  // 1. Fetch Dollar & 18k Gold from Dedicated Source
+  // 1. Fetch Dollar from its dedicated Telegram/Website source
+  const cleanChannelName = (ch?: string) =>
+    (ch || '@tgju_org')
+      .replace('@', '')
+      .replace('https://t.me/', '')
+      .replace('t.me/', '')
+      .replace('/s/', '')
+      .replace('/', '')
+      .trim();
+
+  const dollarSourceType = config.dollarSourceType || config.goldDollarSourceType || 'telegram';
+  const dollarChannel = cleanChannelName(config.dollarTelegramChannel || config.goldDollarTelegramChannel);
+  const dollarSourceUnit = config.dollarSourceUnit || config.goldDollarSourceUnit || 'toman';
+  let dollarRawText = '';
+
   try {
-    if (config.goldDollarSourceType === 'telegram') {
-      const channel = (config.goldDollarTelegramChannel || '@tgju_org')
-        .replace('@', '')
-        .replace('https://t.me/', '')
-        .replace('t.me/', '')
-        .replace('/s/', '')
-        .replace('/', '')
-        .trim();
+    if (dollarSourceType === 'telegram') {
+      dollarRawText = await fetchViaProxy(`https://t.me/s/${dollarChannel}`, 5000);
+    } else if (dollarSourceType === 'website') {
+      const siteUrl = config.dollarWebsiteUrl || config.goldDollarWebsiteUrl || 'https://www.tgju.org';
+      dollarRawText = await fetchViaProxy(siteUrl, 5000);
+    }
 
-      const telegramUrl = `https://t.me/s/${channel}`;
-      const rawText = await fetchViaProxy(telegramUrl, 5000);
-
-      if (rawText) {
-        const parsed = parseTelegramMarketText(rawText, config.goldDollarSourceUnit);
-        for (const item of updated) {
-          if (item.symbol === 'usd' || item.symbol === 'gold_18k') {
-            const found = parsed.matchedItems.find((p) => p.symbol === item.symbol);
-            if (found) {
-              item.priceToman = found.priceToman;
-              item.lastUpdated = timestamp;
-              item.source = `کانال تلگرام @${channel} (${config.goldDollarSourceUnit === 'rial' ? 'ورودی ریال' : 'ورودی تومان'})`;
-              goldDollarUpdated = true;
-            }
-          }
-        }
-      }
-    } else if (config.goldDollarSourceType === 'website') {
-      const siteUrl = config.goldDollarWebsiteUrl || 'https://www.tgju.org';
-      const rawText = await fetchViaProxy(siteUrl, 5000);
-
-      if (rawText) {
-        const parsed = parseTelegramMarketText(rawText, config.goldDollarSourceUnit);
-        for (const item of updated) {
-          if (item.symbol === 'usd' || item.symbol === 'gold_18k') {
-            const found = parsed.matchedItems.find((p) => p.symbol === item.symbol);
-            if (found) {
-              item.priceToman = found.priceToman;
-              item.lastUpdated = timestamp;
-              item.source = `سایت اختصاصی طلا و دلار (${config.goldDollarSourceUnit === 'rial' ? 'ورودی ریال' : 'ورودی تومان'})`;
-              goldDollarUpdated = true;
-            }
-          }
-        }
+    if (dollarRawText) {
+      const parsed = parseTelegramMarketText(dollarRawText, dollarSourceUnit);
+      const usdItem = updated.find((p) => p.symbol === 'usd');
+      const found = parsed.matchedItems.find((p) => p.symbol === 'usd');
+      if (usdItem && found) {
+        usdItem.priceToman = found.priceToman;
+        usdItem.lastUpdated = timestamp;
+        usdItem.source =
+          dollarSourceType === 'telegram'
+            ? `کانال تلگرام @${dollarChannel} (${dollarSourceUnit === 'rial' ? 'ورودی ریال' : 'ورودی تومان'})`
+            : `سایت اختصاصی دلار (${dollarSourceUnit === 'rial' ? 'ورودی ریال' : 'ورودی تومان'})`;
+        goldDollarUpdated = true;
       }
     }
   } catch {
-    // Continue with other sources
+    // Continue
+  }
+
+  // 2. Fetch 18k Gold from its dedicated Telegram/Website source
+  const goldSourceType = config.goldSourceType || config.goldDollarSourceType || 'telegram';
+  const goldChannel = cleanChannelName(config.goldTelegramChannel || config.goldDollarTelegramChannel);
+  const goldSourceUnit = config.goldSourceUnit || config.goldDollarSourceUnit || 'toman';
+  let goldRawText = '';
+
+  try {
+    if (
+      goldSourceType === dollarSourceType &&
+      goldChannel === dollarChannel &&
+      dollarRawText
+    ) {
+      // Reuse text if both point to the same channel
+      goldRawText = dollarRawText;
+    } else if (goldSourceType === 'telegram') {
+      goldRawText = await fetchViaProxy(`https://t.me/s/${goldChannel}`, 5000);
+    } else if (goldSourceType === 'website') {
+      const siteUrl = config.goldWebsiteUrl || config.goldDollarWebsiteUrl || 'https://www.tgju.org';
+      goldRawText = await fetchViaProxy(siteUrl, 5000);
+    }
+
+    if (goldRawText) {
+      const parsed = parseTelegramMarketText(goldRawText, goldSourceUnit);
+      const goldItem = updated.find((p) => p.symbol === 'gold_18k');
+      const found = parsed.matchedItems.find((p) => p.symbol === 'gold_18k');
+      if (goldItem && found) {
+        goldItem.priceToman = found.priceToman;
+        goldItem.lastUpdated = timestamp;
+        goldItem.source =
+          goldSourceType === 'telegram'
+            ? `کانال تلگرام @${goldChannel} (${goldSourceUnit === 'rial' ? 'ورودی ریال' : 'ورودی تومان'})`
+            : `سایت اختصاصی طلا (${goldSourceUnit === 'rial' ? 'ورودی ریال' : 'ورودی تومان'})`;
+        goldDollarUpdated = true;
+      }
+    }
+  } catch {
+    // Continue
   }
 
   // 2. Fetch General Market items from tgju.org (or user-customized generalMarketSourceUrl)
