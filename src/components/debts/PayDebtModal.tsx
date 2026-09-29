@@ -35,7 +35,7 @@ export const PayDebtModal: React.FC<PayDebtModalProps> = ({ isOpen, onClose, deb
   useEffect(() => {
     if (debt) {
       const remainingToman = Math.max(0, debt.amount - debt.paidAmount);
-      const remainingDisplay = currency === 'rial' ? remainingToman * 10 : remainingToman;
+      const remainingDisplay = currency === 'rial' ? Math.round(remainingToman * 10) : remainingToman;
       setAmount(remainingDisplay > 0 ? formatAmountInput(remainingDisplay.toString()) : '');
       setDate(getTodayJalali());
       const defaultAcc = accounts.find(a => a.isDefault) || accounts[0];
@@ -56,7 +56,7 @@ export const PayDebtModal: React.FC<PayDebtModalProps> = ({ isOpen, onClose, deb
   const selectedAccount = accounts.find(a => a.id === accountId);
 
   const handleQuickPercent = (pct: number) => {
-    const remainingDisplay = currency === 'rial' ? remainingAmount * 10 : remainingAmount;
+    const remainingDisplay = currency === 'rial' ? Math.round(remainingAmount * 10) : remainingAmount;
     const val = Math.round((remainingDisplay * pct) / 100);
     setAmount(formatAmountInput(val.toString()));
   };
@@ -72,7 +72,7 @@ export const PayDebtModal: React.FC<PayDebtModalProps> = ({ isOpen, onClose, deb
       return;
     }
 
-    const savedAmount = currency === 'rial' ? Math.round(numAmount / 10) : numAmount;
+    const savedAmount = currency === 'rial' ? (numAmount / 10) : numAmount;
 
     if (isDebt && selectedAccount && selectedAccount.balance < savedAmount) {
       if (

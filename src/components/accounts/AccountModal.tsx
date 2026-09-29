@@ -50,7 +50,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
       setName(initialAccount.name);
       setType(initialAccount.type);
       const startingBal = initialAccount.initialBalance ?? initialAccount.balance ?? 0;
-      const displayBalance = currency === 'rial' ? startingBal * 10 : startingBal;
+      const displayBalance = currency === 'rial' ? Math.round(startingBal * 10) : startingBal;
       setBalance(formatAmountInput(displayBalance.toString()));
       setBankName(initialAccount.bankName || '');
       setCardNumber(initialAccount.cardNumber || '');
@@ -78,7 +78,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
     : { income: 0, expense: 0, netDelta: 0, txCount: 0 };
 
   const parsedEnteredAmount = parseAmount(balance);
-  const canonicalEntered = currency === 'rial' ? Math.round(parsedEnteredAmount / 10) : parsedEnteredAmount;
+  const canonicalEntered = currency === 'rial' ? (parsedEnteredAmount / 10) : parsedEnteredAmount;
 
   // Projected current balance based on edit mode
   const projectedBalance = isReconcileMode
@@ -231,7 +231,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                     onClick={() => {
                       setIsReconcileMode(false);
                       const startingBal = initialAccount.initialBalance ?? initialAccount.balance ?? 0;
-                      const display = currency === 'rial' ? startingBal * 10 : startingBal;
+                      const display = currency === 'rial' ? Math.round(startingBal * 10) : startingBal;
                       setBalance(formatAmountInput(display.toString()));
                     }}
                     className={`flex-1 py-1.5 rounded-lg text-[11px] font-bold transition ${
@@ -246,7 +246,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                     type="button"
                     onClick={() => {
                       setIsReconcileMode(true);
-                      const display = currency === 'rial' ? initialAccount.balance * 10 : initialAccount.balance;
+                      const display = currency === 'rial' ? Math.round(initialAccount.balance * 10) : initialAccount.balance;
                       setBalance(formatAmountInput(display.toString()));
                     }}
                     className={`flex-1 py-1.5 rounded-lg text-[11px] font-bold transition ${

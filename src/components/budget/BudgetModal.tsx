@@ -27,7 +27,7 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
   useEffect(() => {
     if (initialBudget) {
       setCategoryId(initialBudget.categoryId);
-      const displayAmount = currency === 'rial' ? initialBudget.amount * 10 : initialBudget.amount;
+      const displayAmount = currency === 'rial' ? Math.round(initialBudget.amount * 10) : initialBudget.amount;
       setAmount(formatAmountInput(displayAmount.toString()));
       setMonth(initialBudget.month);
     } else {
@@ -48,7 +48,7 @@ export const BudgetModal: React.FC<BudgetModalProps> = ({
       return;
     }
 
-    const savedAmount = currency === 'rial' ? Math.round(numAmount / 10) : numAmount;
+    const savedAmount = currency === 'rial' ? (numAmount / 10) : numAmount;
 
     if (initialBudget) {
       updateBudget({

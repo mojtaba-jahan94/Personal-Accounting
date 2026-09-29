@@ -85,7 +85,7 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
 
   const numAmount = parseAmount(amount);
   const numFee = parseAmount(fee);
-  const numAmountToman = currency === 'rial' ? Math.round(numAmount / 10) : numAmount;
+  const numAmountToman = currency === 'rial' ? (numAmount / 10) : numAmount;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,8 +102,8 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
       return;
     }
 
-    const savedAmount = currency === 'rial' ? Math.round(numAmount / 10) : numAmount;
-    const savedFee = currency === 'rial' ? Math.round(numFee / 10) : numFee;
+    const savedAmount = currency === 'rial' ? (numAmount / 10) : numAmount;
+    const savedFee = currency === 'rial' ? (numFee / 10) : numFee;
 
     if (fromAcc.balance < savedAmount + savedFee) {
       if (!window.confirm('موجودی حساب مبدأ کمتر از این مبلغ و کارمزد است. آیا مایل به ادامه هستید؟')) {

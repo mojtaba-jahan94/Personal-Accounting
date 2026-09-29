@@ -93,11 +93,16 @@ export function toPersianDigits(n: number | string): string {
 }
 
 export function formatNumber(amount: number): string {
-  return new Intl.NumberFormat('en-US').format(Math.round(amount));
+  if (Number.isInteger(amount)) {
+    return new Intl.NumberFormat('en-US').format(amount);
+  }
+  return new Intl.NumberFormat('en-US', {
+    maximumFractionDigits: 2,
+  }).format(amount);
 }
 
 export function formatCurrency(amount: number, currency: Currency = 'toman', persianDigits = true): string {
-  const actualAmount = currency === 'rial' ? amount * 10 : amount;
+  const actualAmount = currency === 'rial' ? Math.round(amount * 10) : amount;
   const formatted = formatNumber(actualAmount);
   const text = `${formatted} ${currency === 'toman' ? 'تومان' : 'ریال'}`;
   return persianDigits ? toPersianDigits(text) : text;
@@ -155,6 +160,7 @@ export function numberToWordsPersian(num: number, currency: Currency = 'toman'):
   }
 
   const actualNum = Math.floor(Math.abs(num));
+  const frac = Math.round((Math.abs(num) - actualNum) * 100);
   const chunks: number[] = [];
   let temp = actualNum;
   while (temp > 0) {
@@ -177,6 +183,13 @@ export function numberToWordsPersian(num: number, currency: Currency = 'toman'):
     }
   }
 
-  const result = words.join(' و ');
+  let result = words.length > 0 ? words.join(' و ') : 'صفر';
+  if (frac > 0) {
+    if (frac % 10 === 0) {
+      result += ` و ${chunkToWords(frac / 10)} دهم`;
+    } else {
+      result += ` و ${chunkToWords(frac)} صدم`;
+    }
+  }
   return `${result} ${currency === 'toman' ? 'تومان' : 'ریال'}`;
 }

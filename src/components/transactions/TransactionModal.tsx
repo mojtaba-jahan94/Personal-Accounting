@@ -61,7 +61,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       setType(initialTransaction.type);
       const isRial = currency === 'rial';
       setInputUnit(currency);
-      const rawAmt = isRial ? initialTransaction.amount * 10 : initialTransaction.amount;
+      const rawAmt = isRial ? Math.round(initialTransaction.amount * 10) : initialTransaction.amount;
       setAmount(formatAmountInput(rawAmt.toString()));
       setDate(initialTransaction.date);
       setDescription(initialTransaction.description);
@@ -69,7 +69,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       setAccountId(initialTransaction.accountId);
       setToAccountId(initialTransaction.toAccountId || '');
       const txFee = initialTransaction.fee || 0;
-      setFee(txFee ? formatAmountInput(isRial ? (txFee * 10).toString() : txFee.toString()) : '0');
+      setFee(txFee ? formatAmountInput((isRial ? Math.round(txFee * 10) : txFee).toString()) : '0');
       setTags(initialTransaction.tags || []);
       setReceiptUrl(initialTransaction.receiptUrl);
       setPersonId(initialTransaction.personId || '');
@@ -138,7 +138,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       if (newUnit === 'rial') {
         setAmount(formatAmountInput(Math.round(val * 10).toString()));
       } else {
-        setAmount(formatAmountInput(Math.round(val / 10).toString()));
+        setAmount(formatAmountInput((val / 10).toString()));
       }
     }
     if (type === 'transfer') {
@@ -147,7 +147,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         if (newUnit === 'rial') {
           setFee(formatAmountInput(Math.round(feeVal * 10).toString()));
         } else {
-          setFee(formatAmountInput(Math.round(feeVal / 10).toString()));
+          setFee(formatAmountInput((feeVal / 10).toString()));
         }
       }
     }
@@ -169,9 +169,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       return;
     }
 
-    const canonicalAmount = inputUnit === 'rial' ? Math.round(numAmount / 10) : numAmount;
+    const canonicalAmount = inputUnit === 'rial' ? (numAmount / 10) : numAmount;
     const rawFee = parseAmount(fee);
-    const canonicalFee = (type === 'transfer' && inputUnit === 'rial') ? Math.round(rawFee / 10) : rawFee;
+    const canonicalFee = (type === 'transfer' && inputUnit === 'rial') ? (rawFee / 10) : rawFee;
 
     const txData = {
       type,
@@ -203,9 +203,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const selectedAcc = accounts.find(a => a.id === accountId);
   const selectedToAcc = accounts.find(a => a.id === toAccountId);
 
-  const numCanonical = inputUnit === 'rial' ? Math.round(numAmount / 10) : numAmount;
+  const numCanonical = inputUnit === 'rial' ? (numAmount / 10) : numAmount;
   const rawFee = parseAmount(fee);
-  const feeCanonical = (type === 'transfer' && inputUnit === 'rial') ? Math.round(rawFee / 10) : rawFee;
+  const feeCanonical = (type === 'transfer' && inputUnit === 'rial') ? (rawFee / 10) : rawFee;
 
   let baseFromBal = selectedAcc ? selectedAcc.balance : 0;
   let baseToBal = selectedToAcc ? selectedToAcc.balance : 0;
@@ -354,7 +354,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   </p>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                     {inputUnit === 'rial'
-                      ? `معادل تومانی در حساب‌ها: ${(Math.round(numAmount / 10)).toLocaleString('fa-IR')} تومان (${numberToWordsPersian(Math.round(numAmount / 10), 'toman')})`
+                      ? `معادل تومانی در حساب‌ها: ${(numAmount / 10).toLocaleString('fa-IR', { maximumFractionDigits: 1 })} تومان (${numberToWordsPersian(numAmount / 10, 'toman')})`
                       : `معادل ریالی: ${(Math.round(numAmount * 10)).toLocaleString('fa-IR')} ریال`}
                   </p>
                 </div>

@@ -37,8 +37,8 @@ export const DebtModal: React.FC<DebtModalProps> = ({
       setPersonName(initialDebt.personName);
       setPhoneNumber(initialDebt.phoneNumber || '');
       setCategory(initialDebt.category || 'personal');
-      const displayAmount = currency === 'rial' ? initialDebt.amount * 10 : initialDebt.amount;
-      const displayPaid = currency === 'rial' ? initialDebt.paidAmount * 10 : initialDebt.paidAmount;
+      const displayAmount = currency === 'rial' ? Math.round(initialDebt.amount * 10) : initialDebt.amount;
+      const displayPaid = currency === 'rial' ? Math.round(initialDebt.paidAmount * 10) : initialDebt.paidAmount;
       setAmount(formatAmountInput(displayAmount.toString()));
       setPaidAmount(formatAmountInput(displayPaid.toString()));
       setDueDate(initialDebt.dueDate);
@@ -83,8 +83,8 @@ export const DebtModal: React.FC<DebtModalProps> = ({
     }
 
     const rawPaid = parseAmount(paidAmount);
-    const savedAmount = currency === 'rial' ? Math.round(numAmount / 10) : numAmount;
-    const savedPaid = currency === 'rial' ? Math.round(rawPaid / 10) : rawPaid;
+    const savedAmount = currency === 'rial' ? (numAmount / 10) : numAmount;
+    const savedPaid = currency === 'rial' ? (rawPaid / 10) : rawPaid;
 
     const debtData = {
       type,

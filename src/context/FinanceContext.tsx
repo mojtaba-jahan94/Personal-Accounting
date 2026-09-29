@@ -588,10 +588,10 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const tx = transactions.find(t => t.id === txId);
     if (!tx) return;
     const oldAmount = tx.amount;
-    const newAmount = Math.round(oldAmount / 10);
+    const newAmount = oldAmount / 10;
     const diff = oldAmount - newAmount;
 
-    const newFee = tx.fee ? Math.round(tx.fee / 10) : undefined;
+    const newFee = tx.fee ? (tx.fee / 10) : undefined;
 
     if (tx.debtId) {
       setDebts(prev =>
@@ -651,9 +651,9 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const updatedTransactions = transactions.map(tx => {
       if (tx.amount >= 100000000) {
         fixedCount++;
-        const newAmount = Math.round(tx.amount / 10);
+        const newAmount = tx.amount / 10;
         const diff = tx.amount - newAmount;
-        const newFee = tx.fee ? Math.round(tx.fee / 10) : undefined;
+        const newFee = tx.fee ? (tx.fee / 10) : undefined;
 
         if (tx.debtId) {
           const currentDebtDiff = debtDeltas.get(tx.debtId) || 0;
@@ -690,37 +690,38 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const convertAllDataCurrency = (factor: 0.1 | 10) => {
+    const scale = (val: number) => factor === 10 ? Math.round(val * 10) : (val * 0.1);
     setAccountsBase(prev =>
       prev.map(a => ({
         ...a,
-        initialBalance: typeof a.initialBalance === 'number' ? Math.round(a.initialBalance * factor) : 0,
-        balance: Math.round(a.balance * factor),
+        initialBalance: typeof a.initialBalance === 'number' ? scale(a.initialBalance) : 0,
+        balance: scale(a.balance),
       }))
     );
     setTransactions(prev =>
       prev.map(t => ({
         ...t,
-        amount: Math.round(t.amount * factor),
-        fee: t.fee ? Math.round(t.fee * factor) : undefined,
+        amount: scale(t.amount),
+        fee: t.fee ? scale(t.fee) : undefined,
       }))
     );
-    setBudgets(prev => prev.map(b => ({ ...b, amount: Math.round(b.amount * factor) })));
+    setBudgets(prev => prev.map(b => ({ ...b, amount: scale(b.amount) })));
     setGoals(prev =>
       prev.map(g => ({
         ...g,
-        targetAmount: Math.round(g.targetAmount * factor),
-        currentAmount: Math.round(g.currentAmount * factor),
+        targetAmount: scale(g.targetAmount),
+        currentAmount: scale(g.currentAmount),
       }))
     );
     setDebts(prev =>
       prev.map(d => ({
         ...d,
-        amount: Math.round(d.amount * factor),
-        paidAmount: Math.round(d.paidAmount * factor),
-        payments: d.payments?.map(p => ({ ...p, amount: Math.round(p.amount * factor) })),
+        amount: scale(d.amount),
+        paidAmount: scale(d.paidAmount),
+        payments: d.payments?.map(p => ({ ...p, amount: scale(p.amount) })),
       }))
     );
-    setCheques(prev => prev.map(c => ({ ...c, amount: Math.round(c.amount * factor) })));
+    setCheques(prev => prev.map(c => ({ ...c, amount: scale(c.amount) })));
   };
 
   // Account Actions

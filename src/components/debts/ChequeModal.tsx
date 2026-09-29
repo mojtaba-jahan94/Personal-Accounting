@@ -31,7 +31,7 @@ export const ChequeModal: React.FC<ChequeModalProps> = ({
   useEffect(() => {
     if (initialCheque) {
       setType(initialCheque.type);
-      const displayAmount = currency === 'rial' ? initialCheque.amount * 10 : initialCheque.amount;
+      const displayAmount = currency === 'rial' ? Math.round(initialCheque.amount * 10) : initialCheque.amount;
       setAmount(formatAmountInput(displayAmount.toString()));
       setDueDate(initialCheque.dueDate);
       setBankName(initialCheque.bankName);
@@ -64,7 +64,7 @@ export const ChequeModal: React.FC<ChequeModalProps> = ({
       return;
     }
 
-    const savedAmount = currency === 'rial' ? Math.round(numAmount / 10) : numAmount;
+    const savedAmount = currency === 'rial' ? (numAmount / 10) : numAmount;
 
     const chequeData = {
       type,

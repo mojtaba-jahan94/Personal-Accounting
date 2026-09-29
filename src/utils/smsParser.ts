@@ -74,7 +74,7 @@ export function parseBankSMS(rawSMS: string): ParsedBankSMS | null {
     if (match && match[1]) {
       const rawNum = parseInt(match[1].replace(/,/g, ''), 10);
       if (!isNaN(rawNum) && rawNum > 0) {
-        amountToman = isRial ? Math.round(rawNum / 10) : rawNum;
+        amountToman = isRial ? (rawNum / 10) : rawNum;
         break;
       }
     }
@@ -85,7 +85,7 @@ export function parseBankSMS(rawSMS: string): ParsedBankSMS | null {
     const fallbackNumbers = normalized.match(/\b([0-9]{1,3}(?:,[0-9]{3})+)\b/g);
     if (fallbackNumbers && fallbackNumbers.length > 0) {
       const rawNum = parseInt(fallbackNumbers[0].replace(/,/g, ''), 10);
-      amountToman = isRial ? Math.round(rawNum / 10) : rawNum;
+      amountToman = isRial ? (rawNum / 10) : rawNum;
     }
   }
 
@@ -110,7 +110,7 @@ export function parseBankSMS(rawSMS: string): ParsedBankSMS | null {
   if (balanceMatch && balanceMatch[1]) {
     const rawBal = parseInt(balanceMatch[1].replace(/,/g, ''), 10);
     if (!isNaN(rawBal)) {
-      balanceToman = isRial ? Math.round(rawBal / 10) : rawBal;
+      balanceToman = isRial ? (rawBal / 10) : rawBal;
     }
   }
 
