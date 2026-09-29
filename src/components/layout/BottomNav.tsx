@@ -12,6 +12,7 @@ import {
   FileCheck2,
   BarChart3,
   Settings,
+  Coins,
 } from 'lucide-react';
 
 interface BottomNavProps {
@@ -34,6 +35,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   const touchStartY = React.useRef<number | null>(null);
 
   const moreItems: { id: TabType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
+    { id: 'assets', label: 'مدیریت دارایی و طلا', icon: Coins },
     { id: 'accounts', label: 'حساب‌ها و کارت‌ها', icon: CreditCard },
     { id: 'budgets', label: 'بودجه‌بندی ماهانه', icon: PieChart },
     { id: 'goals', label: 'اهداف و پس‌انداز', icon: Target },

@@ -13,9 +13,110 @@ import {
   Person,
   DebtPayment,
   TransactionType,
+  Asset,
+  AssetTransaction,
+  MarketPriceItem,
+  PriceSourceConfig,
 } from '../types';
 import { DEFAULT_ACCOUNTS, DEFAULT_CATEGORIES, DEFAULT_PERSONS, getDemoData } from '../utils/sampleData';
 import { getTodayJalali } from '../utils/jalali';
+import {
+  DEFAULT_MARKET_PRICES,
+  DEFAULT_PRICE_SOURCE_CONFIG,
+  fetchLiveMarketRates,
+  parseTelegramMarketText,
+} from '../services/marketPriceService';
+
+export const DEFAULT_ASSETS: Asset[] = [
+  {
+    id: 'asset-gold-18k',
+    name: 'طلای ۱۸ عیار (آبشده و زینتی)',
+    category: 'gold',
+    symbol: 'gold_18k',
+    quantity: 15.5,
+    unit: 'گرم',
+    buyPriceAverage: 3950000,
+    totalCost: 15.5 * 3950000,
+    notes: 'خرید پله‌ای از بازار طلا',
+    purchaseDate: '1403/05/10',
+    createdAt: '1403/05/10',
+  },
+  {
+    id: 'asset-coin-emami',
+    name: 'سکه تمام امامی (طرح جدید)',
+    category: 'coin',
+    symbol: 'coin_emami',
+    quantity: 2,
+    unit: 'عدد',
+    buyPriceAverage: 47800000,
+    totalCost: 2 * 47800000,
+    notes: 'سرمایه‌گذاری بلندمدت صندوق امانات',
+    purchaseDate: '1403/04/15',
+    createdAt: '1403/04/15',
+  },
+  {
+    id: 'asset-usd-cash',
+    name: 'دلار کاغذی آمریکا',
+    category: 'currency',
+    symbol: 'usd',
+    quantity: 1200,
+    unit: 'دلار',
+    buyPriceAverage: 86500,
+    totalCost: 1200 * 86500,
+    notes: 'پس‌انداز ارزی سفر و تورم‌زدایی',
+    purchaseDate: '1403/06/01',
+    createdAt: '1403/06/01',
+  },
+  {
+    id: 'asset-usdt',
+    name: 'تتر دیجیتال (USDT)',
+    category: 'crypto',
+    symbol: 'usdt',
+    quantity: 650,
+    unit: 'تتر',
+    buyPriceAverage: 88200,
+    totalCost: 650 * 88200,
+    notes: 'کیف پول تراست والت',
+    purchaseDate: '1403/07/20',
+    createdAt: '1403/07/20',
+  },
+];
+
+export const DEFAULT_ASSET_TRANSACTIONS: AssetTransaction[] = [
+  {
+    id: 'atx-1',
+    assetId: 'asset-gold-18k',
+    assetName: 'طلای ۱۸ عیار (آبشده و زینتی)',
+    type: 'buy',
+    quantity: 15.5,
+    unitPrice: 3950000,
+    totalAmount: 15.5 * 3950000,
+    date: '1403/05/10',
+    notes: 'خرید اولیه طلا',
+  },
+  {
+    id: 'atx-2',
+    assetId: 'asset-coin-emami',
+    assetName: 'سکه تمام امامی (طرح جدید)',
+    type: 'buy',
+    quantity: 2,
+    unitPrice: 47800000,
+    totalAmount: 2 * 47800000,
+    date: '1403/04/15',
+    notes: 'خرید ۲ عدد سکه امامی',
+  },
+  {
+    id: 'atx-3',
+    assetId: 'asset-usd-cash',
+    assetName: 'دلار کاغذی آمریکا',
+    type: 'buy',
+    quantity: 1200,
+    unitPrice: 86500,
+    totalAmount: 1200 * 86500,
+    date: '1403/06/01',
+    notes: 'خرید اسکناس از صرافی مجاز',
+  },
+];
 
 export interface AccountTransactionsBreakdown {
   income: number;
@@ -163,10 +264,29 @@ interface FinanceContextType {
   importDataJSON: (jsonStr: string) => boolean;
   clearAllData: () => void;
 
+  // Assets & Portfolio
+  assets: Asset[];
+  assetTransactions: AssetTransaction[];
+  marketPrices: MarketPriceItem[];
+  priceSourceConfig: PriceSourceConfig;
+  addAsset: (asset: Omit<Asset, 'id' | 'createdAt'>) => void;
+  updateAsset: (asset: Asset) => void;
+  deleteAsset: (id: string) => void;
+  addAssetTransaction: (tx: Omit<AssetTransaction, 'id'>) => void;
+  deleteAssetTransaction: (id: string) => void;
+  updateMarketPrice: (symbol: string, newPriceToman: number) => void;
+  refreshMarketPrices: () => Promise<{ success: boolean; message: string }>;
+  updatePriceSourceConfig: (cfg: Partial<PriceSourceConfig>) => void;
+  applyTelegramPricesFromText: (text: string) => { count: number; symbols: string[]; message: string };
+
   // Computed values
   totalBalance: number;
   totalIncome: number;
   totalExpense: number;
+  totalPortfolioValueToman: number;
+  totalPortfolioCostToman: number;
+  totalPortfolioPnlToman: number;
+  totalPortfolioPnlPercent: number;
 }
 
 const FinanceContext = createContext<FinanceContextType | undefined>(undefined);
@@ -183,6 +303,10 @@ const STORAGE_KEYS = {
   CURRENCY: 'pf_currency_v1',
   THEME_CONFIG: 'pf_theme_config_v2',
   DASHBOARD_CONFIG: 'pf_dashboard_config_v1',
+  ASSETS: 'pf_assets_v1',
+  ASSET_TRANSACTIONS: 'pf_asset_transactions_v1',
+  MARKET_PRICES: 'pf_market_prices_v1',
+  PRICE_SOURCE_CONFIG: 'pf_price_source_config_v1',
 };
 
 export const DEFAULT_DASHBOARD_CONFIG: DashboardSectionConfig = {
@@ -300,6 +424,33 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [persons, setPersons] = useState<Person[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.PERSONS);
     return saved ? JSON.parse(saved) : DEFAULT_PERSONS;
+  });
+
+  const [assets, setAssets] = useState<Asset[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.ASSETS);
+    return saved ? JSON.parse(saved) : DEFAULT_ASSETS;
+  });
+
+  const [assetTransactions, setAssetTransactions] = useState<AssetTransaction[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.ASSET_TRANSACTIONS);
+    return saved ? JSON.parse(saved) : DEFAULT_ASSET_TRANSACTIONS;
+  });
+
+  const [marketPrices, setMarketPrices] = useState<MarketPriceItem[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.MARKET_PRICES);
+    return saved ? JSON.parse(saved) : DEFAULT_MARKET_PRICES;
+  });
+
+  const [priceSourceConfig, setPriceSourceConfig] = useState<PriceSourceConfig>(() => {
+    const saved = localStorage.getItem(STORAGE_KEYS.PRICE_SOURCE_CONFIG);
+    if (saved) {
+      try {
+        return { ...DEFAULT_PRICE_SOURCE_CONFIG, ...JSON.parse(saved) };
+      } catch {
+        return DEFAULT_PRICE_SOURCE_CONFIG;
+      }
+    }
+    return DEFAULT_PRICE_SOURCE_CONFIG;
   });
 
   const [currency, setCurrency] = useState<Currency>(() => {
@@ -452,6 +603,22 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.CURRENCY, currency);
   }, [currency]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.ASSETS, JSON.stringify(assets));
+  }, [assets]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.ASSET_TRANSACTIONS, JSON.stringify(assetTransactions));
+  }, [assetTransactions]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.MARKET_PRICES, JSON.stringify(marketPrices));
+  }, [marketPrices]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.PRICE_SOURCE_CONFIG, JSON.stringify(priceSourceConfig));
+  }, [priceSourceConfig]);
 
   // Transaction Actions
   const addTransaction = (tx: Omit<Transaction, 'id'>) => {
@@ -960,6 +1127,159 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setCheques(prev => prev.map(ch => (ch.id === id ? { ...ch, status } : ch)));
   };
 
+  // Asset & Portfolio Actions
+  const addAsset = useCallback((asset: Omit<Asset, 'id' | 'createdAt'>) => {
+    const newAsset: Asset = {
+      ...asset,
+      id: 'asset-' + Date.now(),
+      createdAt: getTodayJalali(),
+    };
+    setAssets(prev => [newAsset, ...prev]);
+  }, []);
+
+  const updateAsset = useCallback((asset: Asset) => {
+    setAssets(prev => prev.map(a => (a.id === asset.id ? { ...asset, updatedAt: getTodayJalali() } : a)));
+  }, []);
+
+  const deleteAsset = useCallback((id: string) => {
+    setAssets(prev => prev.filter(a => a.id !== id));
+  }, []);
+
+  const addAssetTransaction = useCallback((tx: Omit<AssetTransaction, 'id'>) => {
+    const newTx: AssetTransaction = {
+      ...tx,
+      id: 'atx-' + Date.now(),
+    };
+    setAssetTransactions(prev => [newTx, ...prev]);
+
+    // Automatically update the parent asset quantity and cost
+    setAssets(prev =>
+      prev.map(asset => {
+        if (asset.id !== tx.assetId) return asset;
+
+        if (tx.type === 'buy') {
+          const newQty = asset.quantity + tx.quantity;
+          const newTotalCost = asset.totalCost + tx.totalAmount;
+          const newAvg = newQty > 0 ? newTotalCost / newQty : 0;
+          return {
+            ...asset,
+            quantity: newQty,
+            totalCost: newTotalCost,
+            buyPriceAverage: newAvg,
+            updatedAt: getTodayJalali(),
+          };
+        } else {
+          // Sell
+          const newQty = Math.max(0, asset.quantity - tx.quantity);
+          const ratio = asset.quantity > 0 ? newQty / asset.quantity : 0;
+          const newTotalCost = asset.totalCost * ratio;
+          return {
+            ...asset,
+            quantity: newQty,
+            totalCost: newTotalCost,
+            updatedAt: getTodayJalali(),
+          };
+        }
+      })
+    );
+  }, []);
+
+  const deleteAssetTransaction = useCallback((id: string) => {
+    setAssetTransactions(prev => prev.filter(t => t.id !== id));
+  }, []);
+
+  const updateMarketPrice = useCallback((symbol: string, newPriceToman: number) => {
+    setMarketPrices(prev =>
+      prev.map(item =>
+        item.symbol === symbol
+          ? {
+              ...item,
+              priceToman: newPriceToman,
+              isCustomManual: true,
+              lastUpdated: getTodayJalali() + ' (دستی)',
+              source: 'تنظیم دستی کاربر',
+            }
+          : item
+      )
+    );
+  }, []);
+
+  const refreshMarketPrices = useCallback(async (): Promise<{ success: boolean; message: string }> => {
+    const res = await fetchLiveMarketRates(priceSourceConfig, marketPrices);
+    const nowTime = new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+    const timestamp = `${getTodayJalali()} - ${nowTime}`;
+
+    if (res.success) {
+      setMarketPrices(res.updatedPrices);
+      setPriceSourceConfig(prev => ({
+        ...prev,
+        lastFetchTime: timestamp,
+        lastFetchStatus: 'success',
+        lastFetchMessage: res.message,
+      }));
+    } else {
+      setPriceSourceConfig(prev => ({
+        ...prev,
+        lastFetchTime: timestamp,
+        lastFetchStatus: 'error',
+        lastFetchMessage: res.message,
+      }));
+    }
+    return { success: res.success, message: res.message };
+  }, [priceSourceConfig, marketPrices]);
+
+  const updatePriceSourceConfig = useCallback((cfg: Partial<PriceSourceConfig>) => {
+    setPriceSourceConfig(prev => {
+      const next = { ...prev, ...cfg };
+      localStorage.setItem(STORAGE_KEYS.PRICE_SOURCE_CONFIG, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const applyTelegramPricesFromText = useCallback((text: string) => {
+    const res = parseTelegramMarketText(text);
+    if (!res.success || res.matchedItems.length === 0) {
+      return { count: 0, symbols: [], message: 'هیچ قیمت معتبری در متن شناسایی نشد.' };
+    }
+
+    const nowTime = new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+    const timestamp = `${getTodayJalali()} - ${nowTime} (تلگرام)`;
+
+    setMarketPrices(prev =>
+      prev.map(item => {
+        const found = res.matchedItems.find(m => m.symbol === item.symbol);
+        if (found) {
+          return {
+            ...item,
+            priceToman: found.priceToman,
+            lastUpdated: timestamp,
+            source: 'پیست متن تلگرام',
+            isCustomManual: true,
+          };
+        }
+        return item;
+      })
+    );
+
+    return {
+      count: res.matchedItems.length,
+      symbols: res.matchedItems.map(m => m.name),
+      message: `${res.matchedItems.length} نرخ از متن تلگرام با موفقیت استخراج و اعمال شد.`,
+    };
+  }, []);
+
+  // Auto-refresh interval for market prices if enabled
+  useEffect(() => {
+    const intervalMins = priceSourceConfig.autoRefreshMinutes || 0;
+    if (intervalMins <= 0) return;
+
+    const timer = setInterval(() => {
+      refreshMarketPrices();
+    }, intervalMins * 60 * 1000);
+
+    return () => clearInterval(timer);
+  }, [priceSourceConfig.autoRefreshMinutes, refreshMarketPrices]);
+
   // Demo data and Backup
   const loadDemoData = useCallback(() => {
     const demo = getDemoData();
@@ -970,11 +1290,13 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setDebts(demo.debts);
     setCheques(demo.cheques);
     setPersons(DEFAULT_PERSONS);
+    setAssets(DEFAULT_ASSETS);
+    setAssetTransactions(DEFAULT_ASSET_TRANSACTIONS);
   }, []);
 
   const exportDataJSON = useCallback((): string => {
     const data = {
-      version: 6,
+      version: 7,
       exportDate: new Date().toISOString(),
       accounts,
       transactions,
@@ -987,9 +1309,29 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       currency,
       themeConfig,
       dashboardConfig,
+      assets,
+      assetTransactions,
+      marketPrices,
+      priceSourceConfig,
     };
     return JSON.stringify(data, null, 2);
-  }, [accounts, transactions, categories, budgets, goals, debts, cheques, persons, currency, themeConfig, dashboardConfig]);
+  }, [
+    accounts,
+    transactions,
+    categories,
+    budgets,
+    goals,
+    debts,
+    cheques,
+    persons,
+    currency,
+    themeConfig,
+    dashboardConfig,
+    assets,
+    assetTransactions,
+    marketPrices,
+    priceSourceConfig,
+  ]);
 
   const importDataJSON = useCallback((jsonStr: string): boolean => {
     try {
@@ -1005,6 +1347,10 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (data.currency) setCurrency(data.currency);
       if (data.themeConfig) setThemeConfig(data.themeConfig);
       if (data.dashboardConfig) setDashboardConfig(data.dashboardConfig);
+      if (data.assets) setAssets(data.assets);
+      if (data.assetTransactions) setAssetTransactions(data.assetTransactions);
+      if (data.marketPrices) setMarketPrices(data.marketPrices);
+      if (data.priceSourceConfig) setPriceSourceConfig(data.priceSourceConfig);
       return true;
     } catch (e) {
       console.error('Error importing backup:', e);
@@ -1019,6 +1365,8 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setDebts([]);
     setCheques([]);
     setPersons([]);
+    setAssets([]);
+    setAssetTransactions([]);
     setAccountsBase(DEFAULT_ACCOUNTS.map(a => ({ ...a, initialBalance: 0, balance: 0 })));
   }, []);
 
@@ -1039,6 +1387,24 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       .reduce((sum, t) => sum + t.amount, 0);
   }, [transactions]);
 
+  // Portfolio calculations
+  const totalPortfolioValueToman = useMemo(() => {
+    return assets.reduce((sum, asset) => {
+      const marketItem = marketPrices.find(m => m.symbol === asset.symbol);
+      const currentPrice = marketItem ? marketItem.priceToman : asset.buyPriceAverage;
+      return sum + (asset.quantity * currentPrice);
+    }, 0);
+  }, [assets, marketPrices]);
+
+  const totalPortfolioCostToman = useMemo(() => {
+    return assets.reduce((sum, asset) => sum + (asset.totalCost || (asset.quantity * asset.buyPriceAverage)), 0);
+  }, [assets]);
+
+  const totalPortfolioPnlToman = totalPortfolioValueToman - totalPortfolioCostToman;
+  const totalPortfolioPnlPercent = totalPortfolioCostToman > 0
+    ? (totalPortfolioPnlToman / totalPortfolioCostToman) * 100
+    : 0;
+
   const contextValue = useMemo(() => ({
     accounts,
     transactions,
@@ -1051,6 +1417,19 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     currency,
     darkMode,
     themeConfig,
+    assets,
+    assetTransactions,
+    marketPrices,
+    priceSourceConfig,
+    addAsset,
+    updateAsset,
+    deleteAsset,
+    addAssetTransaction,
+    deleteAssetTransaction,
+    updateMarketPrice,
+    refreshMarketPrices,
+    updatePriceSourceConfig,
+    applyTelegramPricesFromText,
     addTransaction,
     updateTransaction,
     deleteTransaction,
@@ -1097,6 +1476,10 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     totalBalance,
     totalIncome,
     totalExpense,
+    totalPortfolioValueToman,
+    totalPortfolioCostToman,
+    totalPortfolioPnlToman,
+    totalPortfolioPnlPercent,
   }), [
     accounts,
     transactions,
@@ -1109,10 +1492,27 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     currency,
     darkMode,
     themeConfig,
+    assets,
+    assetTransactions,
+    marketPrices,
+    priceSourceConfig,
+    addAsset,
+    updateAsset,
+    deleteAsset,
+    addAssetTransaction,
+    deleteAssetTransaction,
+    updateMarketPrice,
+    refreshMarketPrices,
+    updatePriceSourceConfig,
+    applyTelegramPricesFromText,
     dashboardConfig,
     totalBalance,
     totalIncome,
     totalExpense,
+    totalPortfolioValueToman,
+    totalPortfolioCostToman,
+    totalPortfolioPnlToman,
+    totalPortfolioPnlPercent,
     getAccountTransactionsDelta,
   ]);
 

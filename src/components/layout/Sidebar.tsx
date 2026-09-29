@@ -9,11 +9,13 @@ import {
   BarChart3,
   Settings,
   ShieldCheck,
+  Coins,
 } from 'lucide-react';
 
 export type TabType =
   | 'dashboard'
   | 'transactions'
+  | 'assets'
   | 'accounts'
   | 'budgets'
   | 'goals'
@@ -30,12 +32,14 @@ interface NavItem {
   id: TabType;
   label: string;
   icon: React.ComponentType<{ className?: string }>;
+  badge?: string;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => {
   const navItems: NavItem[] = [
     { id: 'dashboard', label: 'داشبورد اصلی', icon: LayoutDashboard },
     { id: 'transactions', label: 'تراکنش‌ها و اسناد', icon: ReceiptText },
+    { id: 'assets', label: 'مدیریت دارایی و طلا', icon: Coins, badge: 'زنده' },
     { id: 'accounts', label: 'حساب‌ها و کارت‌ها', icon: CreditCard },
     { id: 'budgets', label: 'بودجه‌بندی ماهانه', icon: PieChart },
     { id: 'goals', label: 'اهداف و پس‌انداز', icon: Target },
@@ -83,7 +87,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
               </div>
               <span className="truncate tracking-tight">{item.label}</span>
 
-              {isActive && (
+              {item.badge && (
+                <span className="mr-auto px-1.5 py-0.2 rounded-md bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-black border border-amber-500/30">
+                  {item.badge}
+                </span>
+              )}
+
+              {isActive && !item.badge && (
                 <div className="mr-auto w-1 h-3 rounded-full bg-indigo-600 dark:bg-indigo-400" />
               )}
             </button>

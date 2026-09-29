@@ -189,3 +189,69 @@ export interface FilterOptions {
   endDate?: string;
   tag?: string;
 }
+
+// ================= Asset & Investment Portfolio Types =================
+export type AssetCategory = 'gold' | 'coin' | 'currency' | 'crypto' | 'custom';
+
+export interface Asset {
+  id: string;
+  name: string; // e.g. "طلای ۱۸ عیار", "سکه امامی", "دلار نقدی", "تتر"
+  category: AssetCategory;
+  symbol: string; // 'gold_18k', 'gold_24k', 'coin_emami', 'coin_half', 'coin_quarter', 'coin_gram', 'gold_melted', 'usd', 'usdt', 'eur', 'aed', 'custom'
+  quantity: number; // e.g. 15.5 گرم or 2 عدد
+  unit: string; // 'گرم', 'عدد', 'دلار', 'تتر', 'واحد'
+  buyPriceAverage: number; // میانگین قیمت خرید هر واحد به تومان
+  totalCost: number; // کل هزینه خرید به تومان
+  notes?: string;
+  purchaseDate?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export type AssetTransactionType = 'buy' | 'sell';
+
+export interface AssetTransaction {
+  id: string;
+  assetId: string;
+  assetName: string;
+  type: AssetTransactionType;
+  quantity: number;
+  unitPrice: number; // Toman
+  totalAmount: number; // Toman
+  date: string; // Jalali YYYY/MM/DD
+  notes?: string;
+  realizedPnl?: number; // Realized Profit/Loss in Toman
+}
+
+export interface MarketPriceItem {
+  symbol: string;
+  name: string;
+  category: AssetCategory;
+  unit: string;
+  priceToman: number;
+  change24h?: number; // e.g. +1.4 or -0.5
+  high24h?: number;
+  low24h?: number;
+  lastUpdated: string; // Jalali date/time
+  source: string; // "نوبیتکس و بازار", "کانال تلگرام", "سورس وب‌سایت", "تنظیم دستی"
+  isCustomManual?: boolean;
+}
+
+export type PriceSourceMode = 'default_markets' | 'telegram' | 'custom_api';
+
+export interface PriceSourceConfig {
+  sourceMode: PriceSourceMode;
+  autoRefreshMinutes: number; // 0 = manual, 1, 5, 15, 30
+  // Telegram Settings
+  telegramChannelOrUrl: string; // e.g. "@tgju_org", "https://t.me/s/...", or custom Telegram bridge
+  telegramBotToken?: string;
+  telegramChatId?: string;
+  // Custom API / Website Settings
+  customApiUrl: string; // e.g. "https://api.example.com/prices"
+  customApiKey?: string;
+  // Status Tracking
+  lastFetchTime?: string;
+  lastFetchStatus?: 'success' | 'error' | 'idle';
+  lastFetchMessage?: string;
+}
+

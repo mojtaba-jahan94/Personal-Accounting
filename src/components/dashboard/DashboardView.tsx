@@ -4,7 +4,7 @@ import { StatCard } from './StatCard';
 import { ExpenseChart } from './ExpenseChart';
 import { DashboardCustomizeModal } from './DashboardCustomizeModal';
 import { CollapsibleSection } from '../common/CollapsibleSection';
-import { formatCurrency, formatCardNumber, toPersianDigits } from '../../utils/formatters';
+import { formatCurrency, formatCardNumber, toPersianDigits, formatNumber } from '../../utils/formatters';
 import { getCategoryIcon } from '../../utils/categoryIcons';
 import { formatJalaliLong } from '../../utils/jalali';
 import {
@@ -22,6 +22,9 @@ import {
   PieChart as PieIcon,
   ListOrdered,
   Layers,
+  Coins,
+  Gem,
+  ArrowUpRight,
 } from 'lucide-react';
 import { TabType } from '../layout/Sidebar';
 import { DashboardSectionKey } from '../../types';
@@ -58,6 +61,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     cheques,
     currency,
     dashboardConfig,
+    totalPortfolioValueToman,
+    totalPortfolioPnlToman,
+    totalPortfolioPnlPercent,
   } = useFinance();
 
   const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
@@ -77,9 +83,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       case 'showHero':
         if (!dashboardConfig.showHero) return null;
         return (
-          <CollapsibleSection
-            key="hero"
-            storageKey="hero_summary"
+          <div key="hero" className="space-y-4">
+            <CollapsibleSection
+              storageKey="hero_summary"
             title={
               <div className="flex items-center gap-2">
                 <span className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
@@ -141,6 +147,43 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             </div>
           </CollapsibleSection>
+
+            {/* VIP Asset Portfolio Quick Banner */}
+            <div className="p-4 sm:p-5 rounded-3xl bg-radial from-slate-900 via-slate-900 to-slate-950 dark:from-slate-900 dark:via-slate-950 dark:to-black border border-amber-500/30 text-white shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-2xl bg-amber-500/20 border border-amber-500/40 text-amber-400 flex items-center justify-center shrink-0">
+                  <Coins className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black text-amber-400">ترمینال دارایی، طلا و ارز</span>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-bold border border-emerald-500/30">
+                      نرخ زنده
+                    </span>
+                  </div>
+                  <div className="text-sm sm:text-base font-black font-mono text-white mt-0.5">
+                    ارزش سبد طلا و ارز: {formatNumber(totalPortfolioValueToman)} تومان
+                    <span
+                      className={`text-xs mr-2 font-mono font-bold ${
+                        totalPortfolioPnlToman >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                      }`}
+                    >
+                      ({totalPortfolioPnlPercent >= 0 ? '+' : ''}
+                      {totalPortfolioPnlPercent.toFixed(1)}%)
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => onSelectTab('assets')}
+                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 text-xs font-black transition flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/20 self-stretch sm:self-auto cursor-pointer active:scale-95"
+              >
+                <span>ورود به ترمینال دارایی‌ها</span>
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
         );
 
       case 'showKpiCards':

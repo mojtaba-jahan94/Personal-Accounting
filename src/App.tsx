@@ -12,6 +12,7 @@ import { Transaction } from './types';
 
 // Code-split views for optimal bundle loading & performance
 const TransactionList = lazy(() => import('./components/transactions/TransactionList').then(m => ({ default: m.TransactionList })));
+const AssetsView = lazy(() => import('./components/assets/AssetsView').then(m => ({ default: m.AssetsView })));
 const AccountsView = lazy(() => import('./components/accounts/AccountsView').then(m => ({ default: m.AccountsView })));
 const BudgetView = lazy(() => import('./components/budget/BudgetView').then(m => ({ default: m.BudgetView })));
 const GoalsView = lazy(() => import('./components/goals/GoalsView').then(m => ({ default: m.GoalsView })));
@@ -23,6 +24,7 @@ const SMSAssistantModal = lazy(() => import('./components/transactions/SMSAssist
 const ALL_TABS: TabType[] = [
   'dashboard',
   'transactions',
+  'assets',
   'reports',
   'accounts',
   'budgets',
@@ -116,6 +118,7 @@ const MainApp: React.FC = () => {
     // Preload views in idle time so switching tabs is instant without rendering or scroll lag
     const preloadViews = () => {
       import('./components/transactions/TransactionList');
+      import('./components/assets/AssetsView');
       import('./components/reports/ReportsView');
       import('./components/accounts/AccountsView');
       import('./components/budget/BudgetView');
@@ -159,6 +162,12 @@ const MainApp: React.FC = () => {
             <TransactionList
               onOpenTransactionModal={handleOpenTransactionModal}
             />
+          </Suspense>
+        );
+      case 'assets':
+        return (
+          <Suspense fallback={<ViewLoadingFallback />}>
+            <AssetsView />
           </Suspense>
         );
       case 'accounts':
