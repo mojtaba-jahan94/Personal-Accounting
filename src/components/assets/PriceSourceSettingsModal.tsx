@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   X,
-  Radio,
   Globe,
   Send,
   Sliders,
@@ -9,9 +8,19 @@ import {
   AlertCircle,
   RefreshCw,
   Info,
-  ExternalLink,
+  ArrowRightLeft,
+  Coins,
+  DollarSign,
+  ToggleLeft,
+  ToggleRight,
+  RotateCcw,
 } from 'lucide-react';
-import { PriceSourceConfig, PriceSourceMode, MarketPriceItem } from '../../types';
+import {
+  PriceSourceConfig,
+  MarketPriceItem,
+  SourceCurrencyUnit,
+  DisplayCurrencyUnit,
+} from '../../types';
 import { fetchLiveMarketRates } from '../../services/marketPriceService';
 
 interface PriceSourceSettingsModalProps {
@@ -20,6 +29,7 @@ interface PriceSourceSettingsModalProps {
   marketPrices: MarketPriceItem[];
   onClose: () => void;
   onSaveConfig: (cfg: Partial<PriceSourceConfig>) => void;
+  onToggleItem: (symbol: string) => void;
   onRefreshNow: () => Promise<{ success: boolean; message: string }>;
 }
 
@@ -29,16 +39,36 @@ export const PriceSourceSettingsModal: React.FC<PriceSourceSettingsModalProps> =
   marketPrices,
   onClose,
   onSaveConfig,
+  onToggleItem,
   onRefreshNow,
 }) => {
   if (!isOpen) return null;
 
-  const [mode, setMode] = useState<PriceSourceMode>(config.sourceMode);
-  const [telegramChannel, setTelegramChannel] = useState(config.telegramChannelOrUrl || '@tgju_org');
-  const [telegramBotToken, setTelegramBotToken] = useState(config.telegramBotToken || '');
-  const [telegramChatId, setTelegramChatId] = useState(config.telegramChatId || '');
-  const [customApiUrl, setCustomApiUrl] = useState(config.customApiUrl || '');
-  const [customApiKey, setCustomApiKey] = useState(config.customApiKey || '');
+  // Dedicated Dollar & Gold Source settings
+  const [goldDollarSourceType, setGoldDollarSourceType] = useState<'telegram' | 'website' | 'auto'>(
+    config.goldDollarSourceType || 'telegram'
+  );
+  const [goldDollarChannel, setGoldDollarChannel] = useState(
+    config.goldDollarTelegramChannel || '@tgju_org'
+  );
+  const [goldDollarWebsiteUrl, setGoldDollarWebsiteUrl] = useState(
+    config.goldDollarWebsiteUrl || 'https://www.tgju.org'
+  );
+  const [goldDollarSourceUnit, setGoldDollarSourceUnit] = useState<SourceCurrencyUnit>(
+    config.goldDollarSourceUnit || 'toman'
+  );
+  const [goldDollarDisplayUnit, setGoldDollarDisplayUnit] = useState<DisplayCurrencyUnit>(
+    config.goldDollarDisplayUnit || 'toman'
+  );
+
+  // General source settings for other prices (default: tgju.org)
+  const [generalMarketSourceUrl, setGeneralMarketSourceUrl] = useState(
+    config.generalMarketSourceUrl || 'https://www.tgju.org'
+  );
+  const [generalSourceUnit, setGeneralSourceUnit] = useState<SourceCurrencyUnit>(
+    config.generalSourceUnit || 'toman'
+  );
+
   const [autoRefreshMins, setAutoRefreshMins] = useState(config.autoRefreshMinutes ?? 5);
 
   const [isTesting, setIsTesting] = useState(false);
@@ -51,12 +81,13 @@ export const PriceSourceSettingsModal: React.FC<PriceSourceSettingsModalProps> =
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     onSaveConfig({
-      sourceMode: mode,
-      telegramChannelOrUrl: telegramChannel.trim(),
-      telegramBotToken: telegramBotToken.trim(),
-      telegramChatId: telegramChatId.trim(),
-      customApiUrl: customApiUrl.trim(),
-      customApiKey: customApiKey.trim(),
+      goldDollarSourceType,
+      goldDollarTelegramChannel: goldDollarChannel.trim(),
+      goldDollarWebsiteUrl: goldDollarWebsiteUrl.trim(),
+      goldDollarSourceUnit,
+      goldDollarDisplayUnit,
+      generalMarketSourceUrl: generalMarketSourceUrl.trim() || 'https://www.tgju.org',
+      generalSourceUnit,
       autoRefreshMinutes: Number(autoRefreshMins),
     });
     onClose();
@@ -68,12 +99,13 @@ export const PriceSourceSettingsModal: React.FC<PriceSourceSettingsModalProps> =
 
     const tempConfig: PriceSourceConfig = {
       ...config,
-      sourceMode: mode,
-      telegramChannelOrUrl: telegramChannel.trim(),
-      telegramBotToken: telegramBotToken.trim(),
-      telegramChatId: telegramChatId.trim(),
-      customApiUrl: customApiUrl.trim(),
-      customApiKey: customApiKey.trim(),
+      goldDollarSourceType,
+      goldDollarTelegramChannel: goldDollarChannel.trim(),
+      goldDollarWebsiteUrl: goldDollarWebsiteUrl.trim(),
+      goldDollarSourceUnit,
+      goldDollarDisplayUnit,
+      generalMarketSourceUrl: generalMarketSourceUrl.trim() || 'https://www.tgju.org',
+      generalSourceUnit,
     };
 
     const res = await fetchLiveMarketRates(tempConfig, marketPrices);
@@ -87,19 +119,19 @@ export const PriceSourceSettingsModal: React.FC<PriceSourceSettingsModalProps> =
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="w-full max-w-xl rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+      <div className="w-full max-w-2xl rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-5 max-h-[92vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-500 flex items-center justify-center border border-indigo-500/20">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center border border-amber-500/20">
               <Sliders className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                تنظیمات منابع قیمت (سورس تلگرام و وب‌سایت)
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                تنظیمات منابع قیمت (دلار، طلا و سایت tgju.org)
               </h3>
               <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                مشخص کنید قیمت‌های لحظه‌ای طلا، سکه و دلار از چه مرجعی دریافت و به‌روزرسانی شوند.
+                شخصی‌سازی منبع اعلامی، تبدیل تومان/ریال و فعال/غیرفعال‌سازی اقلام بازار
               </p>
             </div>
           </div>
@@ -111,203 +143,240 @@ export const PriceSourceSettingsModal: React.FC<PriceSourceSettingsModalProps> =
           </button>
         </div>
 
-        <form onSubmit={handleSave} className="space-y-4">
-          {/* Source Selection Cards */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-              منبع فعال به‌روزرسانی نرخ‌ها:
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {/* Option 1: Default Multi-Market */}
+        <form onSubmit={handleSave} className="space-y-5">
+          {/* SECTION 1: DEDICATED DOLLAR & GOLD SOURCE */}
+          <div className="p-4 rounded-3xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/70 dark:border-amber-900/50 space-y-3.5">
+            <div className="flex items-center justify-between border-b border-amber-200/50 dark:border-amber-900/50 pb-2">
+              <div className="flex items-center gap-2 text-xs font-black text-amber-800 dark:text-amber-300">
+                <DollarSign className="w-4 h-4 text-amber-500" />
+                <span>۱. سورس اختصاصی به‌روزرسانی دلار آمریکا و طلای ۱۸ عیار</span>
+              </div>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                اولویت اصلی
+              </span>
+            </div>
+
+            {/* Source Type Selector */}
+            <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
-                onClick={() => setMode('default_markets')}
-                className={`p-3 rounded-2xl border text-right transition-all flex flex-col justify-between ${
-                  mode === 'default_markets'
-                    ? 'bg-indigo-50/80 dark:bg-indigo-950/40 border-indigo-500 ring-2 ring-indigo-500/20 text-indigo-900 dark:text-indigo-200'
-                    : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                onClick={() => setGoldDollarSourceType('telegram')}
+                className={`p-2.5 rounded-2xl border text-center text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                  goldDollarSourceType === 'telegram'
+                    ? 'bg-sky-500 text-white border-sky-600 shadow-xs'
+                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                 }`}
               >
-                <div className="flex items-center justify-between w-full mb-1">
-                  <span className="text-xs font-bold">سورس بازار و صرافی</span>
-                  <div
-                    className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
-                      mode === 'default_markets'
-                        ? 'border-indigo-600 bg-indigo-600 text-white'
-                        : 'border-slate-400'
-                    }`}
-                  >
-                    {mode === 'default_markets' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                  </div>
-                </div>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
-                  نوبیتکس و نرخ‌های استاندارد بازار آزاد طلا و ارز
-                </p>
+                <Send className="w-3.5 h-3.5 -rotate-45" />
+                <span>کانال تلگرام</span>
               </button>
 
-              {/* Option 2: Telegram Channel */}
               <button
                 type="button"
-                onClick={() => setMode('telegram')}
-                className={`p-3 rounded-2xl border text-right transition-all flex flex-col justify-between ${
-                  mode === 'telegram'
-                    ? 'bg-sky-50/80 dark:bg-sky-950/40 border-sky-500 ring-2 ring-sky-500/20 text-sky-900 dark:text-sky-200'
-                    : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                onClick={() => setGoldDollarSourceType('website')}
+                className={`p-2.5 rounded-2xl border text-center text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                  goldDollarSourceType === 'website'
+                    ? 'bg-amber-500 text-slate-950 border-amber-600 shadow-xs'
+                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                 }`}
               >
-                <div className="flex items-center justify-between w-full mb-1">
-                  <span className="text-xs font-bold flex items-center gap-1">
-                    <Send className="w-3.5 h-3.5 text-sky-500 -rotate-45" />
-                    سورس تلگرام
-                  </span>
-                  <div
-                    className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
-                      mode === 'telegram'
-                        ? 'border-sky-500 bg-sky-500 text-white'
-                        : 'border-slate-400'
-                    }`}
-                  >
-                    {mode === 'telegram' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                  </div>
-                </div>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
-                  خواندن آخرین پیام مظنه از کانال یا بات تلگرامی
-                </p>
+                <Globe className="w-3.5 h-3.5" />
+                <span>آدرس سایت</span>
               </button>
 
-              {/* Option 3: Custom API / Website */}
               <button
                 type="button"
-                onClick={() => setMode('custom_api')}
-                className={`p-3 rounded-2xl border text-right transition-all flex flex-col justify-between ${
-                  mode === 'custom_api'
-                    ? 'bg-amber-50/80 dark:bg-amber-950/40 border-amber-500 ring-2 ring-amber-500/20 text-amber-900 dark:text-amber-200'
-                    : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700/60 text-slate-700 dark:text-slate-300 hover:border-slate-300'
+                onClick={() => setGoldDollarSourceType('auto')}
+                className={`p-2.5 rounded-2xl border text-center text-xs font-bold transition flex items-center justify-center gap-1.5 ${
+                  goldDollarSourceType === 'auto'
+                    ? 'bg-emerald-600 text-white border-emerald-700 shadow-xs'
+                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                 }`}
               >
-                <div className="flex items-center justify-between w-full mb-1">
-                  <span className="text-xs font-bold flex items-center gap-1">
-                    <Globe className="w-3.5 h-3.5 text-amber-500" />
-                    سورس وب / API
-                  </span>
-                  <div
-                    className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
-                      mode === 'custom_api'
-                        ? 'border-amber-500 bg-amber-500 text-white'
-                        : 'border-slate-400'
-                    }`}
-                  >
-                    {mode === 'custom_api' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                  </div>
-                </div>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-tight">
-                  اندپوینت سفارشی JSON یا سرور شخصی شما
-                </p>
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>صرافی و بازار آزاد</span>
               </button>
             </div>
-          </div>
 
-          {/* Telegram Settings Fields */}
-          {mode === 'telegram' && (
-            <div className="p-4 rounded-2xl bg-sky-50/50 dark:bg-sky-950/20 border border-sky-200/60 dark:border-sky-900/40 space-y-3 animate-in fade-in duration-150">
+            {/* Telegram Channel Input */}
+            {goldDollarSourceType === 'telegram' && (
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  آیدی یا لینک کانال تلگرام:
+                  آیدی یا لینک کانال تلگرام برای قیمت دلار و طلا:
                 </label>
                 <div className="relative">
                   <input
                     type="text"
-                    value={telegramChannel}
-                    onChange={(e) => setTelegramChannel(e.target.value)}
-                    placeholder="مثلاً: @tgju_org یا t.me/s/bonbast"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-sky-500/40 text-left dir-ltr pl-8"
+                    value={goldDollarChannel}
+                    onChange={(e) => setGoldDollarChannel(e.target.value)}
+                    placeholder="مثلاً @tgju_org یا @bonbast"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold text-slate-900 dark:text-white text-left dir-ltr pl-8 focus:outline-hidden focus:ring-2 focus:ring-sky-500/40"
                   />
-                  <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs">
                     @
                   </span>
                 </div>
-                <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                  سیستم پیام‌های مظنه کانال تلگرام را با الگوریتم هوشمند تحلیل و قیمت‌های طلا و ارز را استخراج می‌کند.
-                </p>
               </div>
+            )}
 
-              <div className="pt-2 border-t border-sky-200/40 dark:border-sky-800/40 space-y-2">
-                <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
-                  <Info className="w-3.5 h-3.5 text-sky-500" />
-                  توکن ربات تلگرام (اختیاری - برای کانال‌های خصوصی):
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <input
-                    type="text"
-                    value={telegramBotToken}
-                    onChange={(e) => setTelegramBotToken(e.target.value)}
-                    placeholder="Bot Token (مثلاً 123456:ABC...)"
-                    className="px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[11px] font-mono text-slate-900 dark:text-white dir-ltr text-left"
-                  />
-                  <input
-                    type="text"
-                    value={telegramChatId}
-                    onChange={(e) => setTelegramChatId(e.target.value)}
-                    placeholder="Chat ID (مثلاً -100123456789)"
-                    className="px-3 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[11px] font-mono text-slate-900 dark:text-white dir-ltr text-left"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Custom API / Website Settings Fields */}
-          {mode === 'custom_api' && (
-            <div className="p-4 rounded-2xl bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 space-y-3 animate-in fade-in duration-150">
+            {/* Website URL Input */}
+            {goldDollarSourceType === 'website' && (
               <div className="space-y-1">
                 <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  آدرس اینترنتی اندپوینت (Custom JSON Endpoint URL):
+                  آدرس اینترنتی سایت برای استعلام نرخ طلا و دلار:
                 </label>
                 <input
                   type="url"
-                  value={customApiUrl}
-                  onChange={(e) => setCustomApiUrl(e.target.value)}
-                  placeholder="https://api.myrates.com/live-rates.json"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-amber-500/40 text-left dir-ltr"
+                  value={goldDollarWebsiteUrl}
+                  onChange={(e) => setGoldDollarWebsiteUrl(e.target.value)}
+                  placeholder="https://www.tgju.org"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold text-slate-900 dark:text-white text-left dir-ltr focus:outline-hidden focus:ring-2 focus:ring-amber-500/40"
                 />
               </div>
+            )}
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  کلید دسترسی (API Key اختیاری):
-                </label>
-                <input
-                  type="text"
-                  value={customApiKey}
-                  onChange={(e) => setCustomApiKey(e.target.value)}
-                  placeholder="Bearer token or API Key"
-                  className="w-full px-3.5 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono text-slate-900 dark:text-white dir-ltr text-left"
-                />
+            {/* CURRENCY CONVERSION (تومان اعلامی ولی به ریال نشون بده یا برعکس) */}
+            <div className="p-3 rounded-2xl bg-white dark:bg-slate-900 border border-amber-200/60 dark:border-amber-900/40 space-y-2.5">
+              <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                <ArrowRightLeft className="w-3.5 h-3.5 text-amber-500" />
+                <span>تنظیم واحد پولی سورس و نحوه نمایش در برنامه:</span>
               </div>
 
-              <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                پاسخ JSON باید شامل کلیدهایی مانند <code className="font-mono text-amber-600">usd</code>،{' '}
-                <code className="font-mono text-amber-600">usdt</code>،{' '}
-                <code className="font-mono text-amber-600">gold_18k</code> یا{' '}
-                <code className="font-mono text-amber-600">coin_emami</code> باشد.
-              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                {/* Source Unit */}
+                <div className="space-y-1">
+                  <span className="text-[10px] text-slate-500 block">واحد قیمت در کانال/سایت:</span>
+                  <select
+                    value={goldDollarSourceUnit}
+                    onChange={(e) => setGoldDollarSourceUnit(e.target.value as SourceCurrencyUnit)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-hidden"
+                  >
+                    <option value="toman">تومان (مثلاً ۹۳,۴۰۰ اعلام می‌کند)</option>
+                    <option value="rial">ریال (مثلاً ۹۳۴,۰۰۰ اعلام می‌کند)</option>
+                    <option value="auto">تشخیص خودکار بر اساس بازه عددی</option>
+                  </select>
+                </div>
+
+                {/* Display Unit */}
+                <div className="space-y-1">
+                  <span className="text-[10px] text-slate-500 block">واحد نمایش در این برنامه:</span>
+                  <select
+                    value={goldDollarDisplayUnit}
+                    onChange={(e) => setGoldDollarDisplayUnit(e.target.value as DisplayCurrencyUnit)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-hidden"
+                  >
+                    <option value="toman">نمایش به تومان (تومان)</option>
+                    <option value="rial">نمایش به ریال (ریال - ۱۰ برابر)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="text-[10px] text-slate-500 dark:text-slate-400 bg-amber-500/5 p-2 rounded-lg">
+                💡 <span className="font-bold">مثال:</span> اگر کانال قیمت را به{' '}
+                <span className="text-amber-600 dark:text-amber-400 font-bold">تومان</span> اعلام کند،
+                شما می‌توانید انتخاب کنید که در برنامه به{' '}
+                <span className="text-amber-600 dark:text-amber-400 font-bold">ریال</span> نمایش داده شود
+                یا برعکس.
+              </div>
             </div>
-          )}
+          </div>
 
-          {/* Auto Refresh Interval */}
-          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between">
+          {/* SECTION 2: GENERAL MARKET SOURCE (tgju.org editable) */}
+          <div className="p-4 rounded-3xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-700/60 pb-2">
+              <div className="flex items-center gap-2 text-xs font-black text-slate-800 dark:text-slate-200">
+                <Globe className="w-4 h-4 text-indigo-500" />
+                <span>۲. سورس برای بقیه قیمت‌ها (پیش‌فرض: سایت tgju.org با قابلیت تغییر)</span>
+              </div>
+            </div>
+
+            <div className="space-y-1">
+              <div className="flex justify-between items-center">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  آدرس سایت برای سایر نرخ‌ها (سکه، انس، یورو، درهم و...):
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setGeneralMarketSourceUrl('https://www.tgju.org')}
+                  className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  بازنشانی به tgju.org
+                </button>
+              </div>
+              <input
+                type="url"
+                value={generalMarketSourceUrl}
+                onChange={(e) => setGeneralMarketSourceUrl(e.target.value)}
+                placeholder="https://www.tgju.org"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold text-slate-900 dark:text-white text-left dir-ltr focus:outline-hidden focus:ring-2 focus:ring-indigo-500/40"
+              />
+            </div>
+          </div>
+
+          {/* SECTION 3: TOGGLE ITEMS ON / OFF (شخصی سازی اقلام) */}
+          <div className="p-4 rounded-3xl bg-slate-50/70 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-700/60 pb-2">
+              <div>
+                <span className="text-xs font-black text-slate-800 dark:text-slate-200 block">
+                  ۳. شخصی‌سازی اقلام نرخ‌ها (روشن / خاموش)
+                </span>
+                <span className="text-[10px] text-slate-400">
+                  دلار و طلای ۱۸ عیار فعال هستند؛ بقیه گزینه‌ها خاموش هستند و به دلخواه قابل روشن شدن می‌باشند.
+                </span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto pr-1">
+              {marketPrices.map((item) => {
+                const isEnabled = item.isEnabled !== false;
+                const isPrimary = item.symbol === 'usd' || item.symbol === 'gold_18k';
+
+                return (
+                  <button
+                    key={item.symbol}
+                    type="button"
+                    onClick={() => onToggleItem(item.symbol)}
+                    className={`p-2.5 rounded-2xl border text-right transition flex items-center justify-between ${
+                      isEnabled
+                        ? 'bg-amber-50/80 dark:bg-amber-950/30 border-amber-400 text-slate-900 dark:text-white shadow-2xs'
+                        : 'bg-white/60 dark:bg-slate-900/60 border-slate-200/80 dark:border-slate-800 text-slate-400 opacity-60 hover:opacity-90'
+                    }`}
+                  >
+                    <div className="truncate pr-1">
+                      <span className="font-bold text-xs block truncate">{item.name}</span>
+                      <span className="text-[9px] font-mono uppercase text-slate-400">
+                        {item.symbol} {isPrimary && '⭐'}
+                      </span>
+                    </div>
+
+                    <div
+                      className={`w-4 h-4 rounded-md flex items-center justify-center shrink-0 border ${
+                        isEnabled
+                          ? 'bg-amber-500 border-amber-600 text-slate-950'
+                          : 'border-slate-300 dark:border-slate-700'
+                      }`}
+                    >
+                      {isEnabled && <CheckCircle2 className="w-3 h-3 stroke-[3]" />}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* SECTION 4: AUTO REFRESH INTERVAL */}
+          <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-between text-xs">
             <div>
-              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                بازه به‌روزرسانی خودکار نرخ‌ها:
+              <span className="font-bold text-slate-800 dark:text-slate-200 block">
+                بازه زمانی به‌روزرسانی خودکار:
               </span>
-              <p className="text-[10px] text-slate-500 dark:text-slate-400">
-                استعلام دوره‌ای قیمت‌ها در پس‌زمینه
-              </p>
+              <span className="text-[10px] text-slate-400">استعلام خودکار سورس در پس‌زمینه</span>
             </div>
             <select
               value={autoRefreshMins}
               onChange={(e) => setAutoRefreshMins(Number(e.target.value))}
-              className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-indigo-500/40"
+              className="px-3 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-800 dark:text-slate-200"
             >
               <option value={0}>دستی (فقط با کلیک)</option>
               <option value={1}>هر ۱ دقیقه</option>
@@ -317,16 +386,16 @@ export const PriceSourceSettingsModal: React.FC<PriceSourceSettingsModalProps> =
             </select>
           </div>
 
-          {/* Test Source Button & Feedback */}
-          <div className="space-y-2 pt-1">
+          {/* SECTION 5: LIVE TEST BUTTON */}
+          <div className="space-y-2">
             <button
               type="button"
               onClick={handleTestConnection}
               disabled={isTesting}
               className="w-full py-2.5 px-4 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-750 text-slate-800 dark:text-slate-200 text-xs font-bold transition flex items-center justify-center gap-2"
             >
-              <RefreshCw className={`w-3.5 h-3.5 text-indigo-500 ${isTesting ? 'animate-spin' : ''}`} />
-              <span>{isTesting ? 'در حال بررسی اتصال به سورس...' : 'تست دریافت نرخ از سورس انتخابی'}</span>
+              <RefreshCw className={`w-3.5 h-3.5 text-amber-500 ${isTesting ? 'animate-spin' : ''}`} />
+              <span>{isTesting ? 'در حال استعلام نرخ‌ها از سورس...' : 'تست استعلام نرخ از سورس انتخابی'}</span>
             </button>
 
             {testResult && (
@@ -348,7 +417,7 @@ export const PriceSourceSettingsModal: React.FC<PriceSourceSettingsModalProps> =
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex gap-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
             <button
               type="button"
               onClick={onClose}
@@ -358,10 +427,10 @@ export const PriceSourceSettingsModal: React.FC<PriceSourceSettingsModalProps> =
             </button>
             <button
               type="submit"
-              className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition shadow-md shadow-indigo-600/25 flex items-center justify-center gap-2"
+              className="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs transition shadow-md shadow-amber-500/25 flex items-center justify-center gap-2"
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>ذخیره تنظیمات سورس</span>
+              <span>ذخیره تنظیمات سورس و شخصی‌سازی</span>
             </button>
           </div>
         </form>

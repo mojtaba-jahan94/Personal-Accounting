@@ -24,6 +24,10 @@ import {
   Layers,
   History,
   Info,
+  ToggleLeft,
+  ToggleRight,
+  Globe,
+  ArrowRightLeft,
 } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { useFinance } from '../../context/FinanceContext';
@@ -68,6 +72,8 @@ export const AssetsView: React.FC = () => {
     addAssetTransaction,
     deleteAssetTransaction,
     updateMarketPrice,
+    toggleMarketPriceEnabled,
+    setMarketPriceDisplayUnit,
     refreshMarketPrices,
     updatePriceSourceConfig,
     applyTelegramPricesFromText,
@@ -87,6 +93,8 @@ export const AssetsView: React.FC = () => {
   // Filter state for assets and rates
   const [assetCategoryFilter, setAssetCategoryFilter] = useState<AssetCategory | 'all'>('all');
   const [ratesSearchQuery, setRatesSearchQuery] = useState('');
+  const [ratesFilter, setRatesFilter] = useState<'all' | 'enabled' | 'gold' | 'currency'>('all');
+  const [displayUnit, setDisplayUnit] = useState<'toman' | 'rial'>('toman');
 
   // Modals state
   const [isAssetModalOpen, setIsAssetModalOpen] = useState(false);
@@ -182,6 +190,27 @@ export const AssetsView: React.FC = () => {
       }));
   }, [assets, marketPrices]);
 
+  // Only active/enabled rates (by default only USD and 18K Gold)
+  const enabledMarketPrices = useMemo(
+    () => marketPrices.filter((p) => p.isEnabled !== false),
+    [marketPrices]
+  );
+
+  // Helper for displaying prices with either Toman or Rial
+  const formatPriceWithUnit = (priceToman: number, itemUnit?: 'toman' | 'rial') => {
+    const activeUnit = itemUnit || displayUnit;
+    if (activeUnit === 'rial') {
+      return {
+        value: formatNumber(Math.round(priceToman * 10)),
+        unit: 'ریال',
+      };
+    }
+    return {
+      value: formatNumber(priceToman),
+      unit: 'تومان',
+    };
+  };
+
   // Filtered Assets list
   const filteredAssets = useMemo(() => {
     if (assetCategoryFilter === 'all') return assets;
@@ -190,12 +219,23 @@ export const AssetsView: React.FC = () => {
 
   // Filtered Market Rates list
   const filteredMarketRates = useMemo(() => {
-    if (!ratesSearchQuery.trim()) return marketPrices;
-    const q = ratesSearchQuery.toLowerCase().trim();
-    return marketPrices.filter(
-      (item) => item.name.toLowerCase().includes(q) || item.symbol.toLowerCase().includes(q)
-    );
-  }, [marketPrices, ratesSearchQuery]);
+    let list = marketPrices;
+    if (ratesFilter === 'enabled') {
+      list = list.filter((p) => p.isEnabled !== false);
+    } else if (ratesFilter === 'gold') {
+      list = list.filter((p) => p.category === 'gold' || p.category === 'coin');
+    } else if (ratesFilter === 'currency') {
+      list = list.filter((p) => p.category === 'currency' || p.category === 'crypto');
+    }
+
+    if (ratesSearchQuery.trim()) {
+      const q = ratesSearchQuery.toLowerCase().trim();
+      list = list.filter(
+        (item) => item.name.toLowerCase().includes(q) || item.symbol.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [marketPrices, ratesFilter, ratesSearchQuery]);
 
   return (
     <div
@@ -206,50 +246,99 @@ export const AssetsView: React.FC = () => {
       }`}
     >
       {/* 1. Live Market Ticker Marquee Bar */}
-      <div className="rounded-2xl bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-indigo-500/10 border border-amber-500/20 backdrop-blur-md p-2.5 shadow-xs overflow-hidden">
+      <div className="rounded-2xl bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-indigo-500/10 border border-amber-500/20 backdrop-blur-md p-2 shadow-xs overflow-hidden">
         <div className="flex items-center gap-2">
+          {/* Header Badge */}
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500 text-slate-950 font-black text-[11px] shrink-0 shadow-xs">
             <span className="w-2 h-2 rounded-full bg-slate-950 animate-ping" />
             <span>نرخ‌های زنده</span>
           </div>
 
-          {/* Marquee list */}
-          <div className="flex items-center gap-4 overflow-x-auto scrollbar-none py-0.5 text-xs">
-            {marketPrices.slice(0, 8).map((item) => {
-              const change = item.change24h ?? 0;
-              return (
-                <button
-                  key={item.symbol}
-                  onClick={() => {
-                    setEditingRateItem(item);
-                    setIsEditRateModalOpen(true);
-                  }}
-                  className="flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-xl bg-white/70 dark:bg-slate-900/70 border border-slate-200/50 dark:border-slate-800 hover:border-amber-500/40 transition group cursor-pointer"
-                  title="کلیک برای تنظیم نرخ"
-                >
-                  <span className="font-bold text-slate-700 dark:text-slate-300 group-hover:text-amber-500">
-                    {item.name}:
-                  </span>
-                  <span className="font-mono font-black text-slate-900 dark:text-white dir-ltr">
-                    {formatNumber(item.priceToman)}
-                  </span>
-                  <span className="text-[10px] text-slate-400">تومان</span>
+          {/* Active Count & Quick Config Badge */}
+          <button
+            onClick={() => setIsSettingsModalOpen(true)}
+            className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-[10px] font-bold shrink-0 transition"
+            title="مدیریت اقلام فعال و سورس‌ها"
+          >
+            <span>{enabledMarketPrices.length} فعال</span>
+            <Sliders className="w-3 h-3" />
+          </button>
 
-                  {change !== 0 && (
-                    <span
-                      className={`text-[10px] font-bold px-1 rounded-sm dir-ltr flex items-center ${
-                        change > 0
-                          ? 'text-emerald-600 bg-emerald-500/10'
-                          : 'text-rose-600 bg-rose-500/10'
-                      }`}
-                    >
-                      {change > 0 ? '+' : ''}
-                      {change.toFixed(1)}%
+          {/* Global Toman / Rial toggle for ticker */}
+          <div className="flex items-center bg-white/70 dark:bg-slate-900/80 p-0.5 rounded-lg border border-slate-200/60 dark:border-slate-800 text-[10px] font-bold shrink-0">
+            <button
+              onClick={() => setDisplayUnit('toman')}
+              className={`px-1.5 py-0.5 rounded-md transition ${
+                displayUnit === 'toman'
+                  ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
+                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+              }`}
+            >
+              تومان
+            </button>
+            <button
+              onClick={() => setDisplayUnit('rial')}
+              className={`px-1.5 py-0.5 rounded-md transition ${
+                displayUnit === 'rial'
+                  ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
+                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+              }`}
+            >
+              ریال
+            </button>
+          </div>
+
+          {/* Marquee list */}
+          <div className="flex items-center gap-3 overflow-x-auto scrollbar-none py-0.5 text-xs">
+            {enabledMarketPrices.length > 0 ? (
+              enabledMarketPrices.map((item) => {
+                const change = item.change24h ?? 0;
+                const formatted = formatPriceWithUnit(
+                  item.priceToman,
+                  item.displayCurrency || displayUnit
+                );
+
+                return (
+                  <button
+                    key={item.symbol}
+                    onClick={() => {
+                      setEditingRateItem(item);
+                      setIsEditRateModalOpen(true);
+                    }}
+                    className="flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-xl bg-white/70 dark:bg-slate-900/70 border border-slate-200/50 dark:border-slate-800 hover:border-amber-500/40 transition group cursor-pointer"
+                    title="کلیک برای تنظیم نرخ"
+                  >
+                    <span className="font-bold text-slate-700 dark:text-slate-300 group-hover:text-amber-500">
+                      {item.name}:
                     </span>
-                  )}
-                </button>
-              );
-            })}
+                    <span className="font-mono font-black text-slate-900 dark:text-white dir-ltr">
+                      {formatted.value}
+                    </span>
+                    <span className="text-[10px] text-slate-400">{formatted.unit}</span>
+
+                    {change !== 0 && (
+                      <span
+                        className={`text-[10px] font-bold px-1 rounded-sm dir-ltr flex items-center ${
+                          change > 0
+                            ? 'text-emerald-600 bg-emerald-500/10'
+                            : 'text-rose-600 bg-rose-500/10'
+                        }`}
+                      >
+                        {change > 0 ? '+' : ''}
+                        {change.toFixed(1)}%
+                      </span>
+                    )}
+                  </button>
+                );
+              })
+            ) : (
+              <button
+                onClick={() => setIsSettingsModalOpen(true)}
+                className="text-xs text-amber-600 dark:text-amber-400 font-bold hover:underline"
+              >
+                هیچ نرخی فعال نیست — جهت شخصی‌سازی و فعال‌سازی اقلام کلیک کنید
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -865,25 +954,116 @@ export const AssetsView: React.FC = () => {
       {/* Tab 3: Live Market Rates Board */}
       {activeSubTab === 'rates' && (
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-            <div className="relative flex-1 max-w-md">
-              <Search className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                value={ratesSearchQuery}
-                onChange={(e) => setRatesSearchQuery(e.target.value)}
-                placeholder="جستجوی طلا، سکه، دلار، تتر..."
-                className="w-full pr-10 pl-4 py-2.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-amber-500/30"
-              />
+          {/* Information banner about Dollar & 18K Gold being active and others customizable */}
+          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+              <span>
+                <strong>توجه:</strong> به‌طور پیش‌فرض فقط <strong>دلار آمریکا</strong> و <strong>طلای ۱۸ عیار</strong> فعال هستند. سایر اقلام خاموش‌اند اما با کلیک بر روی کلید سوئیچ هر سطر می‌توانید آن‌ها را شخصی‌سازی و روشن کنید. منبع دلار و طلا از تلگرام/وب اختصاصی و بقیه نرخ‌ها از سامانه <strong>tgju.org</strong> است.
+              </span>
+            </div>
+            <button
+              onClick={() => setIsSettingsModalOpen(true)}
+              className="px-3 py-1 rounded-xl bg-amber-500 text-slate-950 font-black text-[11px] shrink-0 hover:bg-amber-600 transition shadow-xs flex items-center gap-1"
+            >
+              <Sliders className="w-3 h-3" />
+              <span>تنظیمات سورس‌ها</span>
+            </button>
+          </div>
+
+          <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+            {/* Search and Filters */}
+            <div className="flex flex-wrap items-center gap-2 flex-1">
+              <div className="relative flex-1 min-w-[200px] max-w-sm">
+                <Search className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  type="text"
+                  value={ratesSearchQuery}
+                  onChange={(e) => setRatesSearchQuery(e.target.value)}
+                  placeholder="جستجوی طلا، سکه، دلار، تتر..."
+                  className="w-full pr-10 pl-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-amber-500/30"
+                />
+              </div>
+
+              {/* Filter Chips */}
+              <div className="flex items-center gap-1 overflow-x-auto scrollbar-none py-0.5 text-xs">
+                <button
+                  onClick={() => setRatesFilter('all')}
+                  className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${
+                    ratesFilter === 'all'
+                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xs'
+                      : 'bg-white/70 dark:bg-slate-900/70 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-100'
+                  }`}
+                >
+                  همه اقلام ({marketPrices.length})
+                </button>
+                <button
+                  onClick={() => setRatesFilter('enabled')}
+                  className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1 ${
+                    ratesFilter === 'enabled'
+                      ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
+                      : 'bg-white/70 dark:bg-slate-900/70 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-100'
+                  }`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span>فقط فعال‌ها ({enabledMarketPrices.length})</span>
+                </button>
+                <button
+                  onClick={() => setRatesFilter('gold')}
+                  className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${
+                    ratesFilter === 'gold'
+                      ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
+                      : 'bg-white/70 dark:bg-slate-900/70 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-100'
+                  }`}
+                >
+                  طلا و سکه
+                </button>
+                <button
+                  onClick={() => setRatesFilter('currency')}
+                  className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${
+                    ratesFilter === 'currency'
+                      ? 'bg-emerald-500 text-white font-black shadow-xs'
+                      : 'bg-white/70 dark:bg-slate-900/70 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-100'
+                  }`}
+                >
+                  اسکناس و ارز
+                </button>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            {/* Actions: Unit toggle + Telegram + Refresh */}
+            <div className="flex items-center gap-2 self-end lg:self-center">
+              {/* Unit Toggle */}
+              <div className="flex items-center bg-white dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold">
+                <button
+                  onClick={() => setDisplayUnit('toman')}
+                  className={`px-2.5 py-1 rounded-lg transition ${
+                    displayUnit === 'toman'
+                      ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
+                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                  }`}
+                >
+                  تومان
+                </button>
+                <button
+                  onClick={() => setDisplayUnit('rial')}
+                  className={`px-2.5 py-1 rounded-lg transition ${
+                    displayUnit === 'rial'
+                      ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
+                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                  }`}
+                >
+                  ریال
+                </button>
+              </div>
+
               <button
                 onClick={() => setIsTelegramModalOpen(true)}
-                className="px-3.5 py-2 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-400/30 text-sky-600 dark:text-sky-300 text-xs font-bold transition flex items-center gap-1.5"
+                className="px-3 py-2 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-400/30 text-sky-600 dark:text-sky-300 text-xs font-bold transition flex items-center gap-1.5"
+                title="استخراج نرخ‌ها از متن تلگرام"
               >
                 <Send className="w-3.5 h-3.5 -rotate-45" />
-                <span>پیست پیام تلگرام</span>
+                <span className="hidden sm:inline">پیست تلگرام</span>
               </button>
 
               <button
@@ -897,43 +1077,86 @@ export const AssetsView: React.FC = () => {
             </div>
           </div>
 
+          {/* Rates Table */}
           <div className="rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-xs text-right">
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/30">
+                    <th className="py-3 px-3 font-bold text-center">وضعیت</th>
                     <th className="py-3 px-4 font-bold">نام دارایی / نماد</th>
-                    <th className="py-3 px-4 font-bold">دسته‌بندی</th>
-                    <th className="py-3 px-4 font-bold">قیمت لحظه‌ای (تومان)</th>
-                    <th className="py-3 px-4 font-bold">تغییرات ۲۴ ساعته</th>
+                    <th className="py-3 px-3 font-bold">دسته‌بندی</th>
+                    <th className="py-3 px-4 font-bold">قیمت لحظه‌ای</th>
+                    <th className="py-3 px-3 font-bold">تغییرات ۲۴ ساعته</th>
                     <th className="py-3 px-4 font-bold">سورس نرخ</th>
-                    <th className="py-3 px-4 font-bold">آخرین به‌روزرسانی</th>
-                    <th className="py-3 px-4 font-bold text-center">عملیات</th>
+                    <th className="py-3 px-3 font-bold text-center">واحد نمایش</th>
+                    <th className="py-3 px-3 font-bold text-center">عملیات</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                   {filteredMarketRates.map((item) => {
+                    const isItemEnabled = item.isEnabled !== false;
                     const change = item.change24h ?? 0;
+                    const isDedicated = item.symbol === 'usd' || item.symbol === 'gold_18k';
+                    const formatted = formatPriceWithUnit(
+                      item.priceToman,
+                      item.displayCurrency || displayUnit
+                    );
+
                     return (
-                      <tr key={item.symbol} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40">
+                      <tr
+                        key={item.symbol}
+                        className={`transition ${
+                          isItemEnabled
+                            ? 'hover:bg-slate-50/70 dark:hover:bg-slate-800/40'
+                            : 'opacity-60 bg-slate-50/20 dark:bg-slate-950/20 hover:opacity-90'
+                        }`}
+                      >
+                        {/* On / Off Toggle Column */}
+                        <td className="py-3.5 px-3 text-center">
+                          <button
+                            onClick={() => toggleMarketPriceEnabled(item.symbol)}
+                            className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                            title={isItemEnabled ? 'کلیک برای غیرفعال‌سازی (خاموش)' : 'کلیک برای فعال‌سازی (روشن)'}
+                          >
+                            {isItemEnabled ? (
+                              <ToggleRight className="w-6 h-6 text-emerald-500 hover:text-emerald-600 transition" />
+                            ) : (
+                              <ToggleLeft className="w-6 h-6 text-slate-400 hover:text-slate-600 transition" />
+                            )}
+                          </button>
+                        </td>
+
+                        {/* Name and Symbol */}
                         <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
                           <div className="flex items-center gap-2">
                             <span className="font-mono text-[10px] text-slate-400 uppercase bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
                               {item.symbol}
                             </span>
                             <span>{item.name}</span>
+                            {!isItemEnabled && (
+                              <span className="text-[10px] text-slate-400 bg-slate-200/60 dark:bg-slate-800/80 px-1.5 py-0.2 rounded font-normal">
+                                خاموش
+                              </span>
+                            )}
                           </div>
                         </td>
 
-                        <td className="py-3.5 px-4 text-slate-500 dark:text-slate-400">
+                        {/* Category */}
+                        <td className="py-3.5 px-3 text-slate-500 dark:text-slate-400">
                           {CATEGORY_LABELS[item.category] || item.category}
                         </td>
 
+                        {/* Current Price */}
                         <td className="py-3.5 px-4 font-mono font-black text-sm text-slate-900 dark:text-white">
-                          {formatNumber(item.priceToman)} <span className="text-[10px] font-normal text-slate-400">تومان / {item.unit}</span>
+                          {formatted.value}{' '}
+                          <span className="text-[10px] font-normal text-slate-400">
+                            {formatted.unit} / {item.unit}
+                          </span>
                         </td>
 
-                        <td className="py-3.5 px-4">
+                        {/* 24h Change */}
+                        <td className="py-3.5 px-3">
                           <span
                             className={`inline-flex items-center gap-1 font-mono font-bold px-2 py-0.5 rounded-md dir-ltr ${
                               change > 0
@@ -948,15 +1171,40 @@ export const AssetsView: React.FC = () => {
                           </span>
                         </td>
 
-                        <td className="py-3.5 px-4 text-slate-500 dark:text-slate-400 text-[11px]">
-                          {item.source}
+                        {/* Source Badge */}
+                        <td className="py-3.5 px-4 text-xs">
+                          {isDedicated ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-300 font-bold border border-amber-500/20 text-[10px]">
+                              <Sparkles className="w-2.5 h-2.5" />
+                              <span>سورس اختصاصی ({priceSourceConfig.goldDollarSourceType === 'telegram' ? 'تلگرام' : 'سایت'})</span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px]">
+                              <Globe className="w-2.5 h-2.5" />
+                              <span>سایت عمومی (tgju.org)</span>
+                            </span>
+                          )}
                         </td>
 
-                        <td className="py-3.5 px-4 font-mono text-slate-400 text-[11px] dir-ltr text-right">
-                          {item.lastUpdated}
+                        {/* Unit Switcher */}
+                        <td className="py-3.5 px-3 text-center">
+                          <button
+                            onClick={() =>
+                              setMarketPriceDisplayUnit(
+                                item.symbol,
+                                (item.displayCurrency || displayUnit) === 'rial' ? 'toman' : 'rial'
+                              )
+                            }
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-amber-500/10 hover:text-amber-600 text-slate-600 dark:text-slate-300 text-[11px] font-bold transition border border-slate-200 dark:border-slate-700"
+                            title="تغییر واحد نمایش بین تومان و ریال برای این قلم"
+                          >
+                            <ArrowRightLeft className="w-2.5 h-2.5" />
+                            <span>{(item.displayCurrency || displayUnit) === 'rial' ? 'ریال' : 'تومان'}</span>
+                          </button>
                         </td>
 
-                        <td className="py-3.5 px-4 text-center">
+                        {/* Edit Price Modal Button */}
+                        <td className="py-3.5 px-3 text-center">
                           <button
                             onClick={() => {
                               setEditingRateItem(item);
@@ -1082,78 +1330,125 @@ export const AssetsView: React.FC = () => {
       {activeSubTab === 'sources' && (
         <div className="space-y-4">
           <div className="p-6 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
               <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                  مدیریت سورس‌های تلگرام و وب‌سایت
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-500" />
+                  مدیریت سورس‌های تلگرام، وب‌سایت و شخصی‌سازی اقلام
                 </h3>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  تنظیم آیدی کانال‌های تلگرامی مظنه، اندپوینت‌های وب و بازه به‌روزرسانی خودکار
+                  تنظیم اختصاصی سورس دلار و طلای ۱۸ عیار، سامانه عمومی tgju.org و انتخاب واحدهای اعلامی/نمایش
                 </p>
               </div>
               <button
                 onClick={() => setIsSettingsModalOpen(true)}
-                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs transition shadow-xs"
+                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs transition shadow-xs flex items-center gap-1.5 self-start sm:self-auto"
               >
-                تغییر و پیکربندی سورس‌ها
+                <Sliders className="w-3.5 h-3.5" />
+                <span>پیکربندی کامل سورس‌ها و اقلام</span>
               </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 space-y-1.5">
-                <span className="text-slate-500 font-bold block">منبع فعال فعلی:</span>
-                <span className="text-sm font-black text-slate-900 dark:text-white block">
-                  {priceSourceConfig.sourceMode === 'telegram'
-                    ? 'کانال تلگرام'
-                    : priceSourceConfig.sourceMode === 'custom_api'
-                    ? 'سورس سفارشی وب'
-                    : 'نرخ لحظه‌ای بازار و نوبیتکس'}
-                </span>
-                <span className="text-[11px] text-slate-400">
-                  {priceSourceConfig.telegramChannelOrUrl || 'سورس پیش‌فرض هوشمند'}
-                </span>
+              {/* Card 1: Dedicated Dollar & Gold */}
+              <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-amber-700 dark:text-amber-300 font-bold flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                    سورس اختصاصی دلار و طلا:
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold text-[10px]">
+                    {priceSourceConfig.goldDollarSourceType === 'telegram' ? 'کانال تلگرام' : 'وب‌سایت اختصاصی'}
+                  </span>
+                </div>
+                <div className="font-mono font-bold text-slate-900 dark:text-white text-xs truncate dir-ltr text-right">
+                  {priceSourceConfig.goldDollarSourceType === 'telegram'
+                    ? priceSourceConfig.goldDollarTelegramChannel || '@tala_dollar_live'
+                    : priceSourceConfig.goldDollarWebsiteUrl || 'پیش‌فرض'}
+                </div>
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 space-y-0.5 pt-1 border-t border-amber-500/10">
+                  <div className="flex justify-between">
+                    <span>واحد اعلامی سورس:</span>
+                    <span className="font-bold text-slate-700 dark:text-slate-300">
+                      {priceSourceConfig.goldDollarSourceUnit === 'toman'
+                        ? 'تومان'
+                        : priceSourceConfig.goldDollarSourceUnit === 'rial'
+                        ? 'ریال'
+                        : 'تشخیص خودکار'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>واحد نمایش در برنامه:</span>
+                    <span className="font-bold text-amber-600 dark:text-amber-400">
+                      {priceSourceConfig.goldDollarDisplayUnit === 'rial' ? 'ریال' : 'تومان'}
+                    </span>
+                  </div>
+                </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 space-y-1.5">
-                <span className="text-slate-500 font-bold block">بازه رفرش خودکار:</span>
-                <span className="text-sm font-black text-slate-900 dark:text-white block font-mono">
-                  {priceSourceConfig.autoRefreshMinutes > 0
-                    ? `هر ${priceSourceConfig.autoRefreshMinutes} دقیقه`
-                    : 'دستی (فقط با کلیک)'}
-                </span>
-                <span className="text-[11px] text-slate-400">به‌روزرسانی خودکار نرخ‌ها در پس‌زمینه</span>
+              {/* Card 2: General Source (tgju.org) */}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-600 dark:text-slate-300 font-bold flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5 text-sky-500" />
+                    سورس عمومی سایر نرخ‌ها:
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-600 dark:text-sky-300 font-bold text-[10px]">
+                    قابل تغییر
+                  </span>
+                </div>
+                <div className="font-mono text-slate-900 dark:text-white text-xs truncate dir-ltr text-right">
+                  {priceSourceConfig.generalMarketSourceUrl || 'https://www.tgju.org'}
+                </div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-200/50 dark:border-slate-700/50 leading-relaxed">
+                  این سورس برای سایر اقلام (سکه، انس طلا، یورو و...) استفاده می‌شود و فقط زمانی که هر قلم را فعال کنید استعلام می‌گردد.
+                </p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 space-y-1.5">
-                <span className="text-slate-500 font-bold block">آخرین وضعیت دریافت:</span>
-                <span
-                  className={`text-sm font-black block ${
-                    priceSourceConfig.lastFetchStatus === 'success'
-                      ? 'text-emerald-500'
-                      : priceSourceConfig.lastFetchStatus === 'error'
-                      ? 'text-rose-500'
-                      : 'text-slate-400'
-                  }`}
-                >
-                  {priceSourceConfig.lastFetchStatus === 'success'
-                    ? 'موفق و متصل'
-                    : priceSourceConfig.lastFetchStatus === 'error'
-                    ? 'خطا در سورس'
-                    : 'آماده استعلام'}
-                </span>
-                <span className="text-[11px] text-slate-400 font-mono">
-                  {priceSourceConfig.lastFetchTime || 'هنوز اجرا نشده'}
-                </span>
+              {/* Card 3: Personalization & Refresh Status */}
+              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-600 dark:text-slate-300 font-bold">وضعیت شخصی‌سازی:</span>
+                  <span className="font-mono font-black text-amber-600 dark:text-amber-400 text-xs">
+                    {enabledMarketPrices.length} از {marketPrices.length} فعال
+                  </span>
+                </div>
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                  {enabledMarketPrices.map((i) => i.name).join('، ')}
+                </div>
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 space-y-0.5 pt-1 border-t border-slate-200/50 dark:border-slate-700/50">
+                  <div className="flex justify-between items-center">
+                    <span>آخرین به‌روزرسانی:</span>
+                    <span
+                      className={`font-bold ${
+                        priceSourceConfig.lastFetchStatus === 'success'
+                          ? 'text-emerald-500'
+                          : priceSourceConfig.lastFetchStatus === 'error'
+                          ? 'text-rose-500'
+                          : 'text-slate-400'
+                      }`}
+                    >
+                      {priceSourceConfig.lastFetchStatus === 'success'
+                        ? 'موفق'
+                        : priceSourceConfig.lastFetchStatus === 'error'
+                        ? 'خطا'
+                        : 'آماده'}
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-slate-400 font-mono dir-ltr text-right">
+                    {priceSourceConfig.lastFetchTime || 'دستی'}
+                  </div>
+                </div>
               </div>
             </div>
 
             <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-300 space-y-1">
               <span className="font-bold flex items-center gap-1.5">
                 <Info className="w-4 h-4 text-amber-500" />
-                نکته مهم در رابطه با سورس‌های تلگرام:
+                قابلیت‌های شخصی‌سازی سورس و تبدیل نرخ:
               </span>
               <p className="leading-relaxed text-[11px]">
-                به دلیل محدودیت‌های شبکه‌ای تلگرام و CORS در برخی مرورگرها، شما می‌توانید در هر زمان با دکمه «پیست پیام تلگرام» متن پیام مظنه را مستقیماً وارد کنید تا نرخ‌ها به صورت ۱۰۰٪ دقیق و بدون وابستگی به شبکه استخراج شوند.
+                اگر کانال یا سایت مظنه شما قیمت‌ها را به <strong>تومان</strong> اعلام می‌کند ولی ترجیح می‌دهید در برنامه به <strong>ریال</strong> نمایش یابد (یا برعکس)، سیستم به‌صورت بلادرنگ تبدیل ریاضی (ضرب یا تقسیم بر ۱۰) را انجام می‌دهد. همچنین می‌توانید هر زمان متن پیام مظنه کانال تلگرام را با کلیک بر روی دکمه «پیست پیام تلگرام» وارد کنید تا بدون نیاز به اتصال مستقیم اینترنتی به‌روز شود.
               </p>
             </div>
           </div>
@@ -1201,6 +1496,7 @@ export const AssetsView: React.FC = () => {
         marketPrices={marketPrices}
         onClose={() => setIsSettingsModalOpen(false)}
         onSaveConfig={(cfg) => updatePriceSourceConfig(cfg)}
+        onToggleItem={toggleMarketPriceEnabled}
         onRefreshNow={refreshMarketPrices}
       />
 

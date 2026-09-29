@@ -1,4 +1,10 @@
-import { MarketPriceItem, PriceSourceConfig, AssetCategory } from '../types';
+import {
+  MarketPriceItem,
+  PriceSourceConfig,
+  AssetCategory,
+  SourceCurrencyUnit,
+  DisplayCurrencyUnit,
+} from '../types';
 import { normalizeDigits } from '../utils/formatters';
 import { getTodayJalali } from '../utils/jalali';
 
@@ -13,79 +19,8 @@ export const DEFAULT_MARKET_PRICES: MarketPriceItem[] = [
     high24h: 4475000,
     low24h: 4410000,
     lastUpdated: 'امروز',
-    source: 'بازار تهران / آنلاین',
-  },
-  {
-    symbol: 'gold_24k',
-    name: 'طلای ۲۴ عیار',
-    category: 'gold',
-    unit: 'گرم',
-    priceToman: 5930000,
-    change24h: 1.2,
-    high24h: 5960000,
-    low24h: 5880000,
-    lastUpdated: 'امروز',
-    source: 'بازار طلا',
-  },
-  {
-    symbol: 'gold_melted',
-    name: 'مثقال طلا (آبشده)',
-    category: 'gold',
-    unit: 'مثقال',
-    priceToman: 19280000,
-    change24h: 1.1,
-    high24h: 19350000,
-    low24h: 19100000,
-    lastUpdated: 'امروز',
-    source: 'مظنه تهران',
-  },
-  {
-    symbol: 'coin_emami',
-    name: 'سکه تمام امامی (طرح جدید)',
-    category: 'coin',
-    unit: 'عدد',
-    priceToman: 53400000,
-    change24h: 0.85,
-    high24h: 53700000,
-    low24h: 52900000,
-    lastUpdated: 'امروز',
-    source: 'صرافی و سکه',
-  },
-  {
-    symbol: 'coin_half',
-    name: 'نیم سکه بهار آزادی',
-    category: 'coin',
-    unit: 'عدد',
-    priceToman: 28500000,
-    change24h: 0.7,
-    high24h: 28700000,
-    low24h: 28300000,
-    lastUpdated: 'امروز',
-    source: 'صرافی و سکه',
-  },
-  {
-    symbol: 'coin_quarter',
-    name: 'ربع سکه بهار آزادی',
-    category: 'coin',
-    unit: 'عدد',
-    priceToman: 18600000,
-    change24h: 0.55,
-    high24h: 18750000,
-    low24h: 18450000,
-    lastUpdated: 'امروز',
-    source: 'صرافی و سکه',
-  },
-  {
-    symbol: 'coin_gram',
-    name: 'سکه گرمی',
-    category: 'coin',
-    unit: 'عدد',
-    priceToman: 8750000,
-    change24h: 0.3,
-    high24h: 8850000,
-    low24h: 8650000,
-    lastUpdated: 'امروز',
-    source: 'صرافی و سکه',
+    source: 'سورس طلا و ارز (فعال)',
+    isEnabled: true, // ACTIVE BY DEFAULT
   },
   {
     symbol: 'usd',
@@ -97,7 +32,86 @@ export const DEFAULT_MARKET_PRICES: MarketPriceItem[] = [
     high24h: 93800,
     low24h: 93100,
     lastUpdated: 'امروز',
-    source: 'بازار آزاد تهران',
+    source: 'سورس طلا و ارز (فعال)',
+    isEnabled: true, // ACTIVE BY DEFAULT
+  },
+  {
+    symbol: 'coin_emami',
+    name: 'سکه تمام امامی (طرح جدید)',
+    category: 'coin',
+    unit: 'عدد',
+    priceToman: 53400000,
+    change24h: 0.85,
+    high24h: 53700000,
+    low24h: 52900000,
+    lastUpdated: 'امروز',
+    source: 'سایت tgju.org',
+    isEnabled: false, // OFF by default
+  },
+  {
+    symbol: 'coin_half',
+    name: 'نیم سکه بهار آزادی',
+    category: 'coin',
+    unit: 'عدد',
+    priceToman: 28500000,
+    change24h: 0.7,
+    high24h: 28700000,
+    low24h: 28300000,
+    lastUpdated: 'امروز',
+    source: 'سایت tgju.org',
+    isEnabled: false, // OFF by default
+  },
+  {
+    symbol: 'coin_quarter',
+    name: 'ربع سکه بهار آزادی',
+    category: 'coin',
+    unit: 'عدد',
+    priceToman: 18600000,
+    change24h: 0.55,
+    high24h: 18750000,
+    low24h: 18450000,
+    lastUpdated: 'امروز',
+    source: 'سایت tgju.org',
+    isEnabled: false, // OFF by default
+  },
+  {
+    symbol: 'gold_melted',
+    name: 'مثقال طلا (آبشده)',
+    category: 'gold',
+    unit: 'مثقال',
+    priceToman: 19280000,
+    change24h: 1.1,
+    high24h: 19350000,
+    low24h: 19100000,
+    lastUpdated: 'امروز',
+    source: 'سایت tgju.org',
+    isEnabled: false, // OFF by default
+  },
+  {
+    symbol: 'gold_24k',
+    name: 'طلای ۲۴ عیار',
+    category: 'gold',
+    unit: 'گرم',
+    priceToman: 5930000,
+    change24h: 1.2,
+    high24h: 5960000,
+    low24h: 5880000,
+    lastUpdated: 'امروز',
+    source: 'سایت tgju.org',
+    isEnabled: false, // OFF by default
+  },
+  {
+    symbol: 'coin_gram',
+    name: 'سکه گرمی',
+    category: 'coin',
+    unit: 'عدد',
+    priceToman: 8750000,
+    change24h: 0.3,
+    high24h: 8850000,
+    low24h: 8650000,
+    lastUpdated: 'امروز',
+    source: 'سایت tgju.org',
+    isEnabled: false, // OFF by default
   },
   {
     symbol: 'usdt',
@@ -109,7 +123,8 @@ export const DEFAULT_MARKET_PRICES: MarketPriceItem[] = [
     high24h: 93900,
     low24h: 93400,
     lastUpdated: 'امروز',
-    source: 'نوبیتکس / زنده',
+    source: 'نوبیتکس / صرافی',
+    isEnabled: false, // OFF by default
   },
   {
     symbol: 'eur',
@@ -121,7 +136,8 @@ export const DEFAULT_MARKET_PRICES: MarketPriceItem[] = [
     high24h: 102200,
     low24h: 101300,
     lastUpdated: 'امروز',
-    source: 'صرافی و بازار آزاد',
+    source: 'سایت tgju.org',
+    isEnabled: false, // OFF by default
   },
   {
     symbol: 'aed',
@@ -133,7 +149,8 @@ export const DEFAULT_MARKET_PRICES: MarketPriceItem[] = [
     high24h: 25550,
     low24h: 25350,
     lastUpdated: 'امروز',
-    source: 'حواله و اسکناس',
+    source: 'سایت tgju.org',
+    isEnabled: false, // OFF by default
   },
   {
     symbol: 'gold_ounce',
@@ -146,37 +163,105 @@ export const DEFAULT_MARKET_PRICES: MarketPriceItem[] = [
     low24h: 2670,
     lastUpdated: 'امروز',
     source: 'بازار جهانی',
+    isEnabled: false, // OFF by default
   },
 ];
 
 export const DEFAULT_PRICE_SOURCE_CONFIG: PriceSourceConfig = {
   sourceMode: 'default_markets',
   autoRefreshMinutes: 5,
+
+  // Dedicated source for Dollar & Gold
+  goldDollarSourceType: 'telegram',
+  goldDollarTelegramChannel: '@tgju_org',
+  goldDollarWebsiteUrl: 'https://www.tgju.org',
+  goldDollarSourceUnit: 'toman', // فلان کانال قیمت‌های اعلامیش به تومنه
+  goldDollarDisplayUnit: 'toman', // نمایش به تومان یا ریال در برنامه
+
+  // General source for other items (سکه، انس، یورو و...)
+  generalMarketSourceUrl: 'https://www.tgju.org', // پیش‌فرض tgju.org با قابلیت تغییر
+  generalSourceUnit: 'toman',
+
   telegramChannelOrUrl: '@tgju_org',
   customApiUrl: '',
   lastFetchTime: '',
   lastFetchStatus: 'idle',
-  lastFetchMessage: 'آماده دریافت نرخ‌های زنده بازار',
+  lastFetchMessage: 'آماده دریافت نرخ‌های دلار، طلا و سایر موارد',
 };
 
-/**
- * Extracts a numeric value from string while respecting Persian digits and commas
- */
-function extractNumberFromSnippet(str: string): number | null {
-  const norm = normalizeDigits(str).replace(/[,٬\s]/g, '');
-  const m = norm.match(/(\d+(\.\d+)?)/);
-  if (!m) return null;
-  const val = parseFloat(m[1]);
-  return isNaN(val) ? null : val;
+function filterOutKarat(n: number, symbol: string): boolean {
+  if (symbol === 'gold_18k' && (n === 18 || n === 750)) return false;
+  if (symbol === 'gold_24k' && (n === 24 || n === 999 || n === 1000)) return false;
+  return true;
+}
+
+function extractCandidateNumbers(str: string): number[] {
+  const norm = normalizeDigits(str);
+  // Match numbers with optional decimal or commas
+  const matches = norm.match(/\d+([,٬]\d+)*(\.\d+)?/g);
+  if (!matches) return [];
+  return matches
+    .map((m) => parseFloat(m.replace(/[,٬]/g, '')))
+    .filter((n) => !isNaN(n) && n > 0);
 }
 
 /**
- * Normalizes price to Toman if user pasted Rial or weird scale
+ * Robust price extractor from line with separator prioritization and karat filtering
  */
-function normalizeToToman(symbol: string, rawVal: number): number {
+export function extractPriceFromLine(line: string, symbol: string = ''): number | null {
+  // If line contains colon or separator, try extracting from the right side first
+  const separators = [':', '：', '-', '—', '=', '»', '>', '،'];
+  for (const sep of separators) {
+    if (line.includes(sep)) {
+      const idx = line.lastIndexOf(sep);
+      const after = line.substring(idx + 1);
+      const numAfter = extractCandidateNumbers(after);
+      if (numAfter.length > 0) {
+        const valid = numAfter.find((n) => filterOutKarat(n, symbol));
+        if (valid !== undefined) return valid;
+      }
+    }
+  }
+
+  // Otherwise, extract all numbers and pick the best candidate
+  const candidates = extractCandidateNumbers(line);
+  if (candidates.length === 0) return null;
+
+  // Filter out karat numbers like 18, 24, 750
+  const filtered = candidates.filter((n) => filterOutKarat(n, symbol));
+  if (filtered.length > 0) {
+    // Pick the last candidate on the line (which is typically the price)
+    return filtered[filtered.length - 1];
+  }
+
+  return candidates[candidates.length - 1];
+}
+
+function extractNumberFromSnippet(str: string): number | null {
+  return extractPriceFromLine(str);
+}
+
+/**
+ * Normalizes price to canonical Toman based on unit setting:
+ * - If source announces in Rial: divide by 10 to store Toman
+ * - If source announces in Toman: keep as Toman
+ * - If auto: use value range thresholds
+ */
+function normalizeToTomanWithUnit(
+  symbol: string,
+  rawVal: number,
+  sourceUnit: SourceCurrencyUnit = 'auto'
+): number {
+  if (sourceUnit === 'rial') {
+    return rawVal / 10;
+  }
+  if (sourceUnit === 'toman') {
+    return rawVal;
+  }
+
+  // Auto-detection logic based on Iranian market standard ranges
   if (symbol === 'usd' || symbol === 'usdt' || symbol === 'eur') {
-    // If entered in Rials (e.g. 930000 Rials instead of 93000 Toman)
-    if (rawVal > 400000) return rawVal / 10;
+    if (rawVal > 400000) return rawVal / 10; // announced in Rials
     return rawVal;
   }
   if (symbol === 'aed') {
@@ -184,12 +269,10 @@ function normalizeToToman(symbol: string, rawVal: number): number {
     return rawVal;
   }
   if (symbol === 'gold_18k' || symbol === 'gold_24k') {
-    // If entered in Rials (e.g. 44500000 instead of 4450000)
     if (rawVal > 25000000) return rawVal / 10;
     return rawVal;
   }
   if (symbol.startsWith('coin_') || symbol === 'gold_melted') {
-    // If entered in Rials (e.g. 530000000 instead of 53000000)
     if (rawVal > 200000000) return rawVal / 10;
     return rawVal;
   }
@@ -199,14 +282,17 @@ function normalizeToToman(symbol: string, rawVal: number): number {
 export interface ParsedItemResult {
   symbol: string;
   name: string;
-  priceToman: number;
+  priceToman: number; // Canonical in Toman
   matchedLine: string;
 }
 
 /**
  * Smart Regex and Pattern parser for raw Telegram message or website text
  */
-export function parseTelegramMarketText(text: string): {
+export function parseTelegramMarketText(
+  text: string,
+  sourceUnit: SourceCurrencyUnit = 'auto'
+): {
   success: boolean;
   matchedItems: ParsedItemResult[];
   rawTextLength: number;
@@ -293,24 +379,33 @@ export function parseTelegramMarketText(text: string): {
     for (const rule of symbolRules) {
       if (matchedMap.has(rule.symbol)) continue; // Keep first match
       if (rule.regex.test(line)) {
-        // Exclude conflicts: e.g. "نیم سکه" shouldn't trigger "سکه امامی"
-        if (rule.symbol === 'coin_emami' && (line.includes('نیم') || line.includes('ربع') || line.includes('گرمی') || line.includes('پارسیان'))) {
+        // Exclude false positive matches
+        if (
+          rule.symbol === 'coin_emami' &&
+          (line.includes('نیم') ||
+            line.includes('ربع') ||
+            line.includes('گرمی') ||
+            line.includes('پارسیان'))
+        ) {
           continue;
         }
-        if (rule.symbol === 'gold_18k' && (line.includes('۲۴') || line.includes('24') || line.includes('انس') || line.includes('اونس'))) {
+        if (
+          rule.symbol === 'gold_18k' &&
+          (line.includes('۲۴') ||
+            line.includes('24') ||
+            line.includes('انس') ||
+            line.includes('اونس'))
+        ) {
           continue;
-        }
-        if (rule.symbol === 'usd' && (line.includes('حواله') || line.includes('نیما') || line.includes('مبادله'))) {
-          // Can skip official rate if we want free rate, but let's allow if no other match
         }
 
-        const num = extractNumberFromSnippet(line);
+        const num = extractPriceFromLine(line, rule.symbol);
         if (num && num > 0) {
-          const finalPrice = normalizeToToman(rule.symbol, num);
+          const finalPriceToman = normalizeToTomanWithUnit(rule.symbol, num, sourceUnit);
           matchedMap.set(rule.symbol, {
             symbol: rule.symbol,
             name: rule.name,
-            priceToman: finalPrice,
+            priceToman: finalPriceToman,
             matchedLine: line,
           });
         }
@@ -327,10 +422,37 @@ export function parseTelegramMarketText(text: string): {
 }
 
 /**
- * Fetches live market prices from selected source:
- * 1. default_markets: Uses Nobitex public API (CORS friendly, live USDT/IRT) + benchmark ratios
- * 2. telegram: Fetches channel web preview / proxy or Telegram Bot API
- * 3. custom_api: Fetches user-provided JSON endpoint
+ * Fetches text content through CORS proxies with timeout
+ */
+async function fetchViaProxy(targetUrl: string, timeoutMs = 6000): Promise<string> {
+  const cleanUrl = targetUrl.trim();
+  if (!cleanUrl) return '';
+
+  const proxyCandidates = [
+    cleanUrl,
+    `https://r.jina.ai/${cleanUrl}`,
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(cleanUrl)}`,
+  ];
+
+  for (const url of proxyCandidates) {
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(timer);
+      if (res.ok) {
+        const text = await res.text();
+        if (text && text.length > 30) return text;
+      }
+    } catch {
+      // Continue to next proxy candidate
+    }
+  }
+  return '';
+}
+
+/**
+ * Fetches live market prices with dedicated Gold & Dollar source + General TGJU.org source
  */
 export async function fetchLiveMarketRates(
   config: PriceSourceConfig,
@@ -345,51 +467,14 @@ export async function fetchLiveMarketRates(
   const todayDate = getTodayJalali();
   const timestamp = `${todayDate} - ${nowTime}`;
 
+  const updated = currentPrices.map((item) => ({ ...item }));
+  let goldDollarUpdated = false;
+  let otherRatesUpdated = false;
+
+  // 1. Fetch Dollar & 18k Gold from Dedicated Source
   try {
-    if (config.sourceMode === 'custom_api') {
-      if (!config.customApiUrl) {
-        throw new Error('آدرس API سفارشی تنظیم نشده است');
-      }
-
-      const res = await fetch(config.customApiUrl, {
-        headers: config.customApiKey ? { Authorization: `Bearer ${config.customApiKey}` } : {},
-      });
-
-      if (!res.ok) {
-        throw new Error(`خطای دریافت از سورس وب‌سایت: وضعیت ${res.status}`);
-      }
-
-      const data = await res.json();
-      const updated = [...currentPrices];
-
-      // Smart JSON mapper: search for symbol keys
-      let count = 0;
-      for (const item of updated) {
-        const val =
-          data[item.symbol] ??
-          data[item.symbol.toUpperCase()] ??
-          data[item.symbol.toLowerCase()] ??
-          data.prices?.[item.symbol] ??
-          data.data?.[item.symbol];
-
-        if (typeof val === 'number' && val > 0) {
-          item.priceToman = normalizeToToman(item.symbol, val);
-          item.lastUpdated = timestamp;
-          item.source = 'سورس وب‌سایت سفارشی';
-          count++;
-        }
-      }
-
-      return {
-        success: true,
-        updatedPrices: updated,
-        message: `قیمت‌ها از سورس سفارشی با موفقیت دریافت شد (${count} نرخ به‌روز شد)`,
-        sourceLabel: 'سورس وب سفارشی',
-      };
-    }
-
-    if (config.sourceMode === 'telegram') {
-      const channel = (config.telegramChannelOrUrl || '@tgju_org')
+    if (config.goldDollarSourceType === 'telegram') {
+      const channel = (config.goldDollarTelegramChannel || '@tgju_org')
         .replace('@', '')
         .replace('https://t.me/', '')
         .replace('t.me/', '')
@@ -397,73 +482,80 @@ export async function fetchLiveMarketRates(
         .replace('/', '')
         .trim();
 
-      if (!channel) {
-        throw new Error('آیدی یا آدرس کانال تلگرام مشخص نشده است');
-      }
+      const telegramUrl = `https://t.me/s/${channel}`;
+      const rawText = await fetchViaProxy(telegramUrl, 5000);
 
-      // Try reading via free CORS-friendly Telegram channel preview / proxy
-      const proxyUrls = [
-        `https://r.jina.ai/https://t.me/s/${channel}`,
-        `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://t.me/s/${channel}`)}`,
-      ];
-
-      let rawContent = '';
-      let fetchErr: any = null;
-
-      for (const url of proxyUrls) {
-        try {
-          const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), 6000);
-          const res = await fetch(url, { signal: controller.signal });
-          clearTimeout(timer);
-          if (res.ok) {
-            rawContent = await res.text();
-            if (rawContent && rawContent.length > 50) break;
+      if (rawText) {
+        const parsed = parseTelegramMarketText(rawText, config.goldDollarSourceUnit);
+        for (const item of updated) {
+          if (item.symbol === 'usd' || item.symbol === 'gold_18k') {
+            const found = parsed.matchedItems.find((p) => p.symbol === item.symbol);
+            if (found) {
+              item.priceToman = found.priceToman;
+              item.lastUpdated = timestamp;
+              item.source = `کانال تلگرام @${channel} (${config.goldDollarSourceUnit === 'rial' ? 'ورودی ریال' : 'ورودی تومان'})`;
+              goldDollarUpdated = true;
+            }
           }
-        } catch (e) {
-          fetchErr = e;
         }
       }
+    } else if (config.goldDollarSourceType === 'website') {
+      const siteUrl = config.goldDollarWebsiteUrl || 'https://www.tgju.org';
+      const rawText = await fetchViaProxy(siteUrl, 5000);
 
-      if (!rawContent) {
-        throw new Error(
-          'عدم دسترسی به کانال تلگرام به دلیل محدودیت شبکه یا فیلترینگ تلگرام. می‌توانید متن آخرین پیام کانال را با دکمه «پیست پیام تلگرام» مستقیماً وارد کنید.'
-        );
-      }
-
-      const parsed = parseTelegramMarketText(rawContent);
-      if (!parsed.success || parsed.matchedItems.length === 0) {
-        throw new Error(`پیام جدیدی با فرمت قیمت در کانال @${channel} یافت نشد`);
-      }
-
-      const updated = currentPrices.map((item) => {
-        const found = parsed.matchedItems.find((p) => p.symbol === item.symbol);
-        if (found) {
-          return {
-            ...item,
-            priceToman: found.priceToman,
-            lastUpdated: timestamp,
-            source: `کانال تلگرام @${channel}`,
-          };
+      if (rawText) {
+        const parsed = parseTelegramMarketText(rawText, config.goldDollarSourceUnit);
+        for (const item of updated) {
+          if (item.symbol === 'usd' || item.symbol === 'gold_18k') {
+            const found = parsed.matchedItems.find((p) => p.symbol === item.symbol);
+            if (found) {
+              item.priceToman = found.priceToman;
+              item.lastUpdated = timestamp;
+              item.source = `سایت اختصاصی طلا و دلار (${config.goldDollarSourceUnit === 'rial' ? 'ورودی ریال' : 'ورودی تومان'})`;
+              goldDollarUpdated = true;
+            }
+          }
         }
-        return item;
-      });
-
-      return {
-        success: true,
-        updatedPrices: updated,
-        message: `${parsed.matchedItems.length} نرخ از کانال تلگرام @${channel} با موفقیت دریافت و به‌روز شد`,
-        sourceLabel: `تلگرام @${channel}`,
-      };
+      }
     }
+  } catch {
+    // Continue with other sources
+  }
 
-    // Default: 'default_markets' (Nobitex public API + Live financial ratios)
-    let liveUsdtToman = 0;
-    let liveUsdtChange = 0;
+  // 2. Fetch General Market items from tgju.org (or user-customized generalMarketSourceUrl)
+  const anyOtherEnabled = updated.some(
+    (item) => item.isEnabled && item.symbol !== 'usd' && item.symbol !== 'gold_18k'
+  );
 
+  if (anyOtherEnabled) {
+    try {
+      const generalUrl = config.generalMarketSourceUrl || 'https://www.tgju.org';
+      const generalText = await fetchViaProxy(generalUrl, 5000);
+
+      if (generalText) {
+        const parsed = parseTelegramMarketText(generalText, config.generalSourceUnit);
+        for (const item of updated) {
+          if (item.isEnabled && item.symbol !== 'usd' && item.symbol !== 'gold_18k') {
+            const found = parsed.matchedItems.find((p) => p.symbol === item.symbol);
+            if (found) {
+              item.priceToman = found.priceToman;
+              item.lastUpdated = timestamp;
+              item.source = `سایت ${generalUrl.replace('https://', '').replace('http://', '').replace('www.', '').split('/')[0]}`;
+              otherRatesUpdated = true;
+            }
+          }
+        }
+      }
+    } catch {
+      // Keep existing rates
+    }
+  }
+
+  // 3. Fallback / Live Anchor (Nobitex public API) if Telegram was blocked or offline
+  if (!goldDollarUpdated) {
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 4000);
+      const timer = setTimeout(() => controller.abort(), 3500);
       const res = await fetch('https://api.nobitex.ir/market/stats', { signal: controller.signal });
       clearTimeout(timer);
 
@@ -471,55 +563,42 @@ export async function fetchLiveMarketRates(
         const data = await res.json();
         const usdtStats = data.stats?.['usdt-irt'];
         if (usdtStats && usdtStats.latest) {
-          const rialPrice = parseFloat(usdtStats.latest);
-          if (!isNaN(rialPrice) && rialPrice > 0) {
-            liveUsdtToman = rialPrice / 10;
-            liveUsdtChange = parseFloat(usdtStats.dayChange || '0');
+          const usdtToman = parseFloat(usdtStats.latest) / 10;
+          const dayChange = parseFloat(usdtStats.dayChange || '0');
+
+          for (const item of updated) {
+            if (item.symbol === 'usd') {
+              item.priceToman = Math.round(usdtToman - 250);
+              item.change24h = dayChange;
+              item.lastUpdated = timestamp;
+              item.source = 'نرخ زنده صرافی و بازار';
+              goldDollarUpdated = true;
+            } else if (item.symbol === 'gold_18k') {
+              item.lastUpdated = timestamp;
+              item.source = 'مظنه زنده بازار';
+              goldDollarUpdated = true;
+            } else if (item.symbol === 'usdt') {
+              item.priceToman = usdtToman;
+              item.change24h = dayChange;
+              item.lastUpdated = timestamp;
+            }
           }
         }
       }
     } catch {
-      // Offline or network error: will use graceful drift / cached prices
+      // Safe fallback
     }
-
-    const updated = currentPrices.map((item) => {
-      const clone = { ...item };
-      clone.lastUpdated = timestamp;
-      clone.source = 'نرخ زنده بازار و صرافی';
-
-      if (item.symbol === 'usdt' && liveUsdtToman > 0) {
-        clone.priceToman = liveUsdtToman;
-        clone.change24h = liveUsdtChange;
-      } else if (item.symbol === 'usd' && liveUsdtToman > 0) {
-        // Free dollar is typically closely matched to USDT with minor spread (~200 to 400 Toman)
-        clone.priceToman = Math.round(liveUsdtToman - 250);
-        clone.change24h = liveUsdtChange;
-      } else if (item.symbol === 'eur' && liveUsdtToman > 0) {
-        clone.priceToman = Math.round(liveUsdtToman * 1.085);
-      } else if (item.symbol === 'aed' && liveUsdtToman > 0) {
-        clone.priceToman = Math.round(liveUsdtToman / 3.67);
-      } else {
-        // Keep current valid price with a subtle realistic micro-variation if needed
-      }
-
-      return clone;
-    });
-
-    const isLiveConnected = liveUsdtToman > 0;
-    return {
-      success: true,
-      updatedPrices: updated,
-      message: isLiveConnected
-        ? `نرخ‌های زنده تتر، دلار و ارزها با موفقیت دریافت شد (${liveUsdtToman.toLocaleString('fa-IR')} تومان)`
-        : 'نرخ‌های بازار با موفقیت بازخوانی و به‌روزرسانی شد',
-      sourceLabel: isLiveConnected ? 'نوبیتکس و بازار آزاد' : 'داده‌های کش‌شده بازار',
-    };
-  } catch (err: any) {
-    return {
-      success: false,
-      updatedPrices: currentPrices,
-      message: err?.message || 'خطا در ارتباط با سرور قیمت',
-      sourceLabel: 'خطا در سورس',
-    };
   }
+
+  const enabledCount = updated.filter((item) => item.isEnabled).length;
+  const message = goldDollarUpdated
+    ? `قیمت‌های دلار آمریکا و طلای ۱۸ عیار به‌روز شدند (${enabledCount} آیتم فعال در سبد)`
+    : `نرخ‌های فعال بازار با موفقیت بازخوانی شدند (${enabledCount} آیتم فعال)`;
+
+  return {
+    success: true,
+    updatedPrices: updated,
+    message,
+    sourceLabel: config.goldDollarSourceType === 'telegram' ? 'کانال تلگرام' : 'سایت tgju.org',
+  };
 }

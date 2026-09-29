@@ -17,9 +17,10 @@ export const TelegramPasteModal: React.FC<TelegramPasteModalProps> = ({
   if (!isOpen) return null;
 
   const [rawText, setRawText] = useState('');
+  const [sourceUnit, setSourceUnit] = useState<'toman' | 'rial' | 'auto'>('auto');
   const [feedback, setFeedback] = useState<string | null>(null);
 
-  const parsed = parseTelegramMarketText(rawText);
+  const parsed = parseTelegramMarketText(rawText, sourceUnit);
 
   const sampleDemoText = `نرخ لحظه‌ای طلا و ارز در بازار تهران:
 دلار نقدی بازار: ۹۳,۴۰۰ تومان
@@ -76,6 +77,27 @@ export const TelegramPasteModal: React.FC<TelegramPasteModalProps> = ({
           >
             <X className="w-5 h-5" />
           </button>
+        </div>
+
+        {/* Currency Unit Selection for pasted text */}
+        <div className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 text-xs">
+          <span className="font-bold text-slate-700 dark:text-slate-300">واحد قیمت‌ها در متن پیام:</span>
+          <div className="flex items-center gap-1">
+            {(['auto', 'toman', 'rial'] as const).map((u) => (
+              <button
+                key={u}
+                type="button"
+                onClick={() => setSourceUnit(u)}
+                className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition ${
+                  sourceUnit === u
+                    ? 'bg-sky-500 text-white shadow-xs'
+                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                {u === 'auto' ? 'تشخیص هوشمند' : u === 'toman' ? 'اعلام به تومان' : 'اعلام به ریال'}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Text Input */}

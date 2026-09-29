@@ -228,30 +228,49 @@ export interface MarketPriceItem {
   name: string;
   category: AssetCategory;
   unit: string;
-  priceToman: number;
+  priceToman: number; // Stored canonical in Toman
   change24h?: number; // e.g. +1.4 or -0.5
   high24h?: number;
   low24h?: number;
   lastUpdated: string; // Jalali date/time
-  source: string; // "نوبیتکس و بازار", "کانال تلگرام", "سورس وب‌سایت", "تنظیم دستی"
+  source: string; // "نوبیتکس و بازار", "کانال تلگرام", "سایت tgju.org", "تنظیم دستی"
   isCustomManual?: boolean;
+  isEnabled?: boolean; // Default true only for 'usd' and 'gold_18k', false for others
+  displayCurrency?: 'toman' | 'rial'; // Custom unit display override per item
 }
 
 export type PriceSourceMode = 'default_markets' | 'telegram' | 'custom_api';
+export type SourceCurrencyUnit = 'toman' | 'rial' | 'auto';
+export type DisplayCurrencyUnit = 'toman' | 'rial' | 'app_default';
 
 export interface PriceSourceConfig {
   sourceMode: PriceSourceMode;
   autoRefreshMinutes: number; // 0 = manual, 1, 5, 15, 30
-  // Telegram Settings
-  telegramChannelOrUrl: string; // e.g. "@tgju_org", "https://t.me/s/...", or custom Telegram bridge
+
+  // Dedicated source settings for US Dollar & 18k Gold
+  goldDollarSourceType: 'telegram' | 'website' | 'auto';
+  goldDollarTelegramChannel: string; // e.g. "@tgju_org", "t.me/s/...", etc.
+  goldDollarWebsiteUrl: string; // e.g. custom site for dollar & gold
+  goldDollarSourceUnit: SourceCurrencyUnit; // فلان کانال قیمت‌های اعلامیش به تومنه یا ریال
+  goldDollarDisplayUnit: DisplayCurrencyUnit; // ولی به ریال نشون بده یا برعکس (تومان یا ریال)
+
+  // General Market Source for other prices (coins, euro, etc.)
+  generalMarketSourceUrl: string; // پیش‌فرض tgju.org با قابلیت تغییر
+  generalSourceUnit: SourceCurrencyUnit;
+
+  // Telegram bot / general settings
+  telegramChannelOrUrl?: string; // legacy/fallback
   telegramBotToken?: string;
   telegramChatId?: string;
-  // Custom API / Website Settings
-  customApiUrl: string; // e.g. "https://api.example.com/prices"
+
+  // Custom API / Website settings (legacy/fallback)
+  customApiUrl?: string;
   customApiKey?: string;
+
   // Status Tracking
   lastFetchTime?: string;
   lastFetchStatus?: 'success' | 'error' | 'idle';
   lastFetchMessage?: string;
 }
+
 

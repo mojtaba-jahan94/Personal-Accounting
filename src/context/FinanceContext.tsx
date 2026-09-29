@@ -275,6 +275,9 @@ interface FinanceContextType {
   addAssetTransaction: (tx: Omit<AssetTransaction, 'id'>) => void;
   deleteAssetTransaction: (id: string) => void;
   updateMarketPrice: (symbol: string, newPriceToman: number) => void;
+  toggleMarketPriceEnabled: (symbol: string) => void;
+  setMarketPriceEnabled: (symbol: string, enabled: boolean) => void;
+  setMarketPriceDisplayUnit: (symbol: string, unit: 'toman' | 'rial') => void;
   refreshMarketPrices: () => Promise<{ success: boolean; message: string }>;
   updatePriceSourceConfig: (cfg: Partial<PriceSourceConfig>) => void;
   applyTelegramPricesFromText: (text: string) => { count: number; symbols: string[]; message: string };
@@ -438,7 +441,22 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const [marketPrices, setMarketPrices] = useState<MarketPriceItem[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.MARKET_PRICES);
-    return saved ? JSON.parse(saved) : DEFAULT_MARKET_PRICES;
+    if (saved) {
+      try {
+        const parsed: MarketPriceItem[] = JSON.parse(saved);
+        // Ensure only usd and gold_18k are enabled by default if not explicitly set
+        return parsed.map((item) => ({
+          ...item,
+          isEnabled:
+            item.isEnabled !== undefined
+              ? item.isEnabled
+              : (item.symbol === 'usd' || item.symbol === 'gold_18k'),
+        }));
+      } catch {
+        return DEFAULT_MARKET_PRICES;
+      }
+    }
+    return DEFAULT_MARKET_PRICES;
   });
 
   const [priceSourceConfig, setPriceSourceConfig] = useState<PriceSourceConfig>(() => {
@@ -1204,6 +1222,36 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     );
   }, []);
 
+  const toggleMarketPriceEnabled = useCallback((symbol: string) => {
+    setMarketPrices(prev =>
+      prev.map(item =>
+        item.symbol === symbol
+          ? { ...item, isEnabled: !item.isEnabled }
+          : item
+      )
+    );
+  }, []);
+
+  const setMarketPriceEnabled = useCallback((symbol: string, enabled: boolean) => {
+    setMarketPrices(prev =>
+      prev.map(item =>
+        item.symbol === symbol
+          ? { ...item, isEnabled: enabled }
+          : item
+      )
+    );
+  }, []);
+
+  const setMarketPriceDisplayUnit = useCallback((symbol: string, unit: 'toman' | 'rial') => {
+    setMarketPrices(prev =>
+      prev.map(item =>
+        item.symbol === symbol
+          ? { ...item, displayCurrency: unit }
+          : item
+      )
+    );
+  }, []);
+
   const refreshMarketPrices = useCallback(async (): Promise<{ success: boolean; message: string }> => {
     const res = await fetchLiveMarketRates(priceSourceConfig, marketPrices);
     const nowTime = new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
@@ -1237,7 +1285,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, []);
 
   const applyTelegramPricesFromText = useCallback((text: string) => {
-    const res = parseTelegramMarketText(text);
+    const res = parseTelegramMarketText(text, priceSourceConfig.goldDollarSourceUnit);
     if (!res.success || res.matchedItems.length === 0) {
       return { count: 0, symbols: [], message: 'هیچ قیمت معتبری در متن شناسایی نشد.' };
     }
@@ -1427,6 +1475,9 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     addAssetTransaction,
     deleteAssetTransaction,
     updateMarketPrice,
+    toggleMarketPriceEnabled,
+    setMarketPriceEnabled,
+    setMarketPriceDisplayUnit,
     refreshMarketPrices,
     updatePriceSourceConfig,
     applyTelegramPricesFromText,
@@ -1502,6 +1553,9 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     addAssetTransaction,
     deleteAssetTransaction,
     updateMarketPrice,
+    toggleMarketPriceEnabled,
+    setMarketPriceEnabled,
+    setMarketPriceDisplayUnit,
     refreshMarketPrices,
     updatePriceSourceConfig,
     applyTelegramPricesFromText,
