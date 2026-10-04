@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import {
   getTursoClient,
   getTursoConfig,
-  fetchRemoteTursoConfig,
   initTursoSchema,
   saveTursoConfig,
   clearTursoConfig,
@@ -66,15 +65,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Initialize Turso & check connection
   const checkConnection = useCallback(async () => {
-    let config = getTursoConfig();
-
-    // If not configured in localStorage or build env, try Vercel integration API
-    if (!config.url) {
-      const remoteConfig = await fetchRemoteTursoConfig();
-      if (remoteConfig && remoteConfig.url) {
-        config = remoteConfig;
-      }
-    }
+    const config = getTursoConfig();
 
     if (!config.url) {
       setTursoStatus('unconfigured');

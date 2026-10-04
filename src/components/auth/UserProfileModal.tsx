@@ -39,7 +39,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
     setIsSyncing(true);
     await syncAllToTurso();
     setIsSyncing(false);
-    setStatusMessage({ type: 'success', text: 'داده‌ها با موفقیت با سرور Turso همگام‌سازی شدند.' });
+    setStatusMessage({ type: 'success', text: 'داده‌ها با موفقیت با سرور ابری همگام‌سازی شدند.' });
   };
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
@@ -101,7 +101,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
             <div className="flex items-center justify-between text-xs">
               <span className="font-bold text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
                 <Database className="w-4 h-4 text-indigo-500" />
-                <span>سرور پایگاه داده Turso:</span>
+                <span>وضعیت اتصال ابری:</span>
               </span>
               {tursoStatus === 'connected' ? (
                 <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold">

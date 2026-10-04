@@ -7,24 +7,20 @@ import {
   EyeOff,
   LogIn,
   UserPlus,
-  Database,
   ArrowRight,
   AlertCircle,
-  CheckCircle2,
   Sparkles,
 } from 'lucide-react';
-import { TursoConfigModal } from '../settings/TursoConfigModal';
 
 interface AuthViewProps {
   onSuccess?: () => void;
 }
 
 export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
-  const { login, register, tursoStatus, isTursoConfigured } = useAuth();
+  const { login, register } = useAuth();
 
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
   const [showPassword, setShowPassword] = useState(false);
-  const [isTursoModalOpen, setIsTursoModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -324,56 +320,20 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
             </form>
           )}
 
-          {/* Quick Demo Option for local preview */}
-          <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800/80 flex items-center justify-between text-xs">
+          {/* Quick Demo Option */}
+          <div className="pt-3 border-t border-slate-200/60 dark:border-slate-800/80 flex items-center justify-center text-xs">
             <button
               type="button"
               onClick={handleQuickDemo}
               disabled={isSubmitting}
-              className="text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold transition flex items-center gap-1"
+              className="text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold transition flex items-center gap-1.5 py-1.5 px-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60"
             >
               <span>ورود سریع با کاربر آزمایشی</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
-
-            {/* Turso Connection Settings Button */}
-            <button
-              type="button"
-              onClick={() => setIsTursoModalOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 font-bold transition"
-            >
-              <Database className="w-3.5 h-3.5 text-indigo-500" />
-              <span>تنظیمات پایگاه داده Turso</span>
-              {tursoStatus === 'connected' && (
-                <span className="w-2 h-2 rounded-full bg-emerald-500" title="متصل" />
-              )}
-            </button>
           </div>
         </div>
-
-        {/* Database Status footer badge */}
-        <div className="text-center mt-4">
-          {tursoStatus === 'connected' ? (
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              اطلاعات روی پایگاه داده سرور Turso ذخیره می‌شود
-            </span>
-          ) : isTursoConfigured ? (
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-amber-600 dark:text-amber-400">
-              در حال برقراری ارتباط با سرور Turso...
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-400 dark:text-slate-500">
-              برای ذخیره اطلاعات روی سرور ابری، دیتابیس Turso را متصل نمایید.
-            </span>
-          )}
-        </div>
       </div>
-
-      <TursoConfigModal
-        isOpen={isTursoModalOpen}
-        onClose={() => setIsTursoModalOpen(false)}
-      />
     </div>
   );
 };

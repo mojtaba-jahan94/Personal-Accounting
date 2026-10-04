@@ -93,34 +93,6 @@ export function getTursoConfig(): TursoConfig {
 }
 
 /**
- * Try to dynamically fetch Turso credentials from Vercel Serverless API (/api/turso-config).
- * This automatically connects when the app is deployed on Vercel with the Turso integration.
- */
-export async function fetchRemoteTursoConfig(): Promise<TursoConfig | null> {
-  const current = getTursoConfig();
-  if (current.url) {
-    return current;
-  }
-
-  try {
-    const res = await fetch('/api/turso-config');
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.url) {
-        saveTursoConfig(data.url, data.authToken || '');
-        return {
-          url: normalizeTursoUrl(data.url),
-          authToken: cleanAuthToken(data.authToken || ''),
-        };
-      }
-    }
-  } catch (e) {
-    // Endpoint not available (e.g. offline or not running on Vercel)
-  }
-  return null;
-}
-
-/**
  * Persist Turso configuration to localStorage
  */
 export function saveTursoConfig(url: string, authToken: string): void {
