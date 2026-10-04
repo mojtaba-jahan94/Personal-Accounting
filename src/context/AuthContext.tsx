@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import {
   getTursoClient,
   getTursoConfig,
+  fetchRemoteTursoConfig,
   initTursoSchema,
   saveTursoConfig,
   clearTursoConfig,
@@ -36,6 +37,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   updateProfile: (displayName: string, currentPassword?: string, newPassword?: string) => Promise<{ success: boolean; error?: string }>;
   configureTurso: (url: string, token: string) => Promise<{ success: boolean; error?: string }>;
+  resetTursoConfig: () => Promise<void>;
   refreshTursoConnection: () => Promise<void>;
 }
 
@@ -64,7 +66,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Initialize Turso & check connection
   const checkConnection = useCallback(async () => {
-    const config = getTursoConfig();
+    let config = getTursoConfig();
+
+    // If not configured in localStorage or build env, try Vercel integration API
+    if (!config.url) {
+      const remoteConfig = await fetchRemoteTursoConfig();
+      if (remoteConfig && remoteConfig.url) {
+        config = remoteConfig;
+      }
+    }
+
     if (!config.url) {
       setTursoStatus('unconfigured');
       setTursoError(null);
@@ -475,6 +486,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { success: true };
   };
 
+  // Disconnect / Clear Turso database credentials
+  const resetTursoConfig = async (): Promise<void> => {
+    clearTursoConfig();
+    await checkConnection();
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -490,6 +507,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         updateProfile,
         configureTurso,
+        resetTursoConfig,
         refreshTursoConnection: checkConnection,
       }}
     >

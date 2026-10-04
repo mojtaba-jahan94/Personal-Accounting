@@ -106,12 +106,22 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
               {tursoStatus === 'connected' ? (
                 <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold">
                   <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                  متصل به سرور
+                  متصل به سرور ابری
+                </span>
+              ) : tursoStatus === 'connecting' ? (
+                <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                  در حال بررسی و اتصال...
+                </span>
+              ) : tursoStatus === 'error' ? (
+                <span className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400 font-bold">
+                  <span className="w-2 h-2 rounded-full bg-rose-500" />
+                  خطا در اتصال به سرور
                 </span>
               ) : (
-                <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold">
-                  <span className="w-2 h-2 rounded-full bg-amber-500" />
-                  در انتظار اتصال
+                <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 font-bold">
+                  <span className="w-2 h-2 rounded-full bg-slate-400" />
+                  تنظیم نشده (حالت محلی)
                 </span>
               )}
             </div>

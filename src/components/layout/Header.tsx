@@ -128,9 +128,23 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
                 <span
                   className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full border border-white dark:border-slate-900 ${
-                    tursoStatus === 'connected' ? 'bg-emerald-500' : 'bg-amber-500'
+                    tursoStatus === 'connected'
+                      ? 'bg-emerald-500'
+                      : tursoStatus === 'connecting'
+                      ? 'bg-amber-500 animate-pulse'
+                      : tursoStatus === 'error'
+                      ? 'bg-rose-500'
+                      : 'bg-slate-400'
                   }`}
-                  title={tursoStatus === 'connected' ? 'متصل به سرور Turso' : 'در انتظار اتصال'}
+                  title={
+                    tursoStatus === 'connected'
+                      ? 'متصل به سرور ابری Turso'
+                      : tursoStatus === 'connecting'
+                      ? 'در حال برقراری ارتباط...'
+                      : tursoStatus === 'error'
+                      ? 'خطا در ارتباط با سرور'
+                      : 'پایگاه داده سرور تنظیم نشده (حالت محلی)'
+                  }
                 />
               </div>
               <span className="hidden sm:inline truncate max-w-[80px] text-[11px] font-bold">
