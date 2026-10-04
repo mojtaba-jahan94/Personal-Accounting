@@ -3,6 +3,7 @@ import { useFinance } from '../../context/FinanceContext';
 import { Cheque, ChequeType, ChequeStatus } from '../../types';
 import { getTodayJalali } from '../../utils/jalali';
 import { numberToWordsPersian, parseAmount, sanitizeAmountInput, formatAmountInput } from '../../utils/formatters';
+import { JalaliDatePicker } from '../common/JalaliDatePicker';
 import { X, Check, FileCheck2 } from 'lucide-react';
 
 interface ChequeModalProps {
@@ -161,15 +162,11 @@ export const ChequeModal: React.FC<ChequeModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-                تاریخ سررسید چک
-              </label>
-              <input
-                type="text"
+              <JalaliDatePicker
                 value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                placeholder="1403/08/15"
-                className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono outline-none"
+                onChange={setDueDate}
+                label="تاریخ سررسید چک"
+                required
               />
             </div>
           </div>

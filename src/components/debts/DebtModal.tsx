@@ -4,6 +4,7 @@ import { Debt, DebtType } from '../../types';
 import { getTodayJalali } from '../../utils/jalali';
 import { numberToWordsPersian, parseAmount, sanitizeAmountInput, formatAmountInput } from '../../utils/formatters';
 import { PersonManagerModal } from '../contacts/PersonManagerModal';
+import { JalaliDatePicker } from '../common/JalaliDatePicker';
 import { X, Check, Users, UserPlus, Phone, Calendar, Tag } from 'lucide-react';
 
 interface DebtModalProps {
@@ -291,19 +292,12 @@ export const DebtModal: React.FC<DebtModalProps> = ({
             {/* Due Date & Description */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  تاریخ موعد / سررسید
-                </label>
-                <div className="relative">
-                  <Calendar className="w-4 h-4 absolute right-3 top-3 text-slate-400" />
-                  <input
-                    type="text"
-                    required
-                    value={dueDate}
-                    onChange={e => setDueDate(e.target.value)}
-                    className="w-full pr-9 pl-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono outline-none focus:border-indigo-500"
-                  />
-                </div>
+                <JalaliDatePicker
+                  value={dueDate}
+                  onChange={setDueDate}
+                  label="تاریخ موعد / سررسید"
+                  required
+                />
               </div>
 
               <div>

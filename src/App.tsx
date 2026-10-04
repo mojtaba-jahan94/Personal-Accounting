@@ -1,5 +1,7 @@
 import React, { useState, useEffect, Suspense, lazy, useRef, useCallback } from 'react';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { FinanceProvider, useFinance } from './context/FinanceContext';
+import { AuthView } from './components/auth/AuthView';
 import { Header } from './components/layout/Header';
 import { Sidebar, TabType } from './components/layout/Sidebar';
 import { BottomNav } from './components/layout/BottomNav';
@@ -285,11 +287,36 @@ const MainApp: React.FC = () => {
   );
 };
 
-export const App: React.FC = () => {
+const AuthenticatedApp: React.FC = () => {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-slate-900 text-white" dir="rtl">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-full border-3 border-indigo-500 border-t-transparent animate-spin" />
+          <span className="text-xs font-bold text-slate-400">در حال بررسی اطلاعات کاربری...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <AuthView />;
+  }
+
   return (
     <FinanceProvider>
       <MainApp />
     </FinanceProvider>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <AuthenticatedApp />
+    </AuthProvider>
   );
 };
 

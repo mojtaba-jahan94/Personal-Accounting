@@ -7,6 +7,7 @@ import { getCategoryIcon } from '../../utils/categoryIcons';
 import { CategoryManagerModal } from '../categories/CategoryManagerModal';
 import { PersonManagerModal } from '../contacts/PersonManagerModal';
 import { LIQUID_GLASS_PRESETS } from '../../utils/liquidGlassPresets';
+import { JalaliDatePicker } from '../common/JalaliDatePicker';
 import {
   X,
   ArrowDownLeft,
@@ -443,29 +444,23 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               )}
 
               {type !== 'transfer' && (
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                    تاریخ شمسی
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                      placeholder="1403/06/15"
-                      className="w-full px-3 py-2.5 rounded-xl bg-white/70 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-bold font-mono outline-none"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setDate(getTodayJalali())}
-                      className="absolute left-2 top-2 px-2 py-0.5 text-[10px] rounded-lg bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 font-bold"
-                    >
-                      امروز
-                    </button>
-                  </div>
-                </div>
+                <JalaliDatePicker
+                  value={date}
+                  onChange={setDate}
+                  label="تاریخ فاکتور / تراکنش"
+                  required
+                />
               )}
             </div>
+
+            {type === 'transfer' && (
+              <JalaliDatePicker
+                value={date}
+                onChange={setDate}
+                label="تاریخ انتقال وجه"
+                required
+              />
+            )}
 
             {/* Live Balance Change Preview */}
             {selectedAcc && numCanonical > 0 && (

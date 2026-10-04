@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { UserProfileModal } from '../auth/UserProfileModal';
 import {
   LayoutDashboard,
   ReceiptText,
@@ -8,8 +10,10 @@ import {
   FileCheck2,
   BarChart3,
   Settings,
-  ShieldCheck,
+  Database,
   Coins,
+  LogOut,
+  User,
 } from 'lucide-react';
 
 export type TabType =
@@ -36,6 +40,9 @@ interface NavItem {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => {
+  const { user, tursoStatus } = useAuth();
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+
   const navItems: NavItem[] = [
     { id: 'dashboard', label: 'داشبورد اصلی', icon: LayoutDashboard },
     { id: 'transactions', label: 'تراکنش‌ها و اسناد', icon: ReceiptText },
@@ -55,8 +62,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
       {/* App Status Indicator */}
       <div className="px-3 py-2 mb-2 rounded-xl bg-slate-100/60 dark:bg-slate-800/40 border border-slate-200/60 dark:border-white/5 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-xs shadow-emerald-500/40" />
-          <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">سیستم آنلاین و امن</span>
+          <div
+            className={`w-2 h-2 rounded-full ${
+              tursoStatus === 'connected'
+                ? 'bg-emerald-500 shadow-xs shadow-emerald-500/40'
+                : 'bg-amber-500'
+            }`}
+          />
+          <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">
+            {tursoStatus === 'connected' ? 'متصل به سرور Turso' : 'پایگاه داده Turso'}
+          </span>
         </div>
         <span className="text-[10px] font-mono font-bold text-slate-400">v1.2</span>
       </div>
@@ -101,16 +116,38 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
         })}
       </div>
 
-      {/* Privacy Capsule at Bottom */}
-      <div className="mt-auto p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/60 dark:border-white/5 space-y-1">
-        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800 dark:text-slate-200">
-          <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
-          <span>حریم خصوصی کامل</span>
+      {/* User Profile Mini Card at Bottom */}
+      {user && (
+        <div className="mt-auto pt-2 border-t border-slate-200/60 dark:border-white/5">
+          <div
+            onClick={() => setIsProfileModalOpen(true)}
+            className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100 dark:bg-slate-800/40 dark:hover:bg-slate-800/80 border border-slate-200/60 dark:border-white/5 flex items-center justify-between gap-2 cursor-pointer transition"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xs font-black shrink-0 shadow-xs">
+                {user.displayName.charAt(0) || user.username.charAt(0).toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <span className="block text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+                  {user.displayName}
+                </span>
+                <span className="block text-[10px] text-slate-400 font-mono truncate" dir="ltr">
+                  @{user.username}
+                </span>
+              </div>
+            </div>
+
+            <div className="p-1 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400">
+              <Database className="w-4 h-4 text-indigo-500" />
+            </div>
+          </div>
         </div>
-        <p className="text-[10px] text-slate-500 dark:text-slate-400 leading-relaxed">
-          داده‌های شما فقط به صورت محلی در مرورگر خودتان نگهداری می‌شود.
-        </p>
-      </div>
+      )}
+
+      <UserProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
     </aside>
   );
 };

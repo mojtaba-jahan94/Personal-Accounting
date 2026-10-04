@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useFinance } from '../../context/FinanceContext';
+import { useAuth } from '../../context/AuthContext';
 import { AccentColor, BorderRadius, LightStyle, BackgroundStyle } from '../../types';
 import {
   Moon,
@@ -20,9 +21,13 @@ import {
   ShieldCheck,
   Maximize2,
   Users,
+  Database,
+  User,
 } from 'lucide-react';
 import { SMSAssistantModal } from '../transactions/SMSAssistantModal';
 import { PersonManagerModal } from '../contacts/PersonManagerModal';
+import { TursoConfigModal } from './TursoConfigModal';
+import { UserProfileModal } from '../auth/UserProfileModal';
 
 const ACCENT_COLORS: { id: AccentColor; name: string; hex: string }[] = [
   { id: 'indigo', name: 'نیلی کلاسیک', hex: '#6366f1' },
@@ -60,11 +65,17 @@ export const SettingsView: React.FC = () => {
     exportDataJSON,
     importDataJSON,
     clearAllData,
+    cloudSyncStatus,
+    syncAllToTurso,
   } = useFinance();
+  const { user, tursoStatus } = useAuth();
 
   const [message, setMessage] = useState<string | null>(null);
   const [isSmsModalOpen, setIsSmsModalOpen] = useState(false);
   const [isPersonModalOpen, setIsPersonModalOpen] = useState(false);
+  const [isTursoModalOpen, setIsTursoModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isSyncingTurso, setIsSyncingTurso] = useState(false);
 
   const showNotification = (msg: string) => {
     setMessage(msg);
@@ -662,6 +673,102 @@ export const SettingsView: React.FC = () => {
         </div>
       </div>
 
+      {/* Cloud Database & User Account */}
+      <div className="liquid-glass-card p-5 sm:p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-200/50 dark:border-white/10">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-indigo-500/15 text-indigo-600 dark:text-indigo-400">
+              <Database className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-black text-slate-900 dark:text-white">
+                پایگاه داده سرور Turso و حساب کاربری
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                ذخیره‌سازی اطلاعات روی سرور و همگام‌سازی ابری
+              </p>
+            </div>
+          </div>
+
+          <div>
+            {tursoStatus === 'connected' ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 text-xs font-bold">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                متصل به سرور Turso
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800 text-xs font-bold">
+                در انتظار اتصال
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl liquid-glass border border-slate-200/60 dark:border-white/10">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-black text-sm shadow-md">
+              {user ? (user.displayName.charAt(0) || user.username.charAt(0).toUpperCase()) : '؟'}
+            </div>
+            <div>
+              <span className="text-xs font-bold text-slate-900 dark:text-white block">
+                {user ? user.displayName : 'کاربر مهمان'}
+              </span>
+              <span className="text-[11px] text-slate-400 font-mono" dir="ltr">
+                {user ? `@${user.username}` : '@guest'}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsProfileModalOpen(true)}
+              className="px-3 py-2 rounded-xl bg-slate-200/70 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center gap-1.5"
+            >
+              <User className="w-3.5 h-3.5" />
+              <span>پروفایل و خروج</span>
+            </button>
+
+            <button
+              onClick={() => setIsTursoModalOpen(true)}
+              className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-sm flex items-center gap-1.5"
+            >
+              <Database className="w-3.5 h-3.5" />
+              <span>تنظیمات پایگاه داده Turso</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between text-xs pt-1 px-1">
+          <span className="text-slate-500 dark:text-slate-400">
+            وضعیت ذخیره‌سازی داده‌ها:
+          </span>
+          <div className="flex items-center gap-3">
+            <span className="font-bold text-slate-700 dark:text-slate-300">
+              {cloudSyncStatus === 'synced'
+                ? 'ذخیره شده روی سرور Turso'
+                : cloudSyncStatus === 'syncing'
+                ? 'در حال ذخیره‌سازی روی سرور...'
+                : cloudSyncStatus === 'error'
+                ? 'خطا در ارتباط با سرور'
+                : 'آفلاین'}
+            </span>
+            <button
+              onClick={async () => {
+                setIsSyncingTurso(true);
+                await syncAllToTurso();
+                setIsSyncingTurso(false);
+                showNotification('اطلاعات با سرور Turso همگام‌سازی شدند.');
+              }}
+              disabled={isSyncingTurso || tursoStatus !== 'connected'}
+              className="text-indigo-600 dark:text-indigo-400 font-bold hover:underline flex items-center gap-1 disabled:opacity-40"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncingTurso ? 'animate-spin' : ''}`} />
+              <span>همگام‌سازی دستی</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* 5. General Settings & Backup */}
       <div className="liquid-glass-card p-5 sm:p-6 space-y-4">
         <div className="flex items-center gap-2.5 pb-3 border-b border-slate-200/50 dark:border-white/10">
@@ -746,6 +853,16 @@ export const SettingsView: React.FC = () => {
       <PersonManagerModal
         isOpen={isPersonModalOpen}
         onClose={() => setIsPersonModalOpen(false)}
+      />
+
+      <TursoConfigModal
+        isOpen={isTursoModalOpen}
+        onClose={() => setIsTursoModalOpen(false)}
+      />
+
+      <UserProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
       />
     </div>
   );

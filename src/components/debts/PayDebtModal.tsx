@@ -4,6 +4,7 @@ import { Debt } from '../../types';
 import { formatCurrency, numberToWordsPersian, toPersianDigits, parseAmount, sanitizeAmountInput, formatAmountInput } from '../../utils/formatters';
 import { getTodayJalali } from '../../utils/jalali';
 import { getAccountTypeMeta } from '../accounts/TransferModal';
+import { JalaliDatePicker } from '../common/JalaliDatePicker';
 import {
   X,
   CreditCard,
@@ -244,18 +245,12 @@ export const PayDebtModal: React.FC<PayDebtModalProps> = ({ isOpen, onClose, deb
             {/* Date & Description */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  تاریخ پرداخت (شمسی)
-                </label>
-                <div className="relative">
-                  <Calendar className="w-4 h-4 absolute right-3 top-3 text-slate-400" />
-                  <input
-                    type="text"
-                    value={date}
-                    onChange={e => setDate(e.target.value)}
-                    className="w-full pr-9 pl-3 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono outline-none focus:border-indigo-500"
-                  />
-                </div>
+                <JalaliDatePicker
+                  value={date}
+                  onChange={setDate}
+                  label="تاریخ پرداخت (شمسی)"
+                  required
+                />
               </div>
 
               <div>

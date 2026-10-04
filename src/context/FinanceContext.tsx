@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useAuth } from './AuthContext';
+import { getTursoClient } from '../services/tursoClient';
 import {
   Account,
   Category,
@@ -294,6 +296,11 @@ interface FinanceContextType {
   totalPortfolioCostToman: number;
   totalPortfolioPnlToman: number;
   totalPortfolioPnlPercent: number;
+
+  // Cloud & Turso Sync
+  cloudSyncStatus: 'synced' | 'syncing' | 'error' | 'offline';
+  syncAllToTurso: () => Promise<void>;
+  isCloudLoading: boolean;
 }
 
 const FinanceContext = createContext<FinanceContextType | undefined>(undefined);
@@ -358,6 +365,10 @@ const DEFAULT_THEME_CONFIG: ThemeConfig = {
 };
 
 export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, tursoStatus } = useAuth();
+  const [cloudSyncStatus, setCloudSyncStatus] = useState<'synced' | 'syncing' | 'error' | 'offline'>('synced');
+  const [isCloudLoading, setIsCloudLoading] = useState<boolean>(false);
+
   const [categories, setCategories] = useState<Category[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.CATEGORIES);
     return saved ? JSON.parse(saved) : DEFAULT_CATEGORIES;
@@ -626,50 +637,285 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     });
   };
 
-  // Sync state to localStorage
+  // Track previous user to trigger data loading only on change
+  const prevUserIdRef = useRef<string | null>(null);
+
+  // Load user data from Turso server (or local user-scoped storage) on login
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(accounts));
-  }, [accounts]);
+    if (!user) {
+      prevUserIdRef.current = null;
+      return;
+    }
+
+    if (prevUserIdRef.current === user.id) {
+      return;
+    }
+    prevUserIdRef.current = user.id;
+
+    const loadUserData = async () => {
+      setIsCloudLoading(true);
+      const userSuffix = '_' + user.id;
+      const client = getTursoClient();
+      let loadedFromTurso = false;
+
+      if (client && tursoStatus === 'connected') {
+        try {
+          const res = await client.execute({
+            sql: 'SELECT collection_key, data_json FROM user_finance_data WHERE user_id = ?',
+            args: [user.id],
+          });
+
+          if (res.rows && res.rows.length > 0) {
+            loadedFromTurso = true;
+            for (const row of res.rows) {
+              try {
+                const k = row.collection_key as string;
+                const v = JSON.parse(row.data_json as string);
+                if (k === 'categories' && Array.isArray(v)) setCategories(v);
+                else if (k === 'transactions' && Array.isArray(v)) setTransactions(v);
+                else if (k === 'accounts' && Array.isArray(v)) setAccountsBase(v);
+                else if (k === 'budgets' && Array.isArray(v)) setBudgets(v);
+                else if (k === 'goals' && Array.isArray(v)) setGoals(v);
+                else if (k === 'debts' && Array.isArray(v)) setDebts(v);
+                else if (k === 'cheques' && Array.isArray(v)) setCheques(v);
+                else if (k === 'persons' && Array.isArray(v)) setPersons(v);
+                else if (k === 'assets' && Array.isArray(v)) setAssets(v);
+                else if (k === 'assetTransactions' && Array.isArray(v)) setAssetTransactions(v);
+                else if (k === 'currency' && (v === 'toman' || v === 'rial')) setCurrency(v);
+                else if (k === 'themeConfig' && typeof v === 'object') setThemeConfig(v);
+                else if (k === 'dashboardConfig' && typeof v === 'object') setDashboardConfig(v);
+              } catch (e) {
+                console.error('Error parsing Turso row:', e);
+              }
+            }
+            setCloudSyncStatus('synced');
+          }
+        } catch (e) {
+          console.error('Error fetching data from Turso:', e);
+          setCloudSyncStatus('error');
+        }
+      }
+
+      // If not loaded from Turso, check user-scoped local storage
+      if (!loadedFromTurso) {
+        try {
+          const savedCats = localStorage.getItem(STORAGE_KEYS.CATEGORIES + userSuffix);
+          if (savedCats) setCategories(JSON.parse(savedCats));
+
+          const savedTxs = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS + userSuffix);
+          if (savedTxs) setTransactions(JSON.parse(savedTxs));
+
+          const savedAccs = localStorage.getItem(STORAGE_KEYS.ACCOUNTS + userSuffix);
+          if (savedAccs) setAccountsBase(JSON.parse(savedAccs));
+
+          const savedBudgets = localStorage.getItem(STORAGE_KEYS.BUDGETS + userSuffix);
+          if (savedBudgets) setBudgets(JSON.parse(savedBudgets));
+
+          const savedGoals = localStorage.getItem(STORAGE_KEYS.GOALS + userSuffix);
+          if (savedGoals) setGoals(JSON.parse(savedGoals));
+
+          const savedDebts = localStorage.getItem(STORAGE_KEYS.DEBTS + userSuffix);
+          if (savedDebts) setDebts(JSON.parse(savedDebts));
+
+          const savedCheques = localStorage.getItem(STORAGE_KEYS.CHEQUES + userSuffix);
+          if (savedCheques) setCheques(JSON.parse(savedCheques));
+
+          const savedPersons = localStorage.getItem(STORAGE_KEYS.PERSONS + userSuffix);
+          if (savedPersons) setPersons(JSON.parse(savedPersons));
+
+          const savedAssets = localStorage.getItem(STORAGE_KEYS.ASSETS + userSuffix);
+          if (savedAssets) setAssets(JSON.parse(savedAssets));
+
+          const savedAssetTxs = localStorage.getItem(STORAGE_KEYS.ASSET_TRANSACTIONS + userSuffix);
+          if (savedAssetTxs) setAssetTransactions(JSON.parse(savedAssetTxs));
+
+          const savedCur = localStorage.getItem(STORAGE_KEYS.CURRENCY + userSuffix);
+          if (savedCur === 'toman' || savedCur === 'rial') setCurrency(savedCur);
+        } catch (e) {
+          console.error('Error loading user-scoped local data:', e);
+        }
+      }
+
+      setIsCloudLoading(false);
+    };
+
+    loadUserData();
+  }, [user, tursoStatus]);
+
+  // Debounced sync to Turso server
+  const syncTimeoutRef = useRef<Record<string, any>>({});
+
+  const syncCollectionToTurso = useCallback((collectionKey: string, data: any) => {
+    if (!user?.id) return;
+    const client = getTursoClient();
+    if (!client || tursoStatus !== 'connected') {
+      setCloudSyncStatus('offline');
+      return;
+    }
+
+    if (syncTimeoutRef.current[collectionKey]) {
+      clearTimeout(syncTimeoutRef.current[collectionKey]);
+    }
+
+    setCloudSyncStatus('syncing');
+
+    syncTimeoutRef.current[collectionKey] = setTimeout(async () => {
+      try {
+        await client.execute({
+          sql: `
+            INSERT INTO user_finance_data (user_id, collection_key, data_json, updated_at)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(user_id, collection_key)
+            DO UPDATE SET data_json = excluded.data_json, updated_at = excluded.updated_at
+          `,
+          args: [user.id, collectionKey, JSON.stringify(data), new Date().toISOString()],
+        });
+        setCloudSyncStatus('synced');
+      } catch (e) {
+        console.error(`Failed to sync ${collectionKey} to Turso:`, e);
+        setCloudSyncStatus('error');
+      }
+    }, 600);
+  }, [user?.id, tursoStatus]);
+
+  // Manual trigger to sync all collections to Turso
+  const syncAllToTurso = useCallback(async () => {
+    if (!user?.id) return;
+    const client = getTursoClient();
+    if (!client || tursoStatus !== 'connected') {
+      setCloudSyncStatus('offline');
+      return;
+    }
+
+    setCloudSyncStatus('syncing');
+    try {
+      const collections = [
+        { key: 'accounts', data: accountsBase },
+        { key: 'transactions', data: transactions },
+        { key: 'categories', data: categories },
+        { key: 'budgets', data: budgets },
+        { key: 'goals', data: goals },
+        { key: 'debts', data: debts },
+        { key: 'cheques', data: cheques },
+        { key: 'persons', data: persons },
+        { key: 'assets', data: assets },
+        { key: 'assetTransactions', data: assetTransactions },
+        { key: 'currency', data: currency },
+        { key: 'themeConfig', data: themeConfig },
+        { key: 'dashboardConfig', data: dashboardConfig },
+      ];
+
+      for (const col of collections) {
+        await client.execute({
+          sql: `
+            INSERT INTO user_finance_data (user_id, collection_key, data_json, updated_at)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(user_id, collection_key)
+            DO UPDATE SET data_json = excluded.data_json, updated_at = excluded.updated_at
+          `,
+          args: [user.id, col.key, JSON.stringify(col.data), new Date().toISOString()],
+        });
+      }
+      setCloudSyncStatus('synced');
+    } catch (e) {
+      console.error('Manual sync to Turso failed:', e);
+      setCloudSyncStatus('error');
+    }
+  }, [
+    user?.id,
+    tursoStatus,
+    accountsBase,
+    transactions,
+    categories,
+    budgets,
+    goals,
+    debts,
+    cheques,
+    persons,
+    assets,
+    assetTransactions,
+    currency,
+    themeConfig,
+    dashboardConfig,
+  ]);
+
+  // Sync state to local storage & Turso server
+  useEffect(() => {
+    const userSuffix = user ? `_${user.id}` : '';
+    localStorage.setItem(STORAGE_KEYS.ACCOUNTS + userSuffix, JSON.stringify(accountsBase));
+    localStorage.setItem(STORAGE_KEYS.ACCOUNTS, JSON.stringify(accountsBase));
+    if (user?.id) syncCollectionToTurso('accounts', accountsBase);
+  }, [accountsBase, user, syncCollectionToTurso]);
 
   useEffect(() => {
+    const userSuffix = user ? `_${user.id}` : '';
+    localStorage.setItem(STORAGE_KEYS.TRANSACTIONS + userSuffix, JSON.stringify(transactions));
     localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(transactions));
-  }, [transactions]);
+    if (user?.id) syncCollectionToTurso('transactions', transactions);
+  }, [transactions, user, syncCollectionToTurso]);
 
   useEffect(() => {
+    const userSuffix = user ? `_${user.id}` : '';
+    localStorage.setItem(STORAGE_KEYS.CATEGORIES + userSuffix, JSON.stringify(categories));
     localStorage.setItem(STORAGE_KEYS.CATEGORIES, JSON.stringify(categories));
-  }, [categories]);
+    if (user?.id) syncCollectionToTurso('categories', categories);
+  }, [categories, user, syncCollectionToTurso]);
 
   useEffect(() => {
+    const userSuffix = user ? `_${user.id}` : '';
+    localStorage.setItem(STORAGE_KEYS.BUDGETS + userSuffix, JSON.stringify(budgets));
     localStorage.setItem(STORAGE_KEYS.BUDGETS, JSON.stringify(budgets));
-  }, [budgets]);
+    if (user?.id) syncCollectionToTurso('budgets', budgets);
+  }, [budgets, user, syncCollectionToTurso]);
 
   useEffect(() => {
+    const userSuffix = user ? `_${user.id}` : '';
+    localStorage.setItem(STORAGE_KEYS.GOALS + userSuffix, JSON.stringify(goals));
     localStorage.setItem(STORAGE_KEYS.GOALS, JSON.stringify(goals));
-  }, [goals]);
+    if (user?.id) syncCollectionToTurso('goals', goals);
+  }, [goals, user, syncCollectionToTurso]);
 
   useEffect(() => {
+    const userSuffix = user ? `_${user.id}` : '';
+    localStorage.setItem(STORAGE_KEYS.DEBTS + userSuffix, JSON.stringify(debts));
     localStorage.setItem(STORAGE_KEYS.DEBTS, JSON.stringify(debts));
-  }, [debts]);
+    if (user?.id) syncCollectionToTurso('debts', debts);
+  }, [debts, user, syncCollectionToTurso]);
 
   useEffect(() => {
+    const userSuffix = user ? `_${user.id}` : '';
+    localStorage.setItem(STORAGE_KEYS.CHEQUES + userSuffix, JSON.stringify(cheques));
     localStorage.setItem(STORAGE_KEYS.CHEQUES, JSON.stringify(cheques));
-  }, [cheques]);
+    if (user?.id) syncCollectionToTurso('cheques', cheques);
+  }, [cheques, user, syncCollectionToTurso]);
 
   useEffect(() => {
+    const userSuffix = user ? `_${user.id}` : '';
+    localStorage.setItem(STORAGE_KEYS.PERSONS + userSuffix, JSON.stringify(persons));
     localStorage.setItem(STORAGE_KEYS.PERSONS, JSON.stringify(persons));
-  }, [persons]);
+    if (user?.id) syncCollectionToTurso('persons', persons);
+  }, [persons, user, syncCollectionToTurso]);
 
   useEffect(() => {
+    const userSuffix = user ? `_${user.id}` : '';
+    localStorage.setItem(STORAGE_KEYS.CURRENCY + userSuffix, currency);
     localStorage.setItem(STORAGE_KEYS.CURRENCY, currency);
-  }, [currency]);
+    if (user?.id) syncCollectionToTurso('currency', currency);
+  }, [currency, user, syncCollectionToTurso]);
 
   useEffect(() => {
+    const userSuffix = user ? `_${user.id}` : '';
+    localStorage.setItem(STORAGE_KEYS.ASSETS + userSuffix, JSON.stringify(assets));
     localStorage.setItem(STORAGE_KEYS.ASSETS, JSON.stringify(assets));
-  }, [assets]);
+    if (user?.id) syncCollectionToTurso('assets', assets);
+  }, [assets, user, syncCollectionToTurso]);
 
   useEffect(() => {
+    const userSuffix = user ? `_${user.id}` : '';
+    localStorage.setItem(STORAGE_KEYS.ASSET_TRANSACTIONS + userSuffix, JSON.stringify(assetTransactions));
     localStorage.setItem(STORAGE_KEYS.ASSET_TRANSACTIONS, JSON.stringify(assetTransactions));
-  }, [assetTransactions]);
+    if (user?.id) syncCollectionToTurso('assetTransactions', assetTransactions);
+  }, [assetTransactions, user, syncCollectionToTurso]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.MARKET_PRICES, JSON.stringify(marketPrices));
@@ -1592,6 +1838,9 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     totalPortfolioCostToman,
     totalPortfolioPnlToman,
     totalPortfolioPnlPercent,
+    cloudSyncStatus,
+    syncAllToTurso,
+    isCloudLoading,
   }), [
     accounts,
     transactions,
@@ -1629,6 +1878,9 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     totalPortfolioPnlToman,
     totalPortfolioPnlPercent,
     getAccountTransactionsDelta,
+    cloudSyncStatus,
+    syncAllToTurso,
+    isCloudLoading,
   ]);
 
   return (

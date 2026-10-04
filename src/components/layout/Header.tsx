@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { useFinance } from '../../context/FinanceContext';
+import { useAuth } from '../../context/AuthContext';
 import { formatCurrency } from '../../utils/formatters';
-import { Sun, Moon, Plus, Wallet, ArrowLeftRight, Smartphone, MessageSquareText } from 'lucide-react';
+import { Sun, Moon, Plus, Wallet, ArrowLeftRight, Smartphone, MessageSquareText, User } from 'lucide-react';
+import { UserProfileModal } from '../auth/UserProfileModal';
 
 interface HeaderProps {
   onOpenTransactionModal: () => void;
@@ -15,7 +17,9 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSmsModal,
 }) => {
   const { totalBalance, currency, setCurrency, darkMode, toggleDarkMode } = useFinance();
+  const { user, tursoStatus } = useAuth();
   const [showPwaTip, setShowPwaTip] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   return (
     <header className="sticky top-2 sm:top-3 z-40 w-full px-3 sm:px-6 max-w-7xl mx-auto transition-all duration-300">
@@ -33,7 +37,7 @@ export const Header: React.FC<HeaderProps> = ({
               مدیر مالی هوشمند
             </h1>
             <p className="text-[10px] text-slate-500 dark:text-slate-400 hidden sm:block truncate">
-              حسابداری شخصی آفلاین
+              حسابداری شخصی
             </p>
           </div>
         </div>
@@ -110,8 +114,37 @@ export const Header: React.FC<HeaderProps> = ({
               <Moon className="w-4 h-4 text-slate-700" />
             )}
           </button>
+
+          {/* User Profile / Turso Sync Capsule */}
+          {user && (
+            <button
+              onClick={() => setIsProfileModalOpen(true)}
+              title={`حساب کاربری: ${user.displayName}`}
+              className="glass-pill flex items-center gap-1.5 px-2 sm:px-3 py-1 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
+            >
+              <div className="relative">
+                <div className="w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center text-[10px] font-black">
+                  {user.displayName.charAt(0) || user.username.charAt(0).toUpperCase()}
+                </div>
+                <span
+                  className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full border border-white dark:border-slate-900 ${
+                    tursoStatus === 'connected' ? 'bg-emerald-500' : 'bg-amber-500'
+                  }`}
+                  title={tursoStatus === 'connected' ? 'متصل به سرور Turso' : 'در انتظار اتصال'}
+                />
+              </div>
+              <span className="hidden sm:inline truncate max-w-[80px] text-[11px] font-bold">
+                {user.displayName}
+              </span>
+            </button>
+          )}
         </div>
       </div>
+
+      <UserProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+      />
 
       {/* Floating PWA Tip Banner */}
       {showPwaTip && (

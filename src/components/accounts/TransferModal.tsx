@@ -4,6 +4,7 @@ import { AccountType } from '../../types';
 import { getTodayJalali } from '../../utils/jalali';
 import { formatCurrency, numberToWordsPersian, parseAmount, sanitizeAmountInput, formatAmountInput } from '../../utils/formatters';
 import { LIQUID_GLASS_PRESETS } from '../../utils/liquidGlassPresets';
+import { JalaliDatePicker } from '../common/JalaliDatePicker';
 import {
   X,
   ArrowLeftRight,
@@ -291,15 +292,11 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
           {/* Date & Description */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                تاریخ انتقال
-              </label>
-              <input
-                type="text"
+              <JalaliDatePicker
                 value={date}
-                onChange={e => setDate(e.target.value)}
-                placeholder="1403/01/01"
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold outline-none focus:border-indigo-500 transition"
+                onChange={setDate}
+                label="تاریخ انتقال"
+                required
               />
             </div>
             <div>
