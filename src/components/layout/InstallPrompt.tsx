@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Smartphone, Download, X, CheckCircle, Share } from 'lucide-react';
+import { BrandLogo } from '../common/BrandLogo';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -75,9 +76,7 @@ export const InstallPrompt: React.FC = () => {
         <div className="fixed bottom-24 sm:bottom-6 right-4 left-4 sm:left-auto sm:right-6 sm:max-w-md z-40 animate-in slide-in-from-bottom duration-300 select-none">
           <div className="bg-[#F7F7F2]/95 dark:bg-[#1F2933]/90 backdrop-blur-xl p-4 rounded-3xl shadow-2xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-[#A68A64] text-[#F7F7F2] flex items-center justify-center shrink-0 shadow-md shadow-[#A68A64]/25">
-                <Smartphone className="w-5 h-5" />
-              </div>
+              <BrandLogo size={42} animated={true} />
               <div>
                 <h4 className="text-xs sm:text-sm font-bold text-[#1F2933] dark:text-[#F7F7F2]">
                   نصب برنامه حسابداری
@@ -112,8 +111,8 @@ export const InstallPrompt: React.FC = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs select-none">
           <div className="bg-[#F7F7F2] dark:bg-[#1F2933] max-w-sm w-full p-6 rounded-3xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between pb-3 border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/15">
-              <div className="flex items-center gap-2">
-                <Smartphone className="w-5 h-5 text-[#A68A64]" />
+              <div className="flex items-center gap-2.5">
+                <BrandLogo size={26} />
                 <h4 className="text-sm font-bold text-[#1F2933] dark:text-[#F7F7F2]">
                   راهنمای نصب روی صفحه اصلی
                 </h4>

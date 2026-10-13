@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { BrandLogo } from '../common/BrandLogo';
 import {
   User,
   Lock,
@@ -92,8 +93,8 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
       <div className="w-full max-w-md relative z-10">
         {/* Brand / Logo header */}
         <div className="text-center mb-6 space-y-2">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-3xl bg-[#A68A64] text-[#F7F7F2] shadow-xl shadow-[#A68A64]/20 mb-2">
-            <Sparkles className="w-7 h-7" />
+          <div className="inline-flex items-center justify-center mb-2">
+            <BrandLogo size={64} animated={true} />
           </div>
           <h1 className="text-2xl font-black tracking-tight text-[#1F2933] dark:text-[#F7F7F2]">
             حسابداری شخصی

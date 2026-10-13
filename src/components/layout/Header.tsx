@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { UserProfileModal } from '../auth/UserProfileModal';
 import { TursoConfigModal } from '../settings/TursoConfigModal';
+import { BrandLogo } from '../common/BrandLogo';
 import { TabType } from './Sidebar';
 
 interface HeaderProps {
@@ -83,9 +84,7 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="bg-[#F7F7F2]/90 dark:bg-[#1F2933]/85 backdrop-blur-2xl border border-[#6B7280]/15 dark:border-[#D1D5DB]/15 rounded-3xl px-3.5 sm:px-5 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-4 shadow-xl">
         {/* Left / Start: Active View Title & Jalali Date Badge */}
         <div className="flex items-center gap-3 shrink-0">
-          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-[#A68A64] text-[#F7F7F2] flex items-center justify-center shadow-md shadow-[#A68A64]/25 shrink-0">
-            <Wallet className="w-5 h-5" />
-          </div>
+          <BrandLogo size="md" animated={true} />
 
           <div className="min-w-0">
             <h1 className="text-xs sm:text-sm font-black text-[#1F2933] dark:text-[#F7F7F2] tracking-tight truncate flex items-center gap-2">

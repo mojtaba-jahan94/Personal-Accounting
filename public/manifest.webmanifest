@@ -5,12 +5,18 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#0c0f1d",
-  "theme_color": "#4f46e5",
+  "background_color": "#1F2933",
+  "theme_color": "#1F2933",
   "orientation": "portrait-primary",
   "dir": "rtl",
   "lang": "fa",
   "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
     {
       "src": "icon-192.png",
       "sizes": "192x192",

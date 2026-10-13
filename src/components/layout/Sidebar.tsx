@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { UserProfileModal } from '../auth/UserProfileModal';
 import { TursoConfigModal } from '../settings/TursoConfigModal';
+import { BrandLogo } from '../common/BrandLogo';
 import {
   LayoutDashboard,
   ReceiptText,
@@ -85,6 +86,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
     <aside
       className="hidden lg:flex flex-col w-72 shrink-0 p-4 m-4 mr-0 rounded-3xl bg-[#F7F7F2]/90 dark:bg-[#1F2933]/80 backdrop-blur-2xl border border-[#6B7280]/15 dark:border-[#D1D5DB]/15 shadow-xl self-start sticky top-20 min-h-[calc(100vh-6rem)] transition-all select-none"
     >
+      {/* Brand Header */}
+      <div className="px-2 py-1 mb-3.5 flex items-center justify-between border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/10 pb-3">
+        <BrandLogo size="md" showText={true} animated={true} />
+        <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#A68A64]/15 text-[#A68A64] border border-[#A68A64]/30">
+          v2.0
+        </span>
+      </div>
+
       {/* App & Cloud Sync Status Pill */}
       <button
         type="button"

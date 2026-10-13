@@ -1,0 +1,172 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background Gradient: Deep Nordic Charcoal -->
+    <radialGradient id="bg-charcoal" cx="40%" cy="30%" r="85%">
+      <stop offset="0%" stop-color="#283542" />
+      <stop offset="50%" stop-color="#1F2933" />
+      <stop offset="100%" stop-color="#141B22" />
+    </radialGradient>
+
+    <!-- Squircle Specular Rim Gradient -->
+    <linearGradient id="rim-specular" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#D1D5DB" stop-opacity="0.35" />
+      <stop offset="35%" stop-color="#6B7280" stop-opacity="0.15" />
+      <stop offset="70%" stop-color="#A68A64" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#C2A882" stop-opacity="0.25" />
+    </linearGradient>
+
+    <!-- Warm Wood Radial Ambient Glow Behind Icon -->
+    <radialGradient id="glow-ambient" cx="50%" cy="48%" r="48%">
+      <stop offset="0%" stop-color="#A68A64" stop-opacity="0.28" />
+      <stop offset="45%" stop-color="#6B7280" stop-opacity="0.16" />
+      <stop offset="80%" stop-color="#A68A64" stop-opacity="0.04" />
+      <stop offset="100%" stop-color="#1F2933" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Primary Warm Wood Body Gradient -->
+    <linearGradient id="wood-body" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C2A882" />
+      <stop offset="45%" stop-color="#A68A64" />
+      <stop offset="100%" stop-color="#8A704C" />
+    </linearGradient>
+
+    <!-- Wood Flap / Front Pocket Depth Gradient -->
+    <linearGradient id="wood-pocket" x1="0%" y1="10%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#8A704C" />
+      <stop offset="18%" stop-color="#9C805A" />
+      <stop offset="100%" stop-color="#735A3B" />
+    </linearGradient>
+
+    <!-- Wealth Growth Bar 1: Fjord to Cloud Gray -->
+    <linearGradient id="bar-cloud-1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#D1D5DB" />
+      <stop offset="100%" stop-color="#6B7280" />
+    </linearGradient>
+
+    <!-- Wealth Growth Bar 2: Snow Cream Pure Luminescence -->
+    <linearGradient id="bar-cream-2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="60%" stop-color="#F7F7F2" />
+      <stop offset="100%" stop-color="#D1D5DB" />
+    </linearGradient>
+
+    <!-- Wealth Growth Bar 3: Peak Warm Wood & Gold Apex -->
+    <linearGradient id="bar-apex-3" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#EADBCE" />
+      <stop offset="30%" stop-color="#C2A882" />
+      <stop offset="100%" stop-color="#A68A64" />
+    </linearGradient>
+
+    <!-- Clasp Metallic Hardware Gradient -->
+    <linearGradient id="clasp-metal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E5D6C3" />
+      <stop offset="50%" stop-color="#C2A882" />
+      <stop offset="100%" stop-color="#8A704C" />
+    </linearGradient>
+
+    <!-- Card Drop Shadow Filter -->
+    <filter id="shadow-card" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="16" stdDeviation="22" flood-color="#0B0F14" flood-opacity="0.65" />
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#0B0F14" flood-opacity="0.3" />
+    </filter>
+
+    <!-- Ascending Bars Shadow -->
+    <filter id="shadow-bars" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#000000" flood-opacity="0.45" />
+    </filter>
+
+    <!-- Glow Filter for Apex Sparkle -->
+    <filter id="sparkle-glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3.5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- 1. SQUIRCLE ICON CANVAS (Nordic Charcoal Base) -->
+  <rect x="0" y="0" width="512" height="512" rx="116" fill="url(#bg-charcoal)" />
+
+  <!-- 2. SPECULAR SQUIRCLE INNER BORDER -->
+  <rect x="3" y="3" width="506" height="506" rx="113" fill="none" stroke="url(#rim-specular)" stroke-width="2.5" />
+
+  <!-- 3. SOFT AMBIENT RADIAL GLOW IN CENTER -->
+  <circle cx="256" cy="256" r="195" fill="url(#glow-ambient)" />
+
+  <!-- 4. SUBTLE SCANDINAVIAN ARCHITECTURAL RINGS -->
+  <circle cx="256" cy="256" r="168" fill="none" stroke="#D1D5DB" stroke-opacity="0.05" stroke-width="1.5" stroke-dasharray="4 6" />
+  <circle cx="256" cy="256" r="132" fill="none" stroke="#A68A64" stroke-opacity="0.08" stroke-width="1.5" />
+
+  <!-- 5. ASCENDING WEALTH PILLARS (Emerging from behind the Ledger/Wallet) -->
+  <g filter="url(#shadow-bars)">
+    <!-- Pillar 1: Steady Base (Fjord / Cloud Gray) -->
+    <rect x="166" y="168" width="46" height="110" rx="14" fill="url(#bar-cloud-1)" />
+    <!-- Pillar 1 Inner Highlight -->
+    <path d="M 172 174 L 206 174" stroke="#FFFFFF" stroke-opacity="0.45" stroke-width="2" stroke-linecap="round" />
+
+    <!-- Pillar 2: Core Growth (Snow Cream #F7F7F2 Luminescence) -->
+    <rect x="233" y="128" width="46" height="150" rx="14" fill="url(#bar-cream-2)" />
+    <!-- Pillar 2 Inner Highlight -->
+    <path d="M 239 134 L 273 134" stroke="#FFFFFF" stroke-opacity="0.8" stroke-width="2.5" stroke-linecap="round" />
+
+    <!-- Pillar 3: Wealth Apex (Warm Wood / Light Brass Peak) -->
+    <rect x="300" y="90" width="46" height="188" rx="14" fill="url(#bar-apex-3)" />
+    <!-- Pillar 3 Inner Highlight -->
+    <path d="M 306 96 L 340 96" stroke="#FFFFFF" stroke-opacity="0.9" stroke-width="2.5" stroke-linecap="round" />
+
+    <!-- Growth Trendline & Vector Nodes -->
+    <path d="M 189 156 L 256 116 L 323 78" fill="none" stroke="#F7F7F2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+    <circle cx="189" cy="156" r="4.5" fill="#6B7280" stroke="#F7F7F2" stroke-width="2" />
+    <circle cx="256" cy="116" r="5" fill="#A68A64" stroke="#F7F7F2" stroke-width="2.5" />
+    <circle cx="323" cy="78" r="6" fill="#C2A882" stroke="#FFFFFF" stroke-width="3" />
+
+    <!-- Apex 4-Point Star Sparkle -->
+    <g transform="translate(352, 68)" filter="url(#sparkle-glow)">
+      <path d="M 0 -12 Q 1 -1 12 0 Q 1 1 0 12 Q -1 1 -12 0 Q -1 -1 0 -12 Z" fill="#F7F7F2" />
+      <circle cx="0" cy="0" r="2.5" fill="#C2A882" />
+    </g>
+  </g>
+
+  <!-- 6. THE SCANDINAVIAN LEDGER / WALLET EMBLEM -->
+  <g filter="url(#shadow-card)">
+    <!-- Back Wallet/Ledger Card Flap -->
+    <rect x="100" y="214" width="312" height="198" rx="36" fill="url(#wood-body)" />
+
+    <!-- Inner Edge Top Specular Sheen -->
+    <path d="M 124 216 L 388 216" stroke="#FFFFFF" stroke-opacity="0.5" stroke-width="2.5" stroke-linecap="round" />
+    <rect x="101" y="215" width="310" height="196" rx="35" fill="none" stroke="#FFFFFF" stroke-opacity="0.2" stroke-width="1.5" />
+
+    <!-- Front Leather/Wood Pocket Fold -->
+    <path d="M 100 286 C 180 312, 332 312, 412 286 L 412 376 C 412 396, 396 412, 376 412 L 136 412 C 116 412, 100 396, 100 376 Z" fill="url(#wood-pocket)" />
+
+    <!-- Pocket Lip Specular Ridge Line -->
+    <path d="M 101 286 C 180 312, 332 312, 411 286" fill="none" stroke="#C2A882" stroke-width="3" stroke-linecap="round" />
+    <path d="M 102 288 C 180 313.5, 332 313.5, 410 288" fill="none" stroke="#000000" stroke-opacity="0.3" stroke-width="1.5" stroke-linecap="round" />
+
+    <!-- Nordic Diagonal Accent Ribbon Detail (Top Left of Card) -->
+    <path d="M 100 252 L 142 214" stroke="#D1D5DB" stroke-opacity="0.4" stroke-width="3.5" stroke-linecap="round" />
+    <path d="M 100 266 L 156 214" stroke="#F7F7F2" stroke-opacity="0.6" stroke-width="2" stroke-linecap="round" />
+
+    <!-- 7. METALLIC SMART CHIP & CLASP DETAIL (Center Clasp) -->
+    <g transform="translate(256, 332)">
+      <!-- Clasp Outer Shadow & Base -->
+      <rect x="-32" y="-24" width="64" height="48" rx="14" fill="#1F2933" stroke="url(#clasp-metal)" stroke-width="2.5" />
+      
+      <!-- Inner Clasp Plate -->
+      <rect x="-24" y="-17" width="48" height="34" rx="9" fill="#141B22" />
+
+      <!-- Metallic Smart Chip Circuit Graphic -->
+      <rect x="-16" y="-11" width="32" height="22" rx="5" fill="none" stroke="url(#clasp-metal)" stroke-width="1.5" />
+      <!-- Circuit Grid Lines -->
+      <line x1="-16" y1="0" x2="-4" y2="0" stroke="url(#clasp-metal)" stroke-width="1.5" />
+      <line x1="4" y1="0" x2="16" y2="0" stroke="url(#clasp-metal)" stroke-width="1.5" />
+      <line x1="0" y1="-11" x2="0" y2="-3" stroke="url(#clasp-metal)" stroke-width="1.5" />
+      <line x1="0" y1="3" x2="0" y2="11" stroke="url(#clasp-metal)" stroke-width="1.5" />
+      <circle cx="0" cy="0" r="3.5" fill="url(#clasp-metal)" />
+    </g>
+
+    <!-- Subtle Stitching / Perforation Edge around Wallet (Nordic Handcrafted Touch) -->
+    <rect x="110" y="224" width="292" height="178" rx="28" fill="none" stroke="#D1D5DB" stroke-opacity="0.18" stroke-width="1.5" stroke-dasharray="5 5" />
+  </g>
+</svg>
