@@ -159,6 +159,23 @@ export function calculateAccountBalance(
   return initial + netDelta;
 }
 
+/**
+ * Pure ledger batch calculation: Recalculates all accounts balances deterministically
+ */
+export function recalculateAllAccountBalances(
+  accounts: Account[],
+  transactions: Transaction[]
+): Account[] {
+  return accounts.map(acc => {
+    const computedBalance = calculateAccountBalance(acc, transactions);
+    return {
+      ...acc,
+      initialBalance: typeof acc.initialBalance === 'number' ? acc.initialBalance : computedBalance,
+      balance: computedBalance,
+    };
+  });
+}
+
 export function getAccountBreakdown(
   accountId: string,
   transactions: Transaction[]
@@ -255,7 +272,7 @@ interface FinanceContextType {
   addCheque: (ch: Omit<Cheque, 'id'>) => void;
   updateCheque: (ch: Cheque) => void;
   deleteCheque: (id: string) => void;
-  changeChequeStatus: (id: string, status: Cheque['status']) => void;
+  changeChequeStatus: (id: string, status: Cheque['status'], accountId?: string) => void;
 
   setCurrency: (c: Currency) => void;
   toggleDarkMode: () => void;
@@ -344,15 +361,15 @@ export const DEFAULT_DASHBOARD_CONFIG: DashboardSectionConfig = {
 
 const DEFAULT_THEME_CONFIG: ThemeConfig = {
   mode: 'light',
-  accent: 'indigo',
-  customAccentHex: '#6366f1',
+  accent: 'wood',
+  customAccentHex: '#A68A64',
   amoledMode: false,
   liquidGlass: true,
   performanceMode: false,
   lightStyle: 'frost',
   backgroundStyle: 'clean_minimal',
-  spotlight1Color: '#6366f1',
-  spotlight2Color: '#06b6d4',
+  spotlight1Color: '#A68A64',
+  spotlight2Color: '#C2A882',
   glassIntensity: 'medium',
   glassOpacity: 0.85,
   glassBlur: 14,
@@ -401,14 +418,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   });
 
   const accounts = useMemo(() => {
-    return accountsBase.map(acc => {
-      const computedBalance = calculateAccountBalance(acc, transactions);
-      return {
-        ...acc,
-        initialBalance: typeof acc.initialBalance === 'number' ? acc.initialBalance : computedBalance,
-        balance: computedBalance,
-      };
-    });
+    return recalculateAllAccountBalances(accountsBase, transactions);
   }, [accountsBase, transactions]);
 
   const [budgets, setBudgets] = useState<Budget[]>(() => {
@@ -640,10 +650,14 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Track previous user to trigger data loading only on change
   const prevUserIdRef = useRef<string | null>(null);
 
+  // Initial hydration guard to prevent empty/default local state from overwriting remote Turso data
+  const isHydratedRef = useRef<boolean>(!user);
+
   // Load user data from Turso server (or local user-scoped storage) on login
   useEffect(() => {
     if (!user) {
       prevUserIdRef.current = null;
+      isHydratedRef.current = true;
       return;
     }
 
@@ -654,6 +668,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     const loadUserData = async () => {
       setIsCloudLoading(true);
+      isHydratedRef.current = false;
       const userSuffix = '_' + user.id;
       const client = getTursoClient();
       let loadedFromTurso = false;
@@ -736,16 +751,22 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
       }
 
+      // Mark hydration complete to allow safe syncing
+      isHydratedRef.current = true;
       setIsCloudLoading(false);
     };
 
     loadUserData();
   }, [user, tursoStatus]);
 
-  // Debounced sync to Turso server
+  // Debounced sync to Turso server (1500ms debounce with hydration guard)
   const syncTimeoutRef = useRef<Record<string, any>>({});
 
   const syncCollectionToTurso = useCallback((collectionKey: string, data: any) => {
+    if (!isHydratedRef.current) {
+      // Guard: never push local default/empty state to cloud before initial load completes
+      return;
+    }
     if (!user?.id) return;
     const client = getTursoClient();
     if (!client || tursoStatus !== 'connected') {
@@ -775,7 +796,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         console.error(`Failed to sync ${collectionKey} to Turso:`, e);
         setCloudSyncStatus('error');
       }
-    }, 600);
+    }, 1500);
   }, [user?.id, tursoStatus]);
 
   // Manual trigger to sync all collections to Turso
@@ -1343,6 +1364,11 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const debt = debts.find(d => d.id === params.debtId);
     if (!debt) return;
 
+    const remaining = Math.max(0, debt.amount - debt.paidAmount);
+    // Clamp payment amount to remaining amount
+    const actualPayAmount = Math.min(params.amount, remaining);
+    if (actualPayAmount <= 0) return;
+
     const txDate = params.date || getTodayJalali();
     const isDebtPay = debt.type === 'debt';
     const txType: TransactionType = isDebtPay ? 'expense' : 'income';
@@ -1357,27 +1383,30 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const newTx: Transaction = {
       id: txId,
       type: txType,
-      amount: params.amount,
+      amount: actualPayAmount,
       date: txDate,
       description: txDesc,
       categoryId: isDebtPay ? 'cat-debt-pay' : 'cat-debt-collect',
       accountId: params.accountId,
       debtId: debt.id,
+      relatedEntityId: debt.id,
       personId: debt.personId,
       tags: [isDebtPay ? 'تسویه بدهی' : 'وصول طلب', debt.personName],
     };
 
     setTransactions(prev => [newTx, ...prev]);
 
-    // 2. Update debt and payment history
+    // 2. Update debt and payment history (auto-mark settled when fully paid)
     const accName = accounts.find(a => a.id === params.accountId)?.name;
     setDebts(prev =>
       prev.map(d => {
         if (d.id === params.debtId) {
-          const paidAmount = d.paidAmount + params.amount;
+          const paidAmount = d.paidAmount + actualPayAmount;
+          const isSettled = paidAmount >= d.amount;
           const newPayment: DebtPayment = {
             id: 'dp-' + Date.now(),
-            amount: params.amount,
+            transactionId: txId,
+            amount: actualPayAmount,
             date: txDate,
             accountId: params.accountId,
             accountName: accName,
@@ -1386,7 +1415,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
           return {
             ...d,
             paidAmount,
-            isSettled: paidAmount >= d.amount,
+            isSettled,
             payments: [...(d.payments || []), newPayment],
           };
         }
@@ -1414,22 +1443,169 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setPersons(prev => prev.filter(p => p.id !== id));
   };
 
-  // Cheques
+  // Cheques & Balance Integrity (only impact account balance when transitioning to/from cleared/passed)
   const addCheque = (ch: Omit<Cheque, 'id'>) => {
-    const newCh: Cheque = { ...ch, id: 'ch-' + Date.now() };
+    const newChId = 'ch-' + Date.now();
+    let linkedTxId: string | undefined;
+
+    const isCleared = ch.status === 'passed' || ch.status === 'cleared';
+    if (isCleared && ch.accountId) {
+      linkedTxId = 'tx-ch-' + Date.now();
+      const isPayable = ch.type === 'payable';
+      const chTx: Transaction = {
+        id: linkedTxId,
+        type: isPayable ? 'expense' : 'income',
+        amount: ch.amount,
+        date: getTodayJalali(),
+        description: isPayable
+          ? `پاس شدن چک پرداختی شماره ${ch.chequeNumber} (در وجه ${ch.partyName})`
+          : `وصول چک دریافتی شماره ${ch.chequeNumber} (از ${ch.partyName})`,
+        categoryId: isPayable ? 'cat-cheque-pay' : 'cat-cheque-collect',
+        accountId: ch.accountId,
+        chequeId: newChId,
+        relatedEntityId: newChId,
+        tags: ['چک', ch.bankName, ch.partyName],
+      };
+      setTransactions(prev => [chTx, ...prev]);
+    }
+
+    const newCh: Cheque = {
+      ...ch,
+      id: newChId,
+      transactionId: linkedTxId,
+      clearedDate: isCleared ? (ch.clearedDate || getTodayJalali()) : undefined,
+    };
     setCheques(prev => [...prev, newCh]);
   };
 
   const updateCheque = (ch: Cheque) => {
-    setCheques(prev => prev.map(item => (item.id === ch.id ? ch : item)));
+    const oldCh = cheques.find(c => c.id === ch.id);
+    if (!oldCh) return;
+
+    const oldWasCleared = oldCh.status === 'passed' || oldCh.status === 'cleared';
+    const newIsCleared = ch.status === 'passed' || ch.status === 'cleared';
+    let updatedTxId = ch.transactionId || oldCh.transactionId;
+
+    if (!oldWasCleared && newIsCleared) {
+      const targetAccountId = ch.accountId || oldCh.accountId || (accounts[0]?.id || '');
+      if (targetAccountId) {
+        updatedTxId = 'tx-ch-' + Date.now();
+        const isPayable = ch.type === 'payable';
+        const chTx: Transaction = {
+          id: updatedTxId,
+          type: isPayable ? 'expense' : 'income',
+          amount: ch.amount,
+          date: getTodayJalali(),
+          description: isPayable
+            ? `پاس شدن چک پرداختی شماره ${ch.chequeNumber} (در وجه ${ch.partyName})`
+            : `وصول چک دریافتی شماره ${ch.chequeNumber} (از ${ch.partyName})`,
+          categoryId: isPayable ? 'cat-cheque-pay' : 'cat-cheque-collect',
+          accountId: targetAccountId,
+          chequeId: ch.id,
+          relatedEntityId: ch.id,
+          tags: ['چک', ch.bankName, ch.partyName],
+        };
+        setTransactions(prev => [chTx, ...prev]);
+      }
+    } else if (oldWasCleared && !newIsCleared) {
+      if (updatedTxId) {
+        setTransactions(prev => prev.filter(t => t.id !== updatedTxId && t.chequeId !== ch.id));
+        updatedTxId = undefined;
+      }
+    } else if (oldWasCleared && newIsCleared && updatedTxId) {
+      const isPayable = ch.type === 'payable';
+      setTransactions(prev =>
+        prev.map(t =>
+          t.id === updatedTxId || t.chequeId === ch.id
+            ? {
+                ...t,
+                amount: ch.amount,
+                accountId: ch.accountId || t.accountId,
+                description: isPayable
+                  ? `پاس شدن چک پرداختی شماره ${ch.chequeNumber} (در وجه ${ch.partyName})`
+                  : `وصول چک دریافتی شماره ${ch.chequeNumber} (از ${ch.partyName})`,
+              }
+            : t
+        )
+      );
+    }
+
+    setCheques(prev =>
+      prev.map(item =>
+        item.id === ch.id
+          ? {
+              ...ch,
+              transactionId: updatedTxId,
+              clearedDate: newIsCleared ? (ch.clearedDate || getTodayJalali()) : undefined,
+            }
+          : item
+      )
+    );
   };
 
   const deleteCheque = (id: string) => {
-    setCheques(prev => prev.filter(ch => ch.id !== id));
+    const ch = cheques.find(c => c.id === id);
+    if (ch && (ch.status === 'passed' || ch.status === 'cleared')) {
+      if (ch.transactionId) {
+        setTransactions(prev => prev.filter(t => t.id !== ch.transactionId && t.chequeId !== id));
+      }
+    }
+    setCheques(prev => prev.filter(c => c.id !== id));
   };
 
-  const changeChequeStatus = (id: string, status: Cheque['status']) => {
-    setCheques(prev => prev.map(ch => (ch.id === id ? { ...ch, status } : ch)));
+  const changeChequeStatus = (id: string, status: Cheque['status'], accountId?: string) => {
+    const cheque = cheques.find(c => c.id === id);
+    if (!cheque) return;
+
+    const oldStatus = cheque.status;
+    const isNowCleared = status === 'passed' || status === 'cleared';
+    const wasCleared = oldStatus === 'passed' || oldStatus === 'cleared';
+
+    let linkedTxId = cheque.transactionId;
+
+    if (!wasCleared && isNowCleared) {
+      // Transitioning to cleared -> impact linked bank account
+      const targetAccountId = accountId || cheque.accountId || (accounts[0]?.id || '');
+      if (targetAccountId) {
+        linkedTxId = 'tx-ch-' + Date.now();
+        const isPayable = cheque.type === 'payable';
+        const chTx: Transaction = {
+          id: linkedTxId,
+          type: isPayable ? 'expense' : 'income',
+          amount: cheque.amount,
+          date: getTodayJalali(),
+          description: isPayable
+            ? `پاس شدن چک پرداختی شماره ${cheque.chequeNumber} (در وجه ${cheque.partyName})`
+            : `وصول چک دریافتی شماره ${cheque.chequeNumber} (از ${cheque.partyName})`,
+          categoryId: isPayable ? 'cat-cheque-pay' : 'cat-cheque-collect',
+          accountId: targetAccountId,
+          chequeId: cheque.id,
+          relatedEntityId: cheque.id,
+          tags: ['چک', cheque.bankName, cheque.partyName],
+        };
+        setTransactions(prev => [chTx, ...prev]);
+      }
+    } else if (wasCleared && !isNowCleared) {
+      // Transitioning away from cleared -> reverse balance impact
+      if (linkedTxId) {
+        setTransactions(prev => prev.filter(t => t.id !== linkedTxId && t.chequeId !== cheque.id));
+        linkedTxId = undefined;
+      }
+    }
+
+    setCheques(prev =>
+      prev.map(ch =>
+        ch.id === id
+          ? {
+              ...ch,
+              status,
+              transactionId: linkedTxId,
+              accountId: accountId || ch.accountId,
+              clearedDate: isNowCleared ? (ch.clearedDate || getTodayJalali()) : undefined,
+            }
+          : ch
+      )
+    );
   };
 
   // Asset & Portfolio Actions
@@ -1451,37 +1627,77 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, []);
 
   const addAssetTransaction = useCallback((tx: Omit<AssetTransaction, 'id'>) => {
+    const newTxId = 'atx-' + Date.now();
+    let linkedLedgerTxId: string | undefined;
+
+    // If trade is linked to a bank account, automatically create a ledger transaction
+    if (tx.accountId) {
+      linkedLedgerTxId = 'tx-asset-' + Date.now();
+      const isBuy = tx.type === 'buy';
+      const tradeLedgerTx: Transaction = {
+        id: linkedLedgerTxId,
+        type: isBuy ? 'expense' : 'income',
+        amount: tx.totalAmount,
+        date: tx.date || getTodayJalali(),
+        description: isBuy
+          ? `خرید ${tx.quantity} ${tx.assetName}`
+          : `فروش ${tx.quantity} ${tx.assetName}`,
+        categoryId: isBuy ? 'cat-investment-buy' : 'cat-investment-sell',
+        accountId: tx.accountId,
+        assetTransactionId: newTxId,
+        relatedEntityId: tx.assetId,
+        tags: ['سرمایه‌گذاری', tx.assetName],
+      };
+      setTransactions(prev => [tradeLedgerTx, ...prev]);
+    }
+
     const newTx: AssetTransaction = {
       ...tx,
-      id: 'atx-' + Date.now(),
+      id: newTxId,
+      transactionId: linkedLedgerTxId,
     };
     setAssetTransactions(prev => [newTx, ...prev]);
 
-    // Automatically update the parent asset quantity and cost
+    // Automatically update the parent asset quantity and cost basis
     setAssets(prev =>
       prev.map(asset => {
         if (asset.id !== tx.assetId) return asset;
 
         if (tx.type === 'buy') {
-          const newQty = asset.quantity + tx.quantity;
-          const newTotalCost = asset.totalCost + tx.totalAmount;
-          const newAvg = newQty > 0 ? newTotalCost / newQty : 0;
+          const oldQty = asset.quantity || 0;
+          const oldBuyPrice = asset.buyPriceAverage || 0;
+          const buyQty = tx.quantity;
+          const tradePrice = tx.unitPrice;
+
+          const newQty = oldQty + buyQty;
+          // Weighted Average Cost basis: ((oldQty * oldBuyPrice) + (buyQty * tradePrice)) / (oldQty + buyQty)
+          const newBuyPrice = newQty > 0
+            ? ((oldQty * oldBuyPrice) + (buyQty * tradePrice)) / newQty
+            : tradePrice;
+          const newTotalCost = newQty * newBuyPrice;
+
           return {
             ...asset,
             quantity: newQty,
-            totalCost: newTotalCost,
-            buyPriceAverage: newAvg,
+            buyPriceAverage: Math.round(newBuyPrice),
+            buyPrice: Math.round(newBuyPrice),
+            totalCost: Math.round(newTotalCost),
             updatedAt: getTodayJalali(),
           };
         } else {
-          // Sell
-          const newQty = Math.max(0, asset.quantity - tx.quantity);
-          const ratio = asset.quantity > 0 ? newQty / asset.quantity : 0;
-          const newTotalCost = asset.totalCost * ratio;
+          // Sell: keep buyPrice unchanged, only reduce quantity
+          const oldQty = asset.quantity || 0;
+          const sellQty = Math.min(tx.quantity, oldQty);
+          const newQty = Math.max(0, oldQty - sellQty);
+          const buyPrice = asset.buyPriceAverage || 0;
+          const newTotalCost = newQty * buyPrice;
+
           return {
             ...asset,
             quantity: newQty,
-            totalCost: newTotalCost,
+            buyPriceAverage: buyPrice,
+            buyPrice: buyPrice,
+            totalCost: Math.round(newTotalCost),
             updatedAt: getTodayJalali(),
           };
         }
@@ -1490,7 +1706,13 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, []);
 
   const deleteAssetTransaction = useCallback((id: string) => {
-    setAssetTransactions(prev => prev.filter(t => t.id !== id));
+    setAssetTransactions(prev => {
+      const target = prev.find(t => t.id === id);
+      if (target?.transactionId) {
+        setTransactions(txs => txs.filter(t => t.id !== target.transactionId && t.assetTransactionId !== id));
+      }
+      return prev.filter(t => t.id !== id);
+    });
   }, []);
 
   const updateMarketPrice = useCallback((symbol: string, newPriceToman: number) => {

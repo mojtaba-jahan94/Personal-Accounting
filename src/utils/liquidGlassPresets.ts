@@ -1,21 +1,40 @@
 import type { GlassConfig } from '@ybouane/liquidglass';
 
 /**
- * Modern Glassmorphism Presets for UI elements
+ * Nordic Warm Wood Design Tokens & Palette (Strict Enforcement)
+ */
+export const NORDIC_PALETTE = {
+  charcoal: '#1F2933', // Deep fjord anchor
+  fjord: '#6B7280',    // Cool slate midtone
+  cloud: '#D1D5DB',    // Soft overcast tone
+  snow: '#F7F7F2',     // Warm snowy surface
+  wood: '#A68A64',     // Natural cedar accent
+  woodLight: '#C2A882',
+  woodDark: '#8A704C',
+  semantic: {
+    income: { light: '#2E7D5B', dark: '#4ADE80', bg: 'rgba(74, 222, 128, 0.10)' },
+    expense: { light: '#C0564B', dark: '#F87171', bg: 'rgba(248, 113, 113, 0.10)' },
+    transfer: { light: '#4A6FA5', dark: '#60A5FA', bg: 'rgba(96, 165, 250, 0.10)' },
+    warning: { light: '#A68A64', dark: '#C2A882', bg: 'rgba(166, 138, 100, 0.10)' },
+  },
+} as const;
+
+/**
+ * Modern Glassmorphism Presets for UI elements (Nordic Warm Wood Edition)
  */
 export const LIQUID_GLASS_PRESETS: Record<string, Partial<GlassConfig>> = {
   // Modern Hero Banner
   heroBanner: {
-    blurAmount: 0.20,
-    refraction: 0.40,
-    chromAberration: 0.02,
-    edgeHighlight: 0.15,
-    specular: 0.12,
+    blurAmount: 0.18,
+    refraction: 0.38,
+    chromAberration: 0.015,
+    edgeHighlight: 0.16,
+    specular: 0.14,
     fresnel: 1.0,
-    cornerRadius: 20,
+    cornerRadius: 24,
     zRadius: 20,
-    tintStrength: 0.05,
-    shadowOpacity: 0.15,
+    tintStrength: 0.04,
+    shadowOpacity: 0.14,
     shadowSpread: 18,
     shadowOffsetY: 6,
   },

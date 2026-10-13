@@ -41,11 +41,11 @@ export const TursoConfigModal: React.FC<TursoConfigModalProps> = ({ isOpen, onCl
     if (res.success) {
       setFeedback({
         type: 'success',
-        message: 'اتصال به پایگاه داده با موفقیت برقرار شد و تنظیمات ذخیره گردید.',
+        message: 'اتصال به پایگاه داده ابری با موفقیت برقرار شد و تنظیمات ذخیره گردید.',
       });
       setTimeout(() => {
         onClose();
-      }, 1400);
+      }, 1200);
     } else {
       setFeedback({
         type: 'error',
@@ -79,7 +79,7 @@ export const TursoConfigModal: React.FC<TursoConfigModalProps> = ({ isOpen, onCl
   };
 
   const handleClear = async () => {
-    if (window.confirm('آیا از قطع ارتباط و حذف تنظیمات پایگاه داده Turso از این مرورگر اطمینان دارید؟ برنامه به حالت محلی سوئیچ خواهد شد.')) {
+    if (window.confirm('آیا از قطع ارتباط و حذف تنظیمات دیتابیس Turso اطمینان دارید؟ برنامه به حالت محلی سوئیچ خواهد شد.')) {
       await resetTursoConfig();
       setUrl('');
       setToken('');
@@ -91,89 +91,100 @@ export const TursoConfigModal: React.FC<TursoConfigModalProps> = ({ isOpen, onCl
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" dir="rtl">
-      <div className="w-full max-w-lg p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+    <div className="fixed inset-0 z-50 bg-[#1F2933]/75 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+      <div className="w-full sm:max-w-lg max-h-[92dvh] flex flex-col rounded-t-3xl sm:rounded-3xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 bg-[#F7F7F2]/95 dark:bg-[#1F2933]/95 backdrop-blur-2xl text-[#1F2933] dark:text-[#F7F7F2] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
+        {/* Mobile drag handle */}
+        <div className="pt-2 sm:hidden flex justify-center">
+          <div className="w-12 h-1.5 bg-[#6B7280]/30 rounded-full" />
+        </div>
+
+        {/* Sticky Header */}
+        <div className="px-6 py-4 border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/10 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400">
+            <div className="w-10 h-10 rounded-2xl bg-[#A68A64]/15 border border-[#A68A64]/30 text-[#A68A64] flex items-center justify-center shadow-sm">
               <Database className="w-5 h-5" />
             </div>
-            <h3 className="font-black text-slate-900 dark:text-white text-base">
-              تنظیمات پایگاه داده Turso
-            </h3>
+            <div>
+              <h3 className="text-base sm:text-lg font-black text-[#1F2933] dark:text-[#F7F7F2]">
+                تنظیمات پایگاه داده Turso
+              </h3>
+              <p className="text-xs text-[#6B7280] dark:text-[#D1D5DB]">
+                همگام‌سازی ابری امن میان تمام دستگاه‌ها
+              </p>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400"
+            className="p-1.5 rounded-xl text-[#6B7280] hover:text-[#1F2933] dark:hover:text-[#F7F7F2] hover:bg-[#6B7280]/10 transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Current status indicator */}
-        <div className="flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-850 border border-slate-200/60 dark:border-slate-800 text-xs">
-          <span className="font-bold text-slate-600 dark:text-slate-400">وضعیت اتصال:</span>
-          {tursoStatus === 'connected' ? (
-            <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-bold">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              متصل به سرور ابری
-            </span>
-          ) : tursoStatus === 'connecting' ? (
-            <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold">
-              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-              در حال بررسی و اتصال...
-            </span>
-          ) : tursoStatus === 'error' ? (
-            <span className="flex items-center gap-1.5 text-rose-600 dark:text-rose-400 font-bold">
-              <span className="w-2 h-2 rounded-full bg-rose-500" />
-              خطا در اتصال
-            </span>
-          ) : (
-            <span className="flex items-center gap-1.5 text-slate-500 font-bold">
-              <span className="w-2 h-2 rounded-full bg-slate-400" />
-              تنظیم نشده (حالت محلی)
-            </span>
-          )}
-        </div>
-
-        {/* Show tursoError if exists */}
-        {tursoError && !feedback && (
-          <div className="p-3 rounded-2xl bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 flex items-start gap-2 text-xs font-bold">
-            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-            <span className="leading-relaxed">{tursoError}</span>
-          </div>
-        )}
-
-        {/* Feedback alert */}
-        {feedback && (
-          <div
-            className={`p-3 rounded-2xl flex items-start gap-2 text-xs font-bold ${
-              feedback.type === 'success'
-                ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-                : 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
-            }`}
-          >
-            {feedback.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+        {/* Scrollable Body */}
+        <form id="turso-form" onSubmit={handleSubmit} className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-4 overscroll-contain">
+          {/* Current status indicator */}
+          <div className="flex items-center justify-between px-3.5 py-2.5 rounded-2xl bg-white/60 dark:bg-[#182028]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 text-xs">
+            <span className="font-bold text-[#6B7280] dark:text-[#D1D5DB]">وضعیت اتصال:</span>
+            {tursoStatus === 'connected' ? (
+              <span className="flex items-center gap-1.5 text-[#2E7D5B] dark:text-[#4ADE80] font-bold">
+                <span className="w-2 h-2 rounded-full bg-[#2E7D5B] animate-pulse" />
+                متصل به سرور ابری
+              </span>
+            ) : tursoStatus === 'connecting' ? (
+              <span className="flex items-center gap-1.5 text-[#A68A64] font-bold">
+                <span className="w-2 h-2 rounded-full bg-[#A68A64] animate-pulse" />
+                در حال بررسی و اتصال...
+              </span>
+            ) : tursoStatus === 'error' ? (
+              <span className="flex items-center gap-1.5 text-[#C0564B] font-bold">
+                <span className="w-2 h-2 rounded-full bg-[#C0564B]" />
+                خطا در اتصال
+              </span>
             ) : (
-              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span className="flex items-center gap-1.5 text-[#6B7280] font-bold">
+                <span className="w-2 h-2 rounded-full bg-[#6B7280]" />
+                محلی (آفلاین)
+              </span>
             )}
-            <span className="leading-relaxed">{feedback.message}</span>
           </div>
-        )}
 
-        {/* Network & ISP Notice */}
-        <div className="p-3 rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-900/40 text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-2">
-          <Wifi className="w-4 h-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
-          <div className="leading-relaxed">
-            <b>نکته مهم ارتباطی:</b> دیتابیس Turso بر بستر سرورهای ابری خارجی قرار دارد. در صورت مواجهه با خطای عدم پاسخگویی سرور (Timeout یا Fetch Failed)، از فعال بودن فیلترشکن یا DNS معتبر اطمینان حاصل فرمایید.
+          {/* Show tursoError if exists */}
+          {tursoError && !feedback && (
+            <div className="p-3 rounded-2xl bg-[#C0564B]/10 text-[#C0564B] border border-[#C0564B]/20 flex items-start gap-2 text-xs font-bold">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span className="leading-relaxed">{tursoError}</span>
+            </div>
+          )}
+
+          {/* Feedback alert */}
+          {feedback && (
+            <div
+              className={`p-3 rounded-2xl flex items-start gap-2 text-xs font-bold ${
+                feedback.type === 'success'
+                  ? 'bg-[#2E7D5B]/15 text-[#2E7D5B] dark:text-[#4ADE80] border border-[#2E7D5B]/30'
+                  : 'bg-[#C0564B]/15 text-[#C0564B] dark:text-[#F87171] border border-[#C0564B]/30'
+              }`}
+            >
+              {feedback.type === 'success' ? (
+                <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
+              ) : (
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              )}
+              <span className="leading-relaxed">{feedback.message}</span>
+            </div>
+          )}
+
+          {/* Network & ISP Notice */}
+          <div className="p-3.5 rounded-2xl bg-[#A68A64]/10 border border-[#A68A64]/25 text-[11px] text-[#A68A64] dark:text-[#C2A882] flex items-start gap-2.5">
+            <Wifi className="w-4 h-4 shrink-0 mt-0.5 text-[#A68A64]" />
+            <div className="leading-relaxed">
+              <b>نکته مهم شبکه:</b> دیتابیس Turso بر بستر ابری جهانی اجرا می‌شود. در صورت مواجهه با خطای ارتباطی (Fetch Failed یا Timeout)، از اتصال اینترنت یا DNS معتبر اطمینان حاصل کنید.
+            </div>
           </div>
-        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1.5">
               آدرس پایگاه داده (Database URL)
             </label>
             <input
@@ -183,15 +194,15 @@ export const TursoConfigModal: React.FC<TursoConfigModalProps> = ({ isOpen, onCl
               placeholder="مثال: libsql://my-db-org.turso.io"
               dir="ltr"
               required
-              className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono text-slate-900 dark:text-white outline-none focus:border-indigo-500"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-mono text-[#1F2933] dark:text-[#F7F7F2] outline-none focus:border-[#A68A64] transition"
             />
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-              آدرس با پیشوند <code className="text-indigo-600 dark:text-indigo-400 font-mono">libsql://</code> یا <code className="text-indigo-600 dark:text-indigo-400 font-mono">https://</code>
+            <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB] mt-1">
+              آدرس با پیشوند <code className="text-[#A68A64] font-mono">libsql://</code> یا <code className="text-[#A68A64] font-mono">https://</code>
             </p>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1.5">
               توکن دسترسی (Auth Token)
             </label>
             <input
@@ -200,10 +211,10 @@ export const TursoConfigModal: React.FC<TursoConfigModalProps> = ({ isOpen, onCl
               onChange={(e) => setToken(e.target.value)}
               placeholder="توکن احراز هویت Turso"
               dir="ltr"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono text-slate-900 dark:text-white outline-none focus:border-indigo-500"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-mono text-[#1F2933] dark:text-[#F7F7F2] outline-none focus:border-[#A68A64] transition"
             />
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-              توکن صادر شده از دستور <code className="text-indigo-600 dark:text-indigo-400 font-mono">turso db tokens create [نام دیتابیس]</code>
+            <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB] mt-1">
+              توکن صادر شده از دستور <code className="text-[#A68A64] font-mono">turso db tokens create [نام دیتابیس]</code>
             </p>
           </div>
 
@@ -212,24 +223,24 @@ export const TursoConfigModal: React.FC<TursoConfigModalProps> = ({ isOpen, onCl
             <button
               type="button"
               onClick={() => setShowGuide(!showGuide)}
-              className="text-[11px] text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 font-bold"
+              className="text-[11px] text-[#A68A64] hover:underline flex items-center gap-1 font-bold"
             >
               <Info className="w-3.5 h-3.5" />
-              <span>{showGuide ? 'بستن راهنمای ساخت دیتابیس Turso' : 'چگونه دیتابیس Turso بسازم و توکن بگیرم؟'}</span>
+              <span>{showGuide ? 'بستن راهنمای ساخت دیتابیس' : 'چگونه دیتابیس Turso بسازم و توکن بگیرم؟'}</span>
             </button>
 
             {showGuide && (
-              <div className="mt-2.5 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs space-y-2 text-slate-700 dark:text-slate-300 leading-relaxed font-sans">
-                <p className="font-bold text-slate-900 dark:text-white">مراحل ۳ گانه ساخت دیتابیس در Turso:</p>
-                <ol className="list-decimal list-inside space-y-1 text-[11px]">
-                  <li>ورود یا ثبت‌نام رایگان در سایت <a href="https://turso.tech" target="_blank" rel="noreferrer" className="text-indigo-500 underline inline-flex items-center gap-0.5">turso.tech <ExternalLink className="w-2.5 h-2.5" /></a></li>
-                  <li>اجرای دستور ساخت دیتابیس در خط فرمان:
-                    <div className="mt-1 p-2 rounded-lg bg-slate-900 text-slate-100 font-mono text-[10px] select-all" dir="ltr">
+              <div className="mt-2.5 p-3 rounded-2xl bg-[#6B7280]/5 dark:bg-[#182028]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 text-xs space-y-2 text-[#1F2933] dark:text-[#F7F7F2] leading-relaxed">
+                <p className="font-bold">مراحل ۳ گانه ساخت دیتابیس در Turso:</p>
+                <ol className="list-decimal list-inside space-y-1 text-[11px] text-[#6B7280] dark:text-[#D1D5DB]">
+                  <li>ورود یا ثبت‌نام رایگان در سایت <a href="https://turso.tech" target="_blank" rel="noreferrer" className="text-[#A68A64] underline inline-flex items-center gap-0.5">turso.tech <ExternalLink className="w-2.5 h-2.5" /></a></li>
+                  <li>اجرای دستور ساخت دیتابیس در ترمینال:
+                    <div className="mt-1 p-2 rounded-lg bg-[#1F2933] text-[#F7F7F2] font-mono text-[10px] select-all" dir="ltr">
                       turso db create personal-accounting
                     </div>
                   </li>
                   <li>دریافت آدرس و ایجاد توکن دائمی:
-                    <div className="mt-1 p-2 rounded-lg bg-slate-900 text-slate-100 font-mono text-[10px] select-all" dir="ltr">
+                    <div className="mt-1 p-2 rounded-lg bg-[#1F2933] text-[#F7F7F2] font-mono text-[10px] select-all" dir="ltr">
                       turso db show personal-accounting --url<br/>
                       turso db tokens create personal-accounting -e none
                     </div>
@@ -238,31 +249,19 @@ export const TursoConfigModal: React.FC<TursoConfigModalProps> = ({ isOpen, onCl
               </div>
             )}
           </div>
+        </form>
 
-          <div className="pt-2 flex flex-wrap gap-2">
-            <button
-              type="submit"
-              disabled={isTesting}
-              className="flex-1 min-w-[130px] py-2.5 px-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black transition flex items-center justify-center gap-1.5 shadow-md disabled:opacity-50"
-            >
-              {isTesting ? (
-                <>
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  <span>در حال بررسی...</span>
-                </>
-              ) : (
-                <span>ذخیره و اتصال</span>
-              )}
-            </button>
-
+        {/* Sticky Footer */}
+        <div className="px-6 py-4 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10 bg-[#F7F7F2]/90 dark:bg-[#182028]/90 flex items-center justify-between gap-2 shrink-0">
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={handleTestOnly}
               disabled={isTesting}
-              className="py-2.5 px-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-300 text-xs font-bold transition flex items-center gap-1.5 disabled:opacity-50"
+              className="py-2.5 px-3 rounded-xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-[#6B7280] dark:text-[#D1D5DB] hover:bg-[#6B7280]/10 text-xs font-bold transition flex items-center gap-1.5 disabled:opacity-50"
             >
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>فقط آزمایش اتصال</span>
+              <RefreshCw className={`w-3.5 h-3.5 ${isTesting ? 'animate-spin' : ''}`} />
+              <span>تست اتصال</span>
             </button>
 
             {currentConfig.url && (
@@ -271,24 +270,34 @@ export const TursoConfigModal: React.FC<TursoConfigModalProps> = ({ isOpen, onCl
                 onClick={handleClear}
                 disabled={isTesting}
                 title="قطع ارتباط و بازگشت به حالت محلی"
-                className="py-2.5 px-3 rounded-2xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/40 dark:hover:bg-rose-900/60 text-rose-600 dark:text-rose-400 text-xs font-bold transition flex items-center gap-1.5 disabled:opacity-50"
+                className="py-2.5 px-3 rounded-xl bg-[#C0564B]/15 hover:bg-[#C0564B]/25 text-[#C0564B] text-xs font-bold transition flex items-center gap-1.5 border border-[#C0564B]/30 disabled:opacity-50"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">حذف تنظیمات</span>
+                <span className="hidden sm:inline">حذف</span>
               </button>
             )}
+          </div>
 
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onClose}
-              className="py-2.5 px-3 rounded-2xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition"
+              className="px-4 py-2.5 rounded-xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-[#6B7280] dark:text-[#D1D5DB] hover:bg-[#6B7280]/10 text-xs font-bold transition"
             >
               انصراف
             </button>
+            <button
+              type="submit"
+              form="turso-form"
+              disabled={isTesting}
+              className="px-5 py-2.5 rounded-xl bg-[#A68A64] hover:bg-[#8A704C] text-[#F7F7F2] font-black text-xs shadow-lg shadow-[#A68A64]/25 transition active:scale-95 flex items-center gap-1.5 disabled:opacity-50"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>ذخیره و اتصال</span>
+            </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
 };
-

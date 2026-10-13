@@ -23,6 +23,18 @@ export interface Account {
   isDefault?: boolean;
 }
 
+export interface Transfer {
+  id: string;
+  fromAccountId: string;
+  toAccountId: string;
+  amount: number;
+  fee?: number;
+  date: string; // Jalali format: YYYY/MM/DD
+  time?: string;
+  description?: string;
+  relatedTransactionId?: string;
+}
+
 export interface Transaction {
   id: string;
   type: TransactionType;
@@ -34,10 +46,15 @@ export interface Transaction {
   accountId: string;
   toAccountId?: string; // For transfers
   fee?: number; // Transfer fee
+  transferId?: string; // Deterministic linking ID for transfers
+  relatedEntityId?: string; // Deterministic linking ID for debt, cheque, asset, etc.
   receiptUrl?: string; // base64 or image url
   tags?: string[];
   debtId?: string; // Optional link to a Debt or Loan
   personId?: string; // Optional link to a Person/Contact
+  chequeId?: string; // Optional link to a Cheque
+  assetTransactionId?: string; // Optional link to an Asset trade
+  createdAt?: string;
 }
 
 export interface Budget {
@@ -79,7 +96,6 @@ export interface DebtPayment {
   description?: string;
 }
 
-
 export interface Debt {
   id: string;
   type: DebtType;
@@ -98,7 +114,7 @@ export interface Debt {
 }
 
 export type ChequeType = 'receivable' | 'payable';
-export type ChequeStatus = 'pending' | 'passed' | 'bounced';
+export type ChequeStatus = 'pending' | 'passed' | 'cleared' | 'bounced';
 
 export interface Cheque {
   id: string;
@@ -110,14 +126,17 @@ export interface Cheque {
   sayadNumber?: string;
   partyName: string;
   personId?: string;
+  accountId?: string; // حساب بانکی متصل برای تسویه
   status: ChequeStatus;
   notes?: string;
+  clearedDate?: string;
+  transactionId?: string;
 }
 
 export type Currency = 'toman' | 'rial';
 
 // Theme Studio Pro Types
-export type AccentColor = 'indigo' | 'emerald' | 'rose' | 'amber' | 'cyan' | 'purple' | 'custom';
+export type AccentColor = 'wood' | 'indigo' | 'emerald' | 'rose' | 'amber' | 'cyan' | 'purple' | 'custom';
 export type GlassIntensity = 'low' | 'medium' | 'high';
 export type AnimationSpeed = 'fast' | 'normal' | 'none';
 export type BorderRadius = 'sharp' | 'smooth' | 'round';
@@ -201,6 +220,7 @@ export interface Asset {
   quantity: number; // e.g. 15.5 گرم or 2 عدد
   unit: string; // 'گرم', 'عدد', 'دلار', 'تتر', 'واحد'
   buyPriceAverage: number; // میانگین قیمت خرید هر واحد به تومان
+  buyPrice?: number; // اختیاری: هم‌ارز با میانگین قیمت خرید
   totalCost: number; // کل هزینه خرید به تومان
   notes?: string;
   purchaseDate?: string;
@@ -221,6 +241,8 @@ export interface AssetTransaction {
   date: string; // Jalali YYYY/MM/DD
   notes?: string;
   realizedPnl?: number; // Realized Profit/Loss in Toman
+  accountId?: string; // حساب بانکی متصل برای کسر/واریز وجه
+  transactionId?: string; // شناسه تراکنش ثبت‌شده در دفتر کل مالی
 }
 
 export interface MarketPriceItem {

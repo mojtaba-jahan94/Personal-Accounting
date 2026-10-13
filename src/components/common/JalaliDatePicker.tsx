@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Calendar as CalendarIcon,
   ChevronRight,
@@ -38,6 +39,10 @@ export const JalaliDatePicker: React.FC<JalaliDatePickerProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputContainerRef = useRef<HTMLDivElement>(null);
+  const popoverRef = useRef<HTMLDivElement>(null);
+  const [coords, setCoords] = useState<{ top: number; left: number; right: number; isAbove: boolean } | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Parse current value or fallback to today
   const today = getTodayJalali();
@@ -72,6 +77,27 @@ export const JalaliDatePicker: React.FC<JalaliDatePickerProps> = ({
   const [isMonthSelectOpen, setIsMonthSelectOpen] = useState(false);
   const [isYearSelectOpen, setIsYearSelectOpen] = useState(false);
 
+  // Detect screen size and update popover coordinates
+  const updatePosition = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    const mobile = window.innerWidth < 640;
+    setIsMobile(mobile);
+
+    if (!mobile && inputContainerRef.current) {
+      const rect = inputContainerRef.current.getBoundingClientRect();
+      const popoverHeight = 360;
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const isAbove = spaceBelow < popoverHeight && rect.top > popoverHeight;
+
+      setCoords({
+        top: isAbove ? rect.top - 6 : rect.bottom + 6,
+        left: rect.left,
+        right: window.innerWidth - rect.right,
+        isAbove,
+      });
+    }
+  }, []);
+
   // Sync view state when value changes and calendar opens
   useEffect(() => {
     if (isOpen) {
@@ -82,13 +108,20 @@ export const JalaliDatePicker: React.FC<JalaliDatePickerProps> = ({
         setViewYear(todayParsed.year);
         setViewMonth(todayParsed.month);
       }
+      updatePosition();
     }
-  }, [isOpen, parsedValue, todayParsed]);
+  }, [isOpen, parsedValue, todayParsed, updatePosition]);
 
-  // Close calendar when clicking outside or pressing Escape
+  // Close calendar when clicking outside or pressing Escape or on window resize
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(target) &&
+        popoverRef.current &&
+        !popoverRef.current.contains(target)
+      ) {
         setIsOpen(false);
         setIsMonthSelectOpen(false);
         setIsYearSelectOpen(false);
@@ -103,15 +136,25 @@ export const JalaliDatePicker: React.FC<JalaliDatePickerProps> = ({
       }
     };
 
+    const handleScrollOrResize = () => {
+      if (isOpen) {
+        updatePosition();
+      }
+    };
+
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
       document.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('resize', handleScrollOrResize);
+      window.addEventListener('scroll', handleScrollOrResize, true);
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('resize', handleScrollOrResize);
+      window.removeEventListener('scroll', handleScrollOrResize, true);
     };
-  }, [isOpen]);
+  }, [isOpen, updatePosition]);
 
   // Navigate months
   const handlePrevMonth = () => {
@@ -132,7 +175,7 @@ export const JalaliDatePicker: React.FC<JalaliDatePickerProps> = ({
     }
   };
 
-  // Select day
+  // Select day - strictly zero padded YYYY/MM/DD
   const handleSelectDay = (day: number) => {
     const formatted = `${viewYear}/${String(viewMonth).padStart(2, '0')}/${String(day).padStart(2, '0')}`;
     onChange(formatted);
@@ -187,16 +230,208 @@ export const JalaliDatePicker: React.FC<JalaliDatePickerProps> = ({
     { label: 'ج', full: 'جمعه', isWeekend: true },
   ];
 
+  const calendarPopoverContent = (
+    <div
+      ref={popoverRef}
+      dir="rtl"
+      className="w-[310px] sm:w-[320px] p-4 bg-[#F7F7F2] dark:bg-[#1F2933] border border-[#6B7280]/20 dark:border-[#D1D5DB]/20 rounded-2xl shadow-2xl backdrop-blur-xl text-[#1F2933] dark:text-[#F7F7F2] select-none animate-in fade-in zoom-in-95 duration-150"
+    >
+      {/* Calendar Header: Month, Year, and Nav Arrows */}
+      <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/15">
+        {/* Right arrow in RTL goes to Next Month */}
+        <button
+          type="button"
+          onClick={handleNextMonth}
+          title="ماه بعد"
+          className="p-1.5 rounded-xl text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#1F2933] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+
+        {/* Current Month & Year Selectors */}
+        <div className="flex items-center gap-2 font-bold text-xs">
+          {/* Month Dropdown Button */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                setIsMonthSelectOpen(!isMonthSelectOpen);
+                setIsYearSelectOpen(false);
+              }}
+              className="px-2.5 py-1 rounded-xl bg-black/5 dark:bg-white/5 text-[#1F2933] dark:text-[#F7F7F2] hover:bg-[#A68A64]/15 hover:text-[#A68A64] transition font-bold"
+            >
+              {PERSIAN_MONTHS[viewMonth - 1]}
+            </button>
+            {isMonthSelectOpen && (
+              <div className="absolute top-full mt-1.5 right-0 w-44 max-h-48 overflow-y-auto bg-[#F7F7F2] dark:bg-[#141B22] border border-[#6B7280]/20 dark:border-[#D1D5DB]/20 rounded-xl shadow-2xl z-30 p-1.5 grid grid-cols-2 gap-1 text-[11px]">
+                {PERSIAN_MONTHS.map((m, idx) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => {
+                      setViewMonth(idx + 1);
+                      setIsMonthSelectOpen(false);
+                    }}
+                    className={`px-2 py-1.5 rounded-lg text-center font-bold transition ${
+                      viewMonth === idx + 1
+                        ? 'bg-[#A68A64] text-[#F7F7F2] shadow-sm'
+                        : 'hover:bg-black/5 dark:hover:bg-white/10 text-[#1F2933] dark:text-[#D1D5DB]'
+                    }`}
+                  >
+                    {m}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Year Dropdown Button */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => {
+                setIsYearSelectOpen(!isYearSelectOpen);
+                setIsMonthSelectOpen(false);
+              }}
+              className="px-2.5 py-1 rounded-xl bg-black/5 dark:bg-white/5 text-[#1F2933] dark:text-[#F7F7F2] hover:bg-[#A68A64]/15 hover:text-[#A68A64] transition font-mono font-bold"
+            >
+              {viewYear}
+            </button>
+            {isYearSelectOpen && (
+              <div className="absolute top-full mt-1.5 left-0 w-36 max-h-48 overflow-y-auto bg-[#F7F7F2] dark:bg-[#141B22] border border-[#6B7280]/20 dark:border-[#D1D5DB]/20 rounded-xl shadow-2xl z-30 p-1.5 grid grid-cols-2 gap-1 text-[11px] font-mono">
+                {yearsList.map((y) => (
+                  <button
+                    key={y}
+                    type="button"
+                    onClick={() => {
+                      setViewYear(y);
+                      setIsYearSelectOpen(false);
+                    }}
+                    className={`px-2 py-1.5 rounded-lg text-center font-bold transition ${
+                      viewYear === y
+                        ? 'bg-[#A68A64] text-[#F7F7F2] shadow-sm'
+                        : 'hover:bg-black/5 dark:hover:bg-white/10 text-[#1F2933] dark:text-[#D1D5DB]'
+                    }`}
+                  >
+                    {y}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Left arrow in RTL goes to Prev Month */}
+        <button
+          type="button"
+          onClick={handlePrevMonth}
+          title="ماه قبل"
+          className="p-1.5 rounded-xl text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#1F2933] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+      </div>
+
+      {/* Weekday Headers */}
+      <div className="grid grid-cols-7 gap-1 text-center mb-1.5">
+        {WEEK_DAYS.map((w, index) => (
+          <span
+            key={index}
+            title={w.full}
+            className={`text-[11px] font-bold py-1 ${
+              w.isWeekend ? 'text-[#C0564B] dark:text-[#F87171]' : 'text-[#6B7280] dark:text-[#D1D5DB]/70'
+            }`}
+          >
+            {w.label}
+          </span>
+        ))}
+      </div>
+
+      {/* Days Grid */}
+      <div className="grid grid-cols-7 gap-1 text-center">
+        {/* Empty slots before first day */}
+        {Array.from({ length: startDayOfWeek }).map((_, i) => (
+          <div key={`empty-${i}`} className="w-8 h-8 sm:w-9 sm:h-9" />
+        ))}
+
+        {/* Days of the month */}
+        {Array.from({ length: daysInMonth }).map((_, i) => {
+          const day = i + 1;
+          const isSelected =
+            parsedValue &&
+            parsedValue.year === viewYear &&
+            parsedValue.month === viewMonth &&
+            parsedValue.day === day;
+
+          const isToday =
+            todayParsed.year === viewYear &&
+            todayParsed.month === viewMonth &&
+            todayParsed.day === day;
+
+          const dayOfWeek = (startDayOfWeek + i) % 7;
+          const isFriday = dayOfWeek === 6;
+
+          return (
+            <button
+              key={day}
+              type="button"
+              onClick={() => handleSelectDay(day)}
+              className={`w-8 h-8 sm:w-9 sm:h-9 mx-auto rounded-xl flex items-center justify-center text-xs font-mono font-bold transition ${
+                isSelected
+                  ? 'bg-[#A68A64] text-[#F7F7F2] shadow-md shadow-[#A68A64]/30 font-black'
+                  : isToday
+                  ? 'ring-1 ring-[#A68A64] text-[#A68A64] bg-[#A68A64]/10 dark:bg-[#A68A64]/15'
+                  : isFriday
+                  ? 'text-[#C0564B] dark:text-[#F87171] hover:bg-[#C0564B]/10 dark:hover:bg-[#F87171]/15'
+                  : 'text-[#1F2933] dark:text-[#F7F7F2] hover:bg-black/5 dark:hover:bg-white/10'
+              }`}
+            >
+              {day}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Quick Presets & Close Footer */}
+      <div className="flex items-center justify-between pt-3 mt-3 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/15 text-[11px] font-bold">
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={handleSelectToday}
+            className="px-2.5 py-1 rounded-xl bg-[#A68A64]/15 text-[#A68A64] hover:bg-[#A68A64] hover:text-[#F7F7F2] transition"
+          >
+            امروز
+          </button>
+          <button
+            type="button"
+            onClick={handleSelectYesterday}
+            className="px-2.5 py-1 rounded-xl bg-black/5 dark:bg-white/5 text-[#6B7280] dark:text-[#D1D5DB] hover:bg-black/10 dark:hover:bg-white/10 transition"
+          >
+            دیروز
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setIsOpen(false)}
+          className="px-2.5 py-1 rounded-xl text-[#6B7280] hover:text-[#1F2933] dark:text-[#D1D5DB] dark:hover:text-white transition"
+        >
+          بستن
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div className={`relative ${className}`} ref={containerRef}>
       {label && (
-        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-          {label} {required && <span className="text-rose-500">*</span>}
+        <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1.5">
+          {label} {required && <span className="text-[#C0564B] dark:text-[#F87171]">*</span>}
         </label>
       )}
 
       {/* Input container */}
-      <div className="relative flex items-center">
+      <div className="relative flex items-center" ref={inputContainerRef}>
         <input
           type="text"
           value={value}
@@ -204,12 +439,12 @@ export const JalaliDatePicker: React.FC<JalaliDatePickerProps> = ({
           placeholder={placeholder}
           disabled={disabled}
           onClick={() => !disabled && setIsOpen(true)}
-          className={`w-full pr-9 pl-12 py-2.5 rounded-xl bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-bold font-mono text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition cursor-pointer select-none ${inputClassName}`}
+          className={`w-full pr-9 pl-14 py-2.5 rounded-xl bg-[#F7F7F2]/80 dark:bg-[#1F2933]/80 border border-[#6B7280]/20 dark:border-[#D1D5DB]/20 text-xs font-bold font-mono text-[#1F2933] dark:text-[#F7F7F2] outline-none focus:ring-2 focus:ring-[#A68A64]/30 focus:border-[#A68A64] transition cursor-pointer select-none backdrop-blur-md ${inputClassName}`}
           readOnly
         />
         <div
           onClick={() => !disabled && setIsOpen(!isOpen)}
-          className="absolute right-3 text-slate-400 dark:text-slate-500 cursor-pointer hover:text-indigo-600 transition"
+          className="absolute right-3 text-[#6B7280] dark:text-[#D1D5DB] cursor-pointer hover:text-[#A68A64] transition"
         >
           <CalendarIcon className="w-4 h-4" />
         </div>
@@ -221,203 +456,41 @@ export const JalaliDatePicker: React.FC<JalaliDatePickerProps> = ({
             e.stopPropagation();
             handleSelectToday();
           }}
-          className="absolute left-2 px-2 py-0.5 text-[10px] rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 font-bold transition"
+          className="absolute left-2.5 px-2 py-0.5 text-[10px] rounded-lg bg-[#A68A64]/15 hover:bg-[#A68A64] text-[#A68A64] hover:text-[#F7F7F2] font-bold transition"
         >
           امروز
         </button>
       </div>
 
-      {/* Floating Calendar Popover */}
-      {isOpen && (
-        <div
-          dir="rtl"
-          className="absolute z-50 mt-1.5 right-0 left-auto w-[290px] sm:w-[310px] p-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150"
-        >
-          {/* Calendar Header: Month, Year, and Nav Arrows */}
-          <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-100 dark:border-slate-800">
-            {/* Right arrow in RTL goes to Next Month */}
-            <button
-              type="button"
-              onClick={handleNextMonth}
-              title="ماه بعد"
-              className="p-1 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-
-            {/* Current Month & Year Selectors */}
-            <div className="flex items-center gap-1.5 font-bold text-xs">
-              {/* Month Dropdown Button */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsMonthSelectOpen(!isMonthSelectOpen);
-                    setIsYearSelectOpen(false);
-                  }}
-                  className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 hover:text-indigo-600 transition"
-                >
-                  {PERSIAN_MONTHS[viewMonth - 1]}
-                </button>
-                {isMonthSelectOpen && (
-                  <div className="absolute top-full mt-1 right-0 w-40 max-h-48 overflow-y-auto bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-20 p-1 grid grid-cols-2 gap-1 text-[11px]">
-                    {PERSIAN_MONTHS.map((m, idx) => (
-                      <button
-                        key={m}
-                        type="button"
-                        onClick={() => {
-                          setViewMonth(idx + 1);
-                          setIsMonthSelectOpen(false);
-                        }}
-                        className={`px-2 py-1.5 rounded-lg text-center font-bold transition ${
-                          viewMonth === idx + 1
-                            ? 'bg-indigo-600 text-white'
-                            : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
-                        }`}
-                      >
-                        {m}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Year Dropdown Button */}
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsYearSelectOpen(!isYearSelectOpen);
-                    setIsMonthSelectOpen(false);
-                  }}
-                  className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 hover:text-indigo-600 transition font-mono"
-                >
-                  {viewYear}
-                </button>
-                {isYearSelectOpen && (
-                  <div className="absolute top-full mt-1 left-0 w-36 max-h-48 overflow-y-auto bg-white dark:bg-slate-850 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-20 p-1 grid grid-cols-2 gap-1 text-[11px] font-mono">
-                    {yearsList.map((y) => (
-                      <button
-                        key={y}
-                        type="button"
-                        onClick={() => {
-                          setViewYear(y);
-                          setIsYearSelectOpen(false);
-                        }}
-                        className={`px-2 py-1.5 rounded-lg text-center font-bold transition ${
-                          viewYear === y
-                            ? 'bg-indigo-600 text-white'
-                            : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300'
-                        }`}
-                      >
-                        {y}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+      {/* Portal-Rendered Calendar Popover with high Z-Index (Z-[120]) to prevent clipping */}
+      {isOpen &&
+        typeof document !== 'undefined' &&
+        createPortal(
+          isMobile ? (
+            // Centered Modal on Mobile
+            <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+              <div
+                className="fixed inset-0 -z-10"
+                onClick={() => setIsOpen(false)}
+              />
+              {calendarPopoverContent}
             </div>
-
-            {/* Left arrow in RTL goes to Prev Month */}
-            <button
-              type="button"
-              onClick={handlePrevMonth}
-              title="ماه قبل"
-              className="p-1 rounded-xl text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+          ) : coords ? (
+            // Desktop Anchored Popover
+            <div
+              className="fixed z-[120]"
+              style={{
+                top: coords.isAbove ? undefined : `${coords.top}px`,
+                bottom: coords.isAbove ? `${window.innerHeight - coords.top}px` : undefined,
+                right: `${Math.max(12, coords.right)}px`,
+              }}
             >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-          </div>
-
-          {/* Weekday Headers */}
-          <div className="grid grid-cols-7 gap-1 text-center mb-1.5">
-            {WEEK_DAYS.map((w, index) => (
-              <span
-                key={index}
-                title={w.full}
-                className={`text-[11px] font-bold py-1 ${
-                  w.isWeekend ? 'text-rose-500' : 'text-slate-400 dark:text-slate-500'
-                }`}
-              >
-                {w.label}
-              </span>
-            ))}
-          </div>
-
-          {/* Days Grid */}
-          <div className="grid grid-cols-7 gap-1 text-center">
-            {/* Empty slots before first day */}
-            {Array.from({ length: startDayOfWeek }).map((_, i) => (
-              <div key={`empty-${i}`} className="w-8 h-8" />
-            ))}
-
-            {/* Days of the month */}
-            {Array.from({ length: daysInMonth }).map((_, i) => {
-              const day = i + 1;
-              const isSelected =
-                parsedValue &&
-                parsedValue.year === viewYear &&
-                parsedValue.month === viewMonth &&
-                parsedValue.day === day;
-
-              const isToday =
-                todayParsed.year === viewYear &&
-                todayParsed.month === viewMonth &&
-                todayParsed.day === day;
-
-              const dayOfWeek = (startDayOfWeek + i) % 7;
-              const isFriday = dayOfWeek === 6;
-
-              return (
-                <button
-                  key={day}
-                  type="button"
-                  onClick={() => handleSelectDay(day)}
-                  className={`w-8 h-8 sm:w-9 sm:h-9 mx-auto rounded-xl flex items-center justify-center text-xs font-mono font-bold transition ${
-                    isSelected
-                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                      : isToday
-                      ? 'border-2 border-indigo-500 text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/40'
-                      : isFriday
-                      ? 'text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40'
-                      : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                  }`}
-                >
-                  {day}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Quick Presets & Close Footer */}
-          <div className="flex items-center justify-between pt-3 mt-2.5 border-t border-slate-100 dark:border-slate-800 text-[11px] font-bold">
-            <div className="flex items-center gap-1.5">
-              <button
-                type="button"
-                onClick={handleSelectToday}
-                className="px-2 py-1 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-100 transition"
-              >
-                امروز
-              </button>
-              <button
-                type="button"
-                onClick={handleSelectYesterday}
-                className="px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
-              >
-                دیروز
-              </button>
+              {calendarPopoverContent}
             </div>
-
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              className="px-2 py-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
-            >
-              بستن
-            </button>
-          </div>
-        </div>
-      )}
+          ) : null,
+          document.body
+        )}
     </div>
   );
 };
+

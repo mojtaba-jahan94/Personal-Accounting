@@ -1,60 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useFinance } from '../../context/FinanceContext';
-import { AccountType } from '../../types';
 import { getTodayJalali } from '../../utils/jalali';
-import { formatCurrency, numberToWordsPersian, parseAmount, sanitizeAmountInput, formatAmountInput } from '../../utils/formatters';
-import { LIQUID_GLASS_PRESETS } from '../../utils/liquidGlassPresets';
+import {
+  formatCurrency,
+  numberToPersianWords,
+  parseAmount,
+  sanitizeAmountInput,
+  formatAmountInput,
+} from '../../utils/formatters';
 import { JalaliDatePicker } from '../common/JalaliDatePicker';
 import {
   X,
   ArrowLeftRight,
   CreditCard,
-  Wallet,
-  PiggyBank,
   ArrowDown,
+  CheckCircle2,
 } from 'lucide-react';
 
 interface TransferModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-export const getAccountTypeMeta = (type: AccountType) => {
-  switch (type) {
-    case 'bank':
-      return {
-        label: 'کارت / حساب بانکی',
-        shortLabel: 'بانکی',
-        icon: CreditCard,
-        color: 'text-blue-500',
-        badgeClass: 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30',
-      };
-    case 'cash':
-      return {
-        label: 'وجه نقد / اسکناس',
-        shortLabel: 'نقد / اسکناس',
-        icon: Wallet,
-        color: 'text-emerald-500',
-        badgeClass: 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30',
-      };
-    case 'savings':
-      return {
-        label: 'حساب پس‌انداز و اندوخته',
-        shortLabel: 'پس‌انداز',
-        icon: PiggyBank,
-        color: 'text-purple-500',
-        badgeClass: 'bg-purple-500/15 text-purple-700 dark:text-purple-300 border-purple-500/30',
-      };
-    default:
-      return {
-        label: 'سایر حساب‌ها',
-        shortLabel: 'سایر',
-        icon: Wallet,
-        color: 'text-slate-500',
-        badgeClass: 'bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-500/30',
-      };
-  }
-};
 
 export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose }) => {
   const { accounts, currency, addTransaction } = useFinance();
@@ -86,7 +52,6 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
 
   const numAmount = parseAmount(amount);
   const numFee = parseAmount(fee);
-  const numAmountToman = currency === 'rial' ? (numAmount / 10) : numAmount;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,48 +92,50 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div
-        data-glass
-        data-config={JSON.stringify(LIQUID_GLASS_PRESETS.crystalWidget)}
-        className="relative w-full max-w-lg liquid-glass-crystal rounded-3xl shadow-2xl p-5 sm:p-6 my-4 sm:my-8 z-10"
-      >
-        {/* Modal Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-slate-200/50 dark:border-white/10">
+    <div className="fixed inset-0 z-50 bg-[#1F2933]/75 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+      <div className="w-full sm:max-w-lg max-h-[92dvh] flex flex-col rounded-t-3xl sm:rounded-3xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 bg-[#F7F7F2]/95 dark:bg-[#1F2933]/95 backdrop-blur-2xl text-[#1F2933] dark:text-[#F7F7F2] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
+        {/* Mobile drag handle */}
+        <div className="pt-2 sm:hidden flex justify-center">
+          <div className="w-12 h-1.5 bg-[#6B7280]/30 rounded-full" />
+        </div>
+
+        {/* Sticky Header */}
+        <div className="px-6 py-4 border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/10 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="p-2.5 rounded-2xl bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 shadow-xs">
+            <div className="w-10 h-10 rounded-2xl bg-[#A68A64]/15 border border-[#A68A64]/30 text-[#A68A64] flex items-center justify-center shadow-sm">
               <ArrowLeftRight className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
+              <h3 className="text-base sm:text-lg font-black text-[#1F2933] dark:text-[#F7F7F2]">
                 انتقال وجه بین حساب‌ها
               </h3>
-              <p className="text-xs text-slate-400">
-                انتقال موجودی بین کارت‌ها، حساب‌های بانکی و کیف پول نقدی
+              <p className="text-xs text-[#6B7280] dark:text-[#D1D5DB]">
+                انتقال موجودی بین کارت‌ها، حساب‌های بانکی و کیف پول
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+            className="p-1.5 rounded-xl text-[#6B7280] hover:text-[#1F2933] dark:hover:text-[#F7F7F2] hover:bg-[#6B7280]/10 transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+        {/* Scrollable Body */}
+        <form id="transfer-form" onSubmit={handleSubmit} className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-4 overscroll-contain">
           {/* 1. Source Selector */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1.5">
               حساب مبدأ (کسر موجودی)
             </label>
             <select
               value={fromAccountId}
               onChange={e => setFromAccountId(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold outline-none focus:border-indigo-500 transition"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-bold outline-none focus:border-[#A68A64] transition text-[#1F2933] dark:text-[#F7F7F2]"
             >
               {accounts.map(acc => (
-                <option key={acc.id} value={acc.id}>
+                <option key={acc.id} value={acc.id} className="dark:bg-[#1F2933]">
                   {acc.name} {acc.bankName ? `(${acc.bankName})` : ''} • موجودی:{' '}
                   {formatCurrency(acc.balance, currency)}
                 </option>
@@ -176,23 +143,23 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
             </select>
 
             {fromAcc && (
-              <div className="mt-2 p-3 rounded-2xl bg-slate-100/70 dark:bg-slate-800/60 border border-slate-200/60 dark:border-white/5 flex items-center justify-between">
+              <div className="mt-2 p-3 rounded-2xl bg-[#6B7280]/5 dark:bg-[#182028]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-xl bg-blue-500/15 text-blue-600 dark:text-blue-400">
+                  <div className="p-2 rounded-xl bg-[#4A6FA5]/15 text-[#4A6FA5]">
                     <CreditCard className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-xs font-black text-slate-900 dark:text-white block">
+                    <span className="text-xs font-black text-[#1F2933] dark:text-[#F7F7F2] block">
                       {fromAcc.name}
                     </span>
-                    <span className="text-[10px] text-slate-500">
+                    <span className="text-[10px] text-[#6B7280] dark:text-[#D1D5DB]">
                       {fromAcc.bankName ? `بانک ${fromAcc.bankName}` : 'حساب نقدی'}
                     </span>
                   </div>
                 </div>
                 <div className="text-left">
-                  <span className="text-[10px] text-slate-400 block">موجودی فعلی:</span>
-                  <span className="text-xs font-black font-mono text-slate-900 dark:text-white">
+                  <span className="text-[10px] text-[#6B7280] dark:text-[#D1D5DB] block">موجودی فعلی:</span>
+                  <span className="text-xs font-black font-mono text-[#1F2933] dark:text-[#F7F7F2]">
                     {formatCurrency(fromAcc.balance, currency)}
                   </span>
                 </div>
@@ -202,25 +169,25 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
 
           {/* Direction Arrow */}
           <div className="flex items-center justify-center my-0.5">
-            <div className="p-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200/50 dark:border-indigo-800/40 shadow-xs">
+            <div className="p-1.5 rounded-full bg-[#A68A64]/10 dark:bg-[#A68A64]/20 text-[#A68A64] border border-[#A68A64]/30 shadow-xs">
               <ArrowDown className="w-4 h-4" />
             </div>
           </div>
 
           {/* 2. Destination Selector */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1.5">
               حساب مقصد (افزایش موجودی)
             </label>
             <select
               value={toAccountId}
               onChange={e => setToAccountId(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold outline-none focus:border-indigo-500 transition"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-bold outline-none focus:border-[#A68A64] transition text-[#1F2933] dark:text-[#F7F7F2]"
             >
               {accounts
                 .filter(a => a.id !== fromAccountId)
                 .map(acc => (
-                  <option key={acc.id} value={acc.id}>
+                  <option key={acc.id} value={acc.id} className="dark:bg-[#1F2933]">
                     {acc.name} {acc.bankName ? `(${acc.bankName})` : ''} • موجودی:{' '}
                     {formatCurrency(acc.balance, currency)}
                   </option>
@@ -228,23 +195,23 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
             </select>
 
             {toAcc && (
-              <div className="mt-2 p-3 rounded-2xl bg-slate-100/70 dark:bg-slate-800/60 border border-slate-200/60 dark:border-white/5 flex items-center justify-between">
+              <div className="mt-2 p-3 rounded-2xl bg-[#6B7280]/5 dark:bg-[#182028]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+                  <div className="p-2 rounded-xl bg-[#2E7D5B]/15 text-[#2E7D5B] dark:text-[#4ADE80]">
                     <CreditCard className="w-4 h-4" />
                   </div>
                   <div>
-                    <span className="text-xs font-black text-slate-900 dark:text-white block">
+                    <span className="text-xs font-black text-[#1F2933] dark:text-[#F7F7F2] block">
                       {toAcc.name}
                     </span>
-                    <span className="text-[10px] text-slate-500">
+                    <span className="text-[10px] text-[#6B7280] dark:text-[#D1D5DB]">
                       {toAcc.bankName ? `بانک ${toAcc.bankName}` : 'حساب نقدی'}
                     </span>
                   </div>
                 </div>
                 <div className="text-left">
-                  <span className="text-[10px] text-slate-400 block">موجودی فعلی:</span>
-                  <span className="text-xs font-black font-mono text-slate-900 dark:text-white">
+                  <span className="text-[10px] text-[#6B7280] dark:text-[#D1D5DB] block">موجودی فعلی:</span>
+                  <span className="text-xs font-black font-mono text-[#1F2933] dark:text-[#F7F7F2]">
                     {formatCurrency(toAcc.balance, currency)}
                   </span>
                 </div>
@@ -255,8 +222,8 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
           {/* Amount and Fee Inputs */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                مبلغ انتقال ({currency === 'toman' ? 'تومان' : 'ریال'})
+              <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1">
+                مبلغ انتقال ({currency === 'toman' ? 'تومان' : 'ریال'}) <span className="text-[#C0564B]">*</span>
               </label>
               <input
                 type="text"
@@ -265,17 +232,17 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
                 value={amount}
                 onChange={e => setAmount(formatAmountInput(sanitizeAmountInput(e.target.value)))}
                 placeholder="0"
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-black font-mono outline-none focus:border-indigo-500 transition"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-sm font-black font-mono outline-none focus:border-[#A68A64] transition text-[#1F2933] dark:text-[#F7F7F2] text-center"
               />
               {numAmount > 0 && (
-                <span className="text-[11px] text-indigo-600 dark:text-indigo-400 block mt-1">
-                  {numberToWordsPersian(numAmountToman)}
-                </span>
+                <div className="mt-1.5 p-2 rounded-xl bg-[#A68A64]/10 dark:bg-[#A68A64]/15 border border-[#A68A64]/20 text-[11px] font-bold text-[#A68A64] dark:text-[#C2A882] text-center">
+                  {numberToPersianWords(numAmount, currency)}
+                </div>
               )}
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1">
                 کارمزد انتقال ({currency === 'toman' ? 'تومان' : 'ریال'})
               </label>
               <input
@@ -284,7 +251,7 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
                 value={fee}
                 onChange={e => setFee(formatAmountInput(sanitizeAmountInput(e.target.value)))}
                 placeholder="0"
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-bold font-mono outline-none focus:border-indigo-500 transition"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-sm font-bold font-mono outline-none focus:border-[#A68A64] transition text-[#1F2933] dark:text-[#F7F7F2] text-center"
               />
             </div>
           </div>
@@ -300,7 +267,7 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1">
                 توضیحات (اختیاری)
               </label>
               <input
@@ -308,28 +275,30 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
                 value={description}
                 onChange={e => setDescription(e.target.value)}
                 placeholder="مثلاً: انتقال به کارت خرید، واریز پس‌انداز..."
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs outline-none focus:border-indigo-500 transition"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs outline-none focus:border-[#A68A64] transition text-[#1F2933] dark:text-[#F7F7F2]"
               />
             </div>
           </div>
-
-          {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-2 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2.5 rounded-2xl text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-            >
-              انصراف
-            </button>
-            <button
-              type="submit"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-black shadow-md shadow-indigo-600/30 transition active:scale-95"
-            >
-              <span>ثبت انتقال وجه</span>
-            </button>
-          </div>
         </form>
+
+        {/* Sticky Footer */}
+        <div className="px-6 py-4 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10 bg-[#F7F7F2]/90 dark:bg-[#182028]/90 flex items-center justify-end gap-3 shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2.5 rounded-xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-[#6B7280] dark:text-[#D1D5DB] hover:bg-[#6B7280]/10 font-bold text-xs transition"
+          >
+            انصراف
+          </button>
+          <button
+            type="submit"
+            form="transfer-form"
+            className="px-5 py-2.5 rounded-xl bg-[#A68A64] hover:bg-[#8A704C] text-[#F7F7F2] font-black text-xs shadow-lg shadow-[#A68A64]/25 transition active:scale-95 flex items-center gap-1.5"
+          >
+            <CheckCircle2 className="w-4 h-4" />
+            <span>ثبت انتقال وجه</span>
+          </button>
+        </div>
       </div>
     </div>
   );

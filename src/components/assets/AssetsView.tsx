@@ -14,8 +14,6 @@ import {
   Edit2,
   Trash2,
   CheckCircle2,
-  AlertCircle,
-  ExternalLink,
   Search,
   Sparkles,
   Maximize2,
@@ -34,10 +32,10 @@ import { useFinance } from '../../context/FinanceContext';
 import {
   Asset,
   AssetCategory,
-  AssetTransaction,
   MarketPriceItem,
 } from '../../types';
-import { formatNumber } from '../../utils/formatters';
+import { formatNumber, toPersianDigits } from '../../utils/formatters';
+import { LiquidGlassContainer } from '../common/LiquidGlassContainer';
 import { AssetModal } from './AssetModal';
 import { AssetTradeModal } from './AssetTradeModal';
 import { TelegramPasteModal } from './TelegramPasteModal';
@@ -45,11 +43,11 @@ import { PriceSourceSettingsModal } from './PriceSourceSettingsModal';
 import { EditMarketPriceModal } from './EditMarketPriceModal';
 
 const CATEGORY_COLORS: Record<AssetCategory, string> = {
-  gold: '#f59e0b', // Amber / Gold
-  coin: '#eab308', // Yellow Gold
-  currency: '#10b981', // Emerald USD
-  crypto: '#06b6d4', // Cyan Tether/Crypto
-  custom: '#8b5cf6', // Purple
+  gold: '#A68A64', // Warm Wood
+  coin: '#C2A882', // Brass / Light Wood
+  currency: '#2E7D5B', // Nordic Sage Emerald
+  crypto: '#4A6FA5', // Fjord Blue
+  custom: '#6B7280', // Fjord Gray
 };
 
 const CATEGORY_LABELS: Record<AssetCategory, string> = {
@@ -186,11 +184,11 @@ export const AssetsView: React.FC = () => {
         name: CATEGORY_LABELS[cat] || cat,
         category: cat,
         value: val,
-        color: CATEGORY_COLORS[cat] || '#8b5cf6',
+        color: CATEGORY_COLORS[cat] || '#A68A64',
       }));
   }, [assets, marketPrices]);
 
-  // Only active/enabled rates (by default only USD and 18K Gold)
+  // Only active/enabled rates
   const enabledMarketPrices = useMemo(
     () => marketPrices.filter((p) => p.isEnabled !== false),
     [marketPrices]
@@ -254,37 +252,37 @@ export const AssetsView: React.FC = () => {
     <div
       className={`space-y-6 transition-all duration-300 ${
         isTerminalMode
-          ? 'fixed inset-0 z-50 overflow-y-auto bg-slate-950 p-4 sm:p-8 text-white'
+          ? 'fixed inset-0 z-50 overflow-y-auto bg-[#1F2933] p-4 sm:p-8 text-[#F7F7F2]'
           : 'relative'
       }`}
     >
       {/* 1. Live Market Ticker Marquee Bar */}
-      <div className="rounded-2xl bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-indigo-500/10 border border-amber-500/20 backdrop-blur-md p-2 shadow-xs overflow-hidden">
+      <div className="rounded-2xl bg-[#F7F7F2]/90 dark:bg-[#1F2933]/70 border border-[#A68A64]/25 dark:border-[#A68A64]/30 backdrop-blur-md p-2 shadow-xs overflow-hidden">
         <div className="flex items-center gap-2">
           {/* Header Badge */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500 text-slate-950 font-black text-[11px] shrink-0 shadow-xs">
-            <span className="w-2 h-2 rounded-full bg-slate-950 animate-ping" />
+          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#A68A64] text-[#F7F7F2] font-black text-[11px] shrink-0 shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-[#F7F7F2] animate-ping" />
             <span>نرخ‌های زنده</span>
           </div>
 
           {/* Active Count & Quick Config Badge */}
           <button
             onClick={() => setIsSettingsModalOpen(true)}
-            className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded-lg bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-[10px] font-bold shrink-0 transition"
+            className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#A68A64]/10 hover:bg-[#A68A64]/20 border border-[#A68A64]/25 text-[#A68A64] text-[10px] font-bold shrink-0 transition"
             title="مدیریت اقلام فعال و سورس‌ها"
           >
-            <span>{enabledMarketPrices.length} فعال</span>
+            <span>{toPersianDigits(enabledMarketPrices.length)} فعال</span>
             <Sliders className="w-3 h-3" />
           </button>
 
           {/* Global Toman / Rial toggle for ticker */}
-          <div className="flex items-center bg-white/70 dark:bg-slate-900/80 p-0.5 rounded-lg border border-slate-200/60 dark:border-slate-800 text-[10px] font-bold shrink-0">
+          <div className="flex items-center bg-[#F7F7F2] dark:bg-[#141B22] p-0.5 rounded-lg border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-[10px] font-bold shrink-0">
             <button
               onClick={() => setDisplayUnit('toman')}
               className={`px-1.5 py-0.5 rounded-md transition ${
                 displayUnit === 'toman'
-                  ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
-                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                  ? 'bg-[#A68A64] text-[#F7F7F2] font-black shadow-xs'
+                  : 'text-[#6B7280] dark:text-[#D1D5DB]/70 hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
               }`}
             >
               تومان
@@ -293,8 +291,8 @@ export const AssetsView: React.FC = () => {
               onClick={() => setDisplayUnit('rial')}
               className={`px-1.5 py-0.5 rounded-md transition ${
                 displayUnit === 'rial'
-                  ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
-                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                  ? 'bg-[#A68A64] text-[#F7F7F2] font-black shadow-xs'
+                  : 'text-[#6B7280] dark:text-[#D1D5DB]/70 hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
               }`}
             >
               ریال
@@ -318,23 +316,23 @@ export const AssetsView: React.FC = () => {
                       setEditingRateItem(item);
                       setIsEditRateModalOpen(true);
                     }}
-                    className="flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-xl bg-white/70 dark:bg-slate-900/70 border border-slate-200/50 dark:border-slate-800 hover:border-amber-500/40 transition group cursor-pointer"
+                    className="flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-xl bg-[#F7F7F2] dark:bg-[#141B22]/80 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 hover:border-[#A68A64]/40 transition group cursor-pointer"
                     title="کلیک برای تنظیم نرخ"
                   >
-                    <span className="font-bold text-slate-700 dark:text-slate-300 group-hover:text-amber-500">
+                    <span className="font-bold text-[#1F2933] dark:text-[#D1D5DB] group-hover:text-[#A68A64]">
                       {item.name}:
                     </span>
-                    <span className="font-mono font-black text-slate-900 dark:text-white dir-ltr">
+                    <span className="font-mono tabular-nums font-black text-[#1F2933] dark:text-[#F7F7F2] dir-ltr">
                       {formatted.value}
                     </span>
-                    <span className="text-[10px] text-slate-400">{formatted.unit}</span>
+                    <span className="text-[10px] text-[#6B7280]">{formatted.unit}</span>
 
                     {change !== 0 && (
                       <span
-                        className={`text-[10px] font-bold px-1 rounded-sm dir-ltr flex items-center ${
+                        className={`text-[10px] font-mono tabular-nums font-bold px-1 rounded-sm dir-ltr flex items-center ${
                           change > 0
-                            ? 'text-emerald-600 bg-emerald-500/10'
-                            : 'text-rose-600 bg-rose-500/10'
+                            ? 'text-[#2E7D5B] dark:text-[#4ADE80] bg-[#2E7D5B]/10'
+                            : 'text-[#C0564B] dark:text-[#F87171] bg-[#C0564B]/10'
                         }`}
                       >
                         {change > 0 ? '+' : ''}
@@ -347,7 +345,7 @@ export const AssetsView: React.FC = () => {
             ) : (
               <button
                 onClick={() => setIsSettingsModalOpen(true)}
-                className="text-xs text-amber-600 dark:text-amber-400 font-bold hover:underline"
+                className="text-xs text-[#A68A64] font-bold hover:underline"
               >
                 هیچ نرخی فعال نیست — جهت شخصی‌سازی و فعال‌سازی اقلام کلیک کنید
               </button>
@@ -356,211 +354,217 @@ export const AssetsView: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. Standalone VIP Terminal Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-radial from-slate-900 via-slate-900 to-slate-950 dark:from-slate-900 dark:via-slate-950 dark:to-black border border-amber-500/30 p-6 sm:p-8 shadow-2xl text-white">
-        {/* Shimmer Background Orbs */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+      {/* 2. Portfolio Hero Banner (Nordic Charcoal & Warm Wood Luxury Panel) */}
+      <LiquidGlassContainer
+        className="rounded-3xl border border-[#A68A64]/30 p-6 sm:p-8 shadow-2xl bg-gradient-to-br from-[#1F2933] via-[#141B22] to-[#1F2933] text-[#F7F7F2] relative overflow-hidden"
+      >
+        {/* Soft Ambient Radiance */}
+        <div className="absolute top-0 right-0 w-80 h-80 bg-[#A68A64]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#2E7D5B]/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full bg-amber-400/20 text-amber-300 border border-amber-400/30 text-[11px] font-black tracking-wide flex items-center gap-1.5">
-                <Gem className="w-3.5 h-3.5 text-amber-400" />
-                ترمینال سرمایه‌گذاری و دارایی‌ها
-              </span>
-
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[11px] font-bold">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span>
-                  کانال دلار: {priceSourceConfig.dollarTelegramChannel || '@tgju_org'} | کانال طلا: {priceSourceConfig.goldTelegramChannel || '@tgju_org'}
+        <div className="relative z-10 space-y-6">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="px-3 py-1 rounded-full bg-[#A68A64]/20 text-[#C2A882] border border-[#A68A64]/30 text-[11px] font-black tracking-wide flex items-center gap-1.5">
+                  <Gem className="w-3.5 h-3.5 text-[#C2A882]" />
+                  پرتفوی دارایی‌های سرمایه‌گذاری
                 </span>
+
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#2E7D5B]/20 border border-[#2E7D5B]/30 text-[#4ADE80] text-[11px] font-bold">
+                  <span className="w-2 h-2 rounded-full bg-[#4ADE80] animate-pulse" />
+                  <span>
+                    سورس‌ها: {priceSourceConfig.dollarTelegramChannel || '@tgju_org'}
+                  </span>
+                </div>
+              </div>
+
+              <h1 className="text-xl sm:text-2xl font-black text-[#F7F7F2] tracking-tight">
+                مدیریت سبد طلا، سکه، ارز و سرمایه‌گذاری
+              </h1>
+              <p className="text-xs text-[#D1D5DB]/80 max-w-2xl leading-relaxed">
+                ارزش روز دارایی‌ها، سود و زیان محقق‌نشده، توزیع ریسک و اتصال لحظه‌ای به منابع مظنه بازار
+              </p>
+            </div>
+
+            {/* Action Bar */}
+            <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+              {/* Add Asset */}
+              <button
+                onClick={() => {
+                  setAssetToEdit(null);
+                  setIsAssetModalOpen(true);
+                }}
+                className="px-4 py-2.5 rounded-2xl bg-[#A68A64] hover:bg-[#8A704C] text-[#F7F7F2] font-black text-xs transition shadow-lg shadow-[#A68A64]/20 flex items-center gap-1.5 active:scale-95"
+              >
+                <Plus className="w-4 h-4 stroke-[3]" />
+                <span>ثبت دارایی جدید</span>
+              </button>
+
+              {/* Trade Action */}
+              <button
+                onClick={() => {
+                  setTradingAsset(assets[0] || null);
+                  setIsTradeModalOpen(true);
+                }}
+                className="px-3.5 py-2.5 rounded-2xl bg-[#F7F7F2]/10 hover:bg-[#F7F7F2]/15 border border-[#D1D5DB]/20 text-[#F7F7F2] text-xs font-bold transition flex items-center gap-1.5 active:scale-95"
+              >
+                <ArrowRightLeft className="w-4 h-4 text-[#C2A882]" />
+                <span>ثبت خرید/فروش</span>
+              </button>
+
+              {/* Live Refresh */}
+              <button
+                onClick={handleRefreshRates}
+                disabled={isRefreshing}
+                className="p-2.5 sm:px-3.5 sm:py-2.5 rounded-2xl bg-[#F7F7F2]/10 hover:bg-[#F7F7F2]/15 border border-[#D1D5DB]/20 text-[#F7F7F2] text-xs font-bold transition flex items-center gap-2 active:scale-95 disabled:opacity-50"
+                title="به‌روزرسانی قیمت‌ها"
+              >
+                <RefreshCw className={`w-4 h-4 text-[#C2A882] ${isRefreshing ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">بروزرسانی آنلاین نرخ‌ها</span>
+              </button>
+
+              {/* Telegram Paste Button */}
+              <button
+                onClick={() => setIsTelegramModalOpen(true)}
+                className="px-3.5 py-2.5 rounded-2xl bg-[#4A6FA5]/25 hover:bg-[#4A6FA5]/35 border border-[#4A6FA5]/40 text-[#60A5FA] text-xs font-bold transition flex items-center gap-1.5 active:scale-95 shadow-xs"
+                title="پیست متن مظنه از تلگرام"
+              >
+                <Send className="w-4 h-4 text-[#60A5FA] -rotate-45" />
+                <span>خواندن از تلگرام</span>
+              </button>
+
+              {/* Price Sources Settings */}
+              <button
+                onClick={() => setIsSettingsModalOpen(true)}
+                className="px-3.5 py-2.5 rounded-2xl bg-[#F7F7F2]/10 hover:bg-[#F7F7F2]/15 border border-[#D1D5DB]/20 text-[#D1D5DB] text-xs font-bold transition flex items-center gap-1.5 active:scale-95"
+                title="تنظیمات منابع قیمت"
+              >
+                <Sliders className="w-4 h-4 text-[#C2A882]" />
+                <span className="hidden sm:inline">تنظیمات منابع قیمت</span>
+              </button>
+
+              {/* Terminal Zen Mode Toggle */}
+              <button
+                onClick={() => setIsTerminalMode(!isTerminalMode)}
+                className="p-2.5 rounded-2xl bg-[#F7F7F2]/10 hover:bg-[#F7F7F2]/15 border border-[#D1D5DB]/20 text-[#D1D5DB] transition"
+                title={isTerminalMode ? 'خروج از حالت تمام‌صفحه' : 'حالت ترمینال مستقل'}
+              >
+                {isTerminalMode ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          {/* Hero 3-Pillar Valuation KPI Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-[#D1D5DB]/15">
+            {/* 1. Total Market Value */}
+            <div className="p-4 rounded-2xl bg-[#F7F7F2]/10 border border-[#D1D5DB]/15 space-y-1">
+              <span className="text-xs text-[#D1D5DB]/70 font-medium">ارزش روز کل دارایی‌ها</span>
+              <div className="text-2xl font-black font-mono tabular-nums text-[#F7F7F2] dir-ltr text-right">
+                {formatNumber(totalPortfolioValueToman)}
+                <span className="text-xs font-sans font-bold text-[#D1D5DB]/70 mr-1.5">تومان</span>
+              </div>
+              <div className="text-xs font-mono tabular-nums font-bold text-[#A68A64] dir-ltr text-right">
+                ≈ {formatNumber(Math.round(totalPortfolioValueUsd))} USD $
               </div>
             </div>
 
-            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
-              مدیریت سبد طلا، سکه، دلار و دارایی‌ها
-            </h1>
-            <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
-              محاسبه لحظه‌ای ارزش روز دارایی‌ها، سود و زیان محقق‌نشده، توزیع ریسک و اتصال به سورس‌های تلگرام و وب‌سایت
-            </p>
-          </div>
+            {/* 2. Total Buy Cost */}
+            <div className="p-4 rounded-2xl bg-[#F7F7F2]/10 border border-[#D1D5DB]/15 space-y-1">
+              <span className="text-xs text-[#D1D5DB]/70 font-medium">بهای تمام‌شده کل دارایی‌ها</span>
+              <div className="text-2xl font-black font-mono tabular-nums text-[#F7F7F2] dir-ltr text-right">
+                {formatNumber(totalPortfolioCostToman)}
+                <span className="text-xs font-sans font-bold text-[#D1D5DB]/70 mr-1.5">تومان</span>
+              </div>
+              <div className="text-xs text-[#D1D5DB]/60">
+                مجموع سرمایه اولیه اختصاص داده شده
+              </div>
+            </div>
 
-          {/* Action Buttons Bar */}
-          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-            {/* Quick Refresh */}
-            <button
-              onClick={handleRefreshRates}
-              disabled={isRefreshing}
-              className="p-2.5 sm:px-3.5 sm:py-2.5 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/10 text-white text-xs font-bold transition flex items-center gap-2 active:scale-95 disabled:opacity-50"
-              title="به‌روزرسانی قیمت‌ها"
-            >
-              <RefreshCw className={`w-4 h-4 text-amber-400 ${isRefreshing ? 'animate-spin' : ''}`} />
-              <span className="hidden sm:inline">به‌روزرسانی نرخ‌ها</span>
-            </button>
-
-            {/* Telegram Paste Button */}
-            <button
-              onClick={() => setIsTelegramModalOpen(true)}
-              className="px-3.5 py-2.5 rounded-2xl bg-sky-500/20 hover:bg-sky-500/30 border border-sky-400/40 text-sky-200 text-xs font-bold transition flex items-center gap-2 active:scale-95 shadow-xs"
-              title="پیست متن مظنه از تلگرام"
-            >
-              <Send className="w-4 h-4 text-sky-400 -rotate-45" />
-              <span>پیست پیام تلگرام</span>
-            </button>
-
-            {/* Price Sources Settings */}
-            <button
-              onClick={() => setIsSettingsModalOpen(true)}
-              className="px-3.5 py-2.5 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/10 text-slate-200 text-xs font-bold transition flex items-center gap-2 active:scale-95"
-              title="پیکربندی سورس تلگرام و وب"
-            >
-              <Sliders className="w-4 h-4 text-amber-400" />
-              <span className="hidden sm:inline">تنظیمات سورس</span>
-            </button>
-
-            {/* Add Asset Button */}
-            <button
-              onClick={() => {
-                setAssetToEdit(null);
-                setIsAssetModalOpen(true);
-              }}
-              className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-slate-950 font-black text-xs transition shadow-lg shadow-amber-500/25 flex items-center gap-1.5 active:scale-95"
-            >
-              <Plus className="w-4 h-4 stroke-[3]" />
-              <span>ثبت دارایی جدید</span>
-            </button>
-
-            {/* Terminal Zen Mode Toggle */}
-            <button
-              onClick={() => setIsTerminalMode(!isTerminalMode)}
-              className="p-2.5 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/10 text-slate-300 transition"
-              title={isTerminalMode ? 'خروج از حالت تمام‌صفحه' : 'حالت ترمینال مستقل'}
-            >
-              {isTerminalMode ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-            </button>
+            {/* 3. Total Profit / Loss */}
+            <div className="p-4 rounded-2xl bg-[#F7F7F2]/10 border border-[#D1D5DB]/15 space-y-1">
+              <span className="text-xs text-[#D1D5DB]/70 font-medium">سود / زیان کل سبد</span>
+              <div
+                className={`text-2xl font-black font-mono tabular-nums dir-ltr text-right ${
+                  totalPortfolioPnlToman >= 0 ? 'text-[#4ADE80]' : 'text-[#F87171]'
+                }`}
+              >
+                {totalPortfolioPnlToman >= 0 ? '+' : ''}
+                {formatNumber(totalPortfolioPnlToman)}
+                <span className="text-xs font-sans font-bold text-[#D1D5DB]/70 mr-1.5">تومان</span>
+              </div>
+              <div
+                className={`text-xs font-mono tabular-nums font-bold dir-ltr text-right flex items-center justify-end gap-1 ${
+                  totalPortfolioPnlPercent >= 0 ? 'text-[#4ADE80]' : 'text-[#F87171]'
+                }`}
+              >
+                {totalPortfolioPnlPercent >= 0 ? (
+                  <TrendingUp className="w-3.5 h-3.5" />
+                ) : (
+                  <TrendingDown className="w-3.5 h-3.5" />
+                )}
+                <span>
+                  {totalPortfolioPnlPercent >= 0 ? '+' : ''}
+                  {totalPortfolioPnlPercent.toFixed(1)}% بازدهی
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
         {refreshMessage && (
-          <div className="mt-4 p-2.5 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-bold flex items-center gap-2 animate-in fade-in">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <div className="mt-4 p-2.5 rounded-xl bg-[#2E7D5B]/20 border border-[#2E7D5B]/30 text-[#4ADE80] text-xs font-bold flex items-center gap-2 animate-in fade-in">
+            <CheckCircle2 className="w-4 h-4 text-[#4ADE80]" />
             <span>{refreshMessage}</span>
           </div>
         )}
-      </div>
+      </LiquidGlassContainer>
 
-      {/* 3. KPI Portfolio Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Total Portfolio Value */}
-        <div className="p-5 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-            <span className="font-bold">ارزش کل سبد دارایی</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
-              <Coins className="w-4 h-4" />
-            </div>
-          </div>
-          <div className="space-y-0.5">
-            <div className="text-xl font-black text-slate-900 dark:text-white font-mono dir-ltr text-right">
-              {formatNumber(totalPortfolioValueToman)}
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 mr-1.5">
-                تومان
-              </span>
-            </div>
-            <div className="text-xs font-mono font-bold text-slate-400 dark:text-slate-500 dir-ltr text-right">
-              ≈ {formatNumber(Math.round(totalPortfolioValueUsd))} USD $
-            </div>
-          </div>
-        </div>
-
-        {/* Card 2: Unrealized P&L */}
-        <div className="p-5 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-            <span className="font-bold">سود / زیان کل سبد</span>
-            <div
-              className={`w-8 h-8 rounded-xl flex items-center justify-center ${
-                totalPortfolioPnlToman >= 0
-                  ? 'bg-emerald-500/10 text-emerald-500'
-                  : 'bg-rose-500/10 text-rose-500'
-              }`}
-            >
-              {totalPortfolioPnlToman >= 0 ? (
-                <TrendingUp className="w-4 h-4" />
-              ) : (
-                <TrendingDown className="w-4 h-4" />
-              )}
-            </div>
-          </div>
-          <div className="space-y-0.5">
-            <div
-              className={`text-xl font-black font-mono dir-ltr text-right ${
-                totalPortfolioPnlToman >= 0
-                  ? 'text-emerald-600 dark:text-emerald-400'
-                  : 'text-rose-600 dark:text-rose-400'
-              }`}
-            >
-              {totalPortfolioPnlToman >= 0 ? '+' : ''}
-              {formatNumber(totalPortfolioPnlToman)}
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 mr-1.5">
-                تومان
-              </span>
-            </div>
-            <div
-              className={`text-xs font-mono font-bold dir-ltr text-right ${
-                totalPortfolioPnlPercent >= 0
-                  ? 'text-emerald-600 dark:text-emerald-400'
-                  : 'text-rose-600 dark:text-rose-400'
-              }`}
-            >
-              {totalPortfolioPnlPercent >= 0 ? '+' : ''}
-              {totalPortfolioPnlPercent.toFixed(1)}% بازدهی کل
-            </div>
-          </div>
-        </div>
-
-        {/* Card 3: Gold Share & Weight */}
-        <div className="p-5 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+      {/* 3. Gold & Currency Asset Share Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Gold Share & Weight */}
+        <div className="p-5 rounded-2xl bg-[#F7F7F2]/90 dark:bg-[#1F2933]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 shadow-xs space-y-2">
+          <div className="flex items-center justify-between text-xs text-[#6B7280] dark:text-[#D1D5DB]/70">
             <span className="font-bold">سهم طلا و مسکوکات</span>
-            <div className="w-8 h-8 rounded-xl bg-yellow-500/10 text-yellow-500 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[#A68A64]/15 text-[#A68A64] flex items-center justify-center">
               <Gem className="w-4 h-4" />
             </div>
           </div>
           <div className="space-y-0.5">
-            <div className="text-xl font-black text-slate-900 dark:text-white font-mono dir-ltr text-right">
+            <div className="text-xl font-black text-[#1F2933] dark:text-[#F7F7F2] font-mono tabular-nums dir-ltr text-right">
               {formatNumber(goldStats.totalGoldValue)}
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 mr-1.5">
+              <span className="text-xs font-bold text-[#6B7280] dark:text-[#D1D5DB]/70 mr-1.5">
                 تومان
               </span>
             </div>
-            <div className="text-xs font-bold text-amber-600 dark:text-amber-400 flex items-center justify-between">
-              <span>{goldStats.percentOfPortfolio.toFixed(0)}% کل سبد</span>
+            <div className="text-xs font-bold text-[#A68A64] flex items-center justify-between">
+              <span>{toPersianDigits(goldStats.percentOfPortfolio.toFixed(0))}٪ کل سبد</span>
               {goldStats.totalGrams > 0 && (
-                <span className="font-mono">{goldStats.totalGrams} گرم طلا</span>
+                <span className="font-mono tabular-nums">{toPersianDigits(goldStats.totalGrams)} گرم طلا</span>
               )}
             </div>
           </div>
         </div>
 
-        {/* Card 4: Currency & Crypto Share */}
-        <div className="p-5 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-2">
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-            <span className="font-bold">سهم دلار و کریپتو</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
+        {/* Currency & Crypto Share */}
+        <div className="p-5 rounded-2xl bg-[#F7F7F2]/90 dark:bg-[#1F2933]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 shadow-xs space-y-2">
+          <div className="flex items-center justify-between text-xs text-[#6B7280] dark:text-[#D1D5DB]/70">
+            <span className="font-bold">سهم ارز، دلار و تتر</span>
+            <div className="w-8 h-8 rounded-xl bg-[#2E7D5B]/15 text-[#2E7D5B] dark:text-[#4ADE80] flex items-center justify-center">
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
           <div className="space-y-0.5">
-            <div className="text-xl font-black text-slate-900 dark:text-white font-mono dir-ltr text-right">
+            <div className="text-xl font-black text-[#1F2933] dark:text-[#F7F7F2] font-mono tabular-nums dir-ltr text-right">
               {formatNumber(currencyStats.totalCurrencyValue)}
-              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 mr-1.5">
+              <span className="text-xs font-bold text-[#6B7280] dark:text-[#D1D5DB]/70 mr-1.5">
                 تومان
               </span>
             </div>
-            <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 flex items-center justify-between">
-              <span>{currencyStats.percentOfPortfolio.toFixed(0)}% کل سبد</span>
+            <div className="text-xs font-bold text-[#2E7D5B] dark:text-[#4ADE80] flex items-center justify-between">
+              <span>{toPersianDigits(currencyStats.percentOfPortfolio.toFixed(0))}٪ کل سبد</span>
               {currencyStats.totalUsdCount > 0 && (
-                <span className="font-mono">{formatNumber(currencyStats.totalUsdCount)} $</span>
+                <span className="font-mono tabular-nums">{formatNumber(currencyStats.totalUsdCount)} $</span>
               )}
             </div>
           </div>
@@ -568,14 +572,14 @@ export const AssetsView: React.FC = () => {
       </div>
 
       {/* 4. Sub-Navigation Tabs */}
-      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-3 gap-2 overflow-x-auto scrollbar-none">
+      <div className="flex items-center justify-between border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/10 pb-3 gap-2 overflow-x-auto scrollbar-none">
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => setActiveSubTab('portfolio')}
             className={`px-4 py-2 rounded-2xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap ${
               activeSubTab === 'portfolio'
-                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-black'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                ? 'bg-[#A68A64] text-[#F7F7F2] shadow-md shadow-[#A68A64]/20 font-black'
+                : 'text-[#6B7280] dark:text-[#D1D5DB]/70 hover:bg-[#6B7280]/10 dark:hover:bg-[#D1D5DB]/10'
             }`}
           >
             <BarChart3 className="w-4 h-4" />
@@ -586,20 +590,20 @@ export const AssetsView: React.FC = () => {
             onClick={() => setActiveSubTab('assets')}
             className={`px-4 py-2 rounded-2xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap ${
               activeSubTab === 'assets'
-                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-black'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                ? 'bg-[#A68A64] text-[#F7F7F2] shadow-md shadow-[#A68A64]/20 font-black'
+                : 'text-[#6B7280] dark:text-[#D1D5DB]/70 hover:bg-[#6B7280]/10 dark:hover:bg-[#D1D5DB]/10'
             }`}
           >
             <Layers className="w-4 h-4" />
-            <span>دارایی‌های من ({assets.length})</span>
+            <span>دارایی‌های من ({toPersianDigits(assets.length)})</span>
           </button>
 
           <button
             onClick={() => setActiveSubTab('rates')}
             className={`px-4 py-2 rounded-2xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap ${
               activeSubTab === 'rates'
-                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-black'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                ? 'bg-[#A68A64] text-[#F7F7F2] shadow-md shadow-[#A68A64]/20 font-black'
+                : 'text-[#6B7280] dark:text-[#D1D5DB]/70 hover:bg-[#6B7280]/10 dark:hover:bg-[#D1D5DB]/10'
             }`}
           >
             <Coins className="w-4 h-4" />
@@ -610,24 +614,24 @@ export const AssetsView: React.FC = () => {
             onClick={() => setActiveSubTab('trades')}
             className={`px-4 py-2 rounded-2xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap ${
               activeSubTab === 'trades'
-                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-black'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                ? 'bg-[#A68A64] text-[#F7F7F2] shadow-md shadow-[#A68A64]/20 font-black'
+                : 'text-[#6B7280] dark:text-[#D1D5DB]/70 hover:bg-[#6B7280]/10 dark:hover:bg-[#D1D5DB]/10'
             }`}
           >
             <History className="w-4 h-4" />
-            <span>معاملات خرید و فروش ({assetTransactions.length})</span>
+            <span>معاملات خرید و فروش ({toPersianDigits(assetTransactions.length)})</span>
           </button>
 
           <button
             onClick={() => setActiveSubTab('sources')}
             className={`px-4 py-2 rounded-2xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap ${
               activeSubTab === 'sources'
-                ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-black'
-                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                ? 'bg-[#A68A64] text-[#F7F7F2] shadow-md shadow-[#A68A64]/20 font-black'
+                : 'text-[#6B7280] dark:text-[#D1D5DB]/70 hover:bg-[#6B7280]/10 dark:hover:bg-[#D1D5DB]/10'
             }`}
           >
             <Sliders className="w-4 h-4" />
-            <span>سورس‌های قیمت</span>
+            <span>تنظیمات سورس‌ها</span>
           </button>
         </div>
       </div>
@@ -639,12 +643,12 @@ export const AssetsView: React.FC = () => {
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Allocation Donut Chart */}
-            <div className="lg:col-span-1 p-6 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col justify-between">
-              <div className="space-y-1 pb-2 border-b border-slate-100 dark:border-slate-800">
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+            <div className="lg:col-span-1 p-6 rounded-3xl bg-[#F7F7F2]/90 dark:bg-[#1F2933]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 shadow-xs flex flex-col justify-between">
+              <div className="space-y-1 pb-2 border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/10">
+                <h3 className="text-sm font-bold text-[#1F2933] dark:text-[#F7F7F2]">
                   ترکیب و توزیع سبد دارایی
                 </h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB]/70">
                   درصد سهم هر دسته در کل سرمایه‌گذاری
                 </p>
               </div>
@@ -674,13 +678,13 @@ export const AssetsView: React.FC = () => {
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <div className="py-12 text-center text-xs text-slate-400">
+                <div className="py-12 text-center text-xs text-[#6B7280]">
                   هنوز دارایی در سبد ثبت نشده است
                 </div>
               )}
 
               {/* Legend */}
-              <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+              <div className="space-y-2 pt-2 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10">
                 {allocationChartData.map((item) => {
                   const pct =
                     totalPortfolioValueToman > 0 ? (item.value / totalPortfolioValueToman) * 100 : 0;
@@ -694,11 +698,11 @@ export const AssetsView: React.FC = () => {
                           className="w-3 h-3 rounded-full"
                           style={{ backgroundColor: item.color }}
                         />
-                        <span className="text-slate-700 dark:text-slate-300">{item.name}</span>
+                        <span className="text-[#1F2933] dark:text-[#D1D5DB]">{item.name}</span>
                       </div>
-                      <div className="flex items-center gap-2 font-mono">
-                        <span className="text-slate-900 dark:text-white">{pct.toFixed(1)}%</span>
-                        <span className="text-[10px] text-slate-400">
+                      <div className="flex items-center gap-2 font-mono tabular-nums">
+                        <span className="text-[#1F2933] dark:text-[#F7F7F2]">{toPersianDigits(pct.toFixed(1))}٪</span>
+                        <span className="text-[10px] text-[#6B7280]">
                           ({formatNumber(item.value)})
                         </span>
                       </div>
@@ -708,21 +712,21 @@ export const AssetsView: React.FC = () => {
               </div>
             </div>
 
-            {/* Holdings Quick Summary Table & Cards */}
+            {/* Holdings Quick Summary Table */}
             <div className="lg:col-span-2 space-y-4">
-              <div className="p-6 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+              <div className="p-6 rounded-3xl bg-[#F7F7F2]/90 dark:bg-[#1F2933]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 shadow-xs space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                    <h3 className="text-sm font-bold text-[#1F2933] dark:text-[#F7F7F2]">
                       بررسی اجمالی دارایی‌های ثبت شده
                     </h3>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                    <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB]/70">
                       وضعیت سود و زیان هر قلم دارایی به تفکیک قیمت روز بازار
                     </p>
                   </div>
                   <button
                     onClick={() => setActiveSubTab('assets')}
-                    className="text-xs font-bold text-amber-600 dark:text-amber-400 hover:underline flex items-center gap-1"
+                    className="text-xs font-bold text-[#A68A64] hover:underline flex items-center gap-1"
                   >
                     <span>مشاهده تمام جزئیات</span>
                     <ArrowUpRight className="w-3.5 h-3.5" />
@@ -732,7 +736,7 @@ export const AssetsView: React.FC = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs text-right">
                     <thead>
-                      <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 pb-2">
+                      <tr className="border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/10 text-[#6B7280] dark:text-[#D1D5DB]/70 pb-2">
                         <th className="py-2.5 px-3 font-bold">نام دارایی</th>
                         <th className="py-2.5 px-3 font-bold">موجودی</th>
                         <th className="py-2.5 px-3 font-bold">میانگین خرید</th>
@@ -741,7 +745,7 @@ export const AssetsView: React.FC = () => {
                         <th className="py-2.5 px-3 font-bold text-left">بازدهی / سود</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                    <tbody className="divide-y divide-[#6B7280]/10 dark:divide-[#D1D5DB]/10">
                       {assets.map((asset) => {
                         const mPrice = marketPrices.find((p) => p.symbol === asset.symbol);
                         const curPrice = mPrice ? mPrice.priceToman : asset.buyPriceAverage;
@@ -751,34 +755,34 @@ export const AssetsView: React.FC = () => {
                         const pnlPct = cost > 0 ? (pnl / cost) * 100 : 0;
 
                         return (
-                          <tr key={asset.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                            <td className="py-3 px-3">
-                              <div className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                                <div
+                          <tr key={asset.id} className="hover:bg-[#6B7280]/5 dark:hover:bg-[#D1D5DB]/5 transition">
+                            <td className="py-3 px-3 font-bold text-[#1F2933] dark:text-[#F7F7F2]">
+                              <div className="flex items-center gap-2">
+                                <span
                                   className="w-2.5 h-2.5 rounded-full"
-                                  style={{ backgroundColor: CATEGORY_COLORS[asset.category] }}
+                                  style={{ backgroundColor: CATEGORY_COLORS[asset.category] || '#A68A64' }}
                                 />
                                 <span>{asset.name}</span>
                               </div>
                             </td>
-                            <td className="py-3 px-3 font-mono font-bold text-slate-800 dark:text-slate-200">
+                            <td className="py-3 px-3 font-mono tabular-nums text-[#1F2933] dark:text-[#D1D5DB]">
                               {formatNumber(asset.quantity)} {asset.unit}
                             </td>
-                            <td className="py-3 px-3 font-mono text-slate-600 dark:text-slate-400">
-                              {formatNumber(asset.buyPriceAverage)}
+                            <td className="py-3 px-3 font-mono tabular-nums text-[#6B7280] dark:text-[#D1D5DB]/70">
+                              {formatNumber(asset.buyPriceAverage)} تومان
                             </td>
-                            <td className="py-3 px-3 font-mono font-bold text-amber-600 dark:text-amber-400">
-                              {formatNumber(curPrice)}
+                            <td className="py-3 px-3 font-mono tabular-nums font-bold text-[#A68A64]">
+                              {formatNumber(curPrice)} تومان
                             </td>
-                            <td className="py-3 px-3 font-mono font-black text-slate-900 dark:text-white">
-                              {formatNumber(curVal)}
+                            <td className="py-3 px-3 font-mono tabular-nums font-black text-[#1F2933] dark:text-[#F7F7F2]">
+                              {formatNumber(curVal)} تومان
                             </td>
-                            <td className="py-3 px-3 text-left dir-ltr">
+                            <td className="py-3 px-3 text-left">
                               <span
-                                className={`inline-flex items-center px-2 py-0.5 rounded-md font-mono font-bold text-[11px] ${
+                                className={`font-mono tabular-nums font-bold text-[11px] px-2 py-0.5 rounded-full dir-ltr inline-block ${
                                   pnl >= 0
-                                    ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                                    : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
+                                    ? 'bg-[#2E7D5B]/10 text-[#2E7D5B] dark:text-[#4ADE80]'
+                                    : 'bg-[#C0564B]/10 text-[#C0564B] dark:text-[#F87171]'
                                 }`}
                               >
                                 {pnl >= 0 ? '+' : ''}
@@ -797,23 +801,34 @@ export const AssetsView: React.FC = () => {
         </div>
       )}
 
-      {/* Tab 2: My Assets Holdings Cards */}
+      {/* Tab 2: Asset Holdings Cards */}
       {activeSubTab === 'assets' && (
         <div className="space-y-4">
           {/* Category Filter Chips */}
           <div className="flex items-center justify-between flex-wrap gap-2">
-            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none pb-1">
-              {(['all', 'gold', 'coin', 'currency', 'crypto', 'custom'] as const).map((cat) => (
+            <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1">
+              <button
+                onClick={() => setAssetCategoryFilter('all')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                  assetCategoryFilter === 'all'
+                    ? 'bg-[#A68A64] text-[#F7F7F2] shadow-xs'
+                    : 'bg-[#F7F7F2]/90 dark:bg-[#1F2933]/60 text-[#6B7280] dark:text-[#D1D5DB] border border-[#6B7280]/15 dark:border-[#D1D5DB]/10'
+                }`}
+              >
+                همه دسته‌ها ({toPersianDigits(assets.length)})
+              </button>
+
+              {(Object.keys(CATEGORY_LABELS) as AssetCategory[]).map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setAssetCategoryFilter(cat)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition whitespace-nowrap ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
                     assetCategoryFilter === cat
-                      ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
-                      : 'bg-white/70 dark:bg-slate-900/70 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-100'
+                      ? 'bg-[#A68A64] text-[#F7F7F2] shadow-xs'
+                      : 'bg-[#F7F7F2]/90 dark:bg-[#1F2933]/60 text-[#6B7280] dark:text-[#D1D5DB] border border-[#6B7280]/15 dark:border-[#D1D5DB]/10'
                   }`}
                 >
-                  {cat === 'all' ? 'همه دارایی‌ها' : CATEGORY_LABELS[cat] || cat}
+                  {CATEGORY_LABELS[cat]}
                 </button>
               ))}
             </div>
@@ -823,14 +838,14 @@ export const AssetsView: React.FC = () => {
                 setAssetToEdit(null);
                 setIsAssetModalOpen(true);
               }}
-              className="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs transition flex items-center gap-1.5 shadow-xs"
+              className="px-3.5 py-1.5 rounded-xl bg-[#A68A64] hover:bg-[#8A704C] text-[#F7F7F2] text-xs font-bold transition flex items-center gap-1 shadow-xs"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>افزودن دارایی</span>
             </button>
           </div>
 
-          {/* Cards Grid */}
+          {/* Holdings Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredAssets.map((asset) => {
               const mPrice = marketPrices.find((p) => p.symbol === asset.symbol);
@@ -843,38 +858,38 @@ export const AssetsView: React.FC = () => {
               return (
                 <div
                   key={asset.id}
-                  className="rounded-3xl bg-white/85 dark:bg-slate-900/85 backdrop-blur-md border border-slate-200/90 dark:border-slate-800 p-5 shadow-xs space-y-4 hover:border-amber-500/40 transition group"
+                  className="p-5 rounded-2xl bg-[#F7F7F2]/90 dark:bg-[#1F2933]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 flex flex-col justify-between gap-3 shadow-xs hover:border-[#A68A64]/30 transition"
                 >
-                  {/* Top row */}
-                  <div className="flex items-start justify-between">
+                  {/* Header */}
+                  <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2.5">
                       <div
                         className="w-10 h-10 rounded-2xl flex items-center justify-center font-bold text-white shadow-xs"
-                        style={{ backgroundColor: CATEGORY_COLORS[asset.category] || '#f59e0b' }}
+                        style={{ backgroundColor: CATEGORY_COLORS[asset.category] || '#A68A64' }}
                       >
-                        {asset.category === 'gold' && <Gem className="w-5 h-5 text-slate-950" />}
-                        {asset.category === 'coin' && <Coins className="w-5 h-5 text-slate-950" />}
+                        {asset.category === 'gold' && <Gem className="w-5 h-5 text-[#F7F7F2]" />}
+                        {asset.category === 'coin' && <Coins className="w-5 h-5 text-[#F7F7F2]" />}
                         {asset.category === 'currency' && (
-                          <DollarSign className="w-5 h-5 text-slate-950" />
+                          <DollarSign className="w-5 h-5 text-[#F7F7F2]" />
                         )}
                         {asset.category === 'crypto' && <span className="font-mono text-sm">₮</span>}
-                        {asset.category === 'custom' && <Layers className="w-5 h-5 text-white" />}
+                        {asset.category === 'custom' && <Layers className="w-5 h-5 text-[#F7F7F2]" />}
                       </div>
                       <div>
-                        <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                        <h4 className="text-sm font-bold text-[#1F2933] dark:text-[#F7F7F2]">
                           {asset.name}
                         </h4>
-                        <span className="text-[10px] font-bold text-slate-400">
+                        <span className="text-[10px] font-bold text-[#6B7280]">
                           {CATEGORY_LABELS[asset.category]}
                         </span>
                       </div>
                     </div>
 
                     <span
-                      className={`text-xs font-mono font-black px-2 py-0.5 rounded-full dir-ltr ${
+                      className={`text-xs font-mono tabular-nums font-black px-2 py-0.5 rounded-full dir-ltr ${
                         pnl >= 0
-                          ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                          : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
+                          ? 'bg-[#2E7D5B]/10 text-[#2E7D5B] dark:text-[#4ADE80] border border-[#2E7D5B]/20'
+                          : 'bg-[#C0564B]/10 text-[#C0564B] dark:text-[#F87171] border border-[#C0564B]/20'
                       }`}
                     >
                       {pnl >= 0 ? '+' : ''}
@@ -883,33 +898,43 @@ export const AssetsView: React.FC = () => {
                   </div>
 
                   {/* Quantity & Value metrics */}
-                  <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800/80 space-y-2">
+                  <div className="p-3 rounded-2xl bg-[#F7F7F2] dark:bg-[#141B22]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 space-y-2">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-500">موجودی:</span>
-                      <span className="font-mono font-black text-slate-900 dark:text-white">
+                      <span className="text-[#6B7280]">موجودی:</span>
+                      <span className="font-mono tabular-nums font-black text-[#1F2933] dark:text-[#F7F7F2]">
                         {formatNumber(asset.quantity)} {asset.unit}
                       </span>
                     </div>
 
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-slate-500">نرخ روز بازار:</span>
-                      <span className="font-mono font-bold text-amber-600 dark:text-amber-400">
-                        {formatNumber(curPrice)} تومان
-                      </span>
+                      <span className="text-[#6B7280]">نرخ روز بازار:</span>
+                      <button
+                        onClick={() => {
+                          if (mPrice) {
+                            setEditingRateItem(mPrice);
+                            setIsEditRateModalOpen(true);
+                          }
+                        }}
+                        className="font-mono tabular-nums font-bold text-[#A68A64] hover:underline flex items-center gap-1"
+                        title="ویرایش قیمت این قلم"
+                      >
+                        <span>{formatNumber(curPrice)} تومان</span>
+                        <Edit2 className="w-3 h-3 text-[#A68A64]" />
+                      </button>
                     </div>
 
-                    <div className="flex justify-between items-center text-xs pt-1.5 border-t border-slate-200/50 dark:border-slate-700/50">
-                      <span className="font-bold text-slate-700 dark:text-slate-300">
+                    <div className="flex justify-between items-center text-xs pt-1.5 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10">
+                      <span className="font-bold text-[#1F2933] dark:text-[#D1D5DB]">
                         ارزش روز کل:
                       </span>
-                      <span className="font-mono font-black text-sm text-slate-900 dark:text-white">
+                      <span className="font-mono tabular-nums font-black text-sm text-[#1F2933] dark:text-[#F7F7F2]">
                         {formatNumber(curVal)} تومان
                       </span>
                     </div>
                   </div>
 
                   {/* PnL & Cost info */}
-                  <div className="flex justify-between items-center text-[11px] text-slate-500 px-1">
+                  <div className="flex justify-between items-center text-[11px] text-[#6B7280] px-1">
                     <span>
                       سود/زیان: {pnl >= 0 ? '+' : ''}
                       {formatNumber(pnl)} تومان
@@ -918,13 +943,13 @@ export const AssetsView: React.FC = () => {
                   </div>
 
                   {/* Action buttons */}
-                  <div className="flex items-center gap-2 pt-1 border-t border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-2 pt-1 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10">
                     <button
                       onClick={() => {
                         setTradingAsset(asset);
                         setIsTradeModalOpen(true);
                       }}
-                      className="flex-1 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-xs font-bold transition flex items-center justify-center gap-1 border border-amber-500/20"
+                      className="flex-1 py-1.5 rounded-xl bg-[#A68A64]/10 hover:bg-[#A68A64]/20 text-[#A68A64] text-xs font-bold transition flex items-center justify-center gap-1 border border-[#A68A64]/20"
                     >
                       <ArrowDownLeft className="w-3.5 h-3.5" />
                       <span>معامله (خرید/فروش)</span>
@@ -935,7 +960,7 @@ export const AssetsView: React.FC = () => {
                         setAssetToEdit(asset);
                         setIsAssetModalOpen(true);
                       }}
-                      className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                      className="p-1.5 rounded-xl text-[#6B7280] hover:text-[#1F2933] dark:hover:text-[#F7F7F2] hover:bg-[#6B7280]/10 dark:hover:bg-[#D1D5DB]/10 transition"
                       title="ویرایش دارایی"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
@@ -947,7 +972,7 @@ export const AssetsView: React.FC = () => {
                           deleteAsset(asset.id);
                         }
                       }}
-                      className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition"
+                      className="p-1.5 rounded-xl text-[#6B7280] hover:text-[#C0564B] hover:bg-[#C0564B]/10 transition"
                       title="حذف دارایی"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -963,17 +988,16 @@ export const AssetsView: React.FC = () => {
       {/* Tab 3: Live Market Rates Board */}
       {activeSubTab === 'rates' && (
         <div className="space-y-4">
-          {/* Information banner about Dollar & 18K Gold being active and others customizable */}
-          <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-800 dark:text-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
+          <div className="p-3.5 rounded-2xl bg-[#A68A64]/10 border border-[#A68A64]/20 text-xs text-[#1F2933] dark:text-[#D1D5DB] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+              <Sparkles className="w-4 h-4 text-[#A68A64] shrink-0" />
               <span>
-                <strong>توجه:</strong> به‌طور پیش‌فرض فقط <strong>دلار آمریکا</strong> و <strong>طلای ۱۸ عیار</strong> فعال هستند. سایر اقلام خاموش‌اند اما با کلیک بر روی کلید سوئیچ هر سطر می‌توانید آن‌ها را شخصی‌سازی و روشن کنید. منبع دلار و طلا از تلگرام/وب اختصاصی و بقیه نرخ‌ها از سامانه <strong>tgju.org</strong> است.
+                <strong>توجه:</strong> به‌طور پیش‌فرض فقط <strong>دلار آمریکا</strong> و <strong>طلای ۱۸ عیار</strong> فعال هستند. سایر اقلام را می‌توانید با کلید سوئیچ شخصی‌سازی و روشن نمایید.
               </span>
             </div>
             <button
               onClick={() => setIsSettingsModalOpen(true)}
-              className="px-3 py-1 rounded-xl bg-amber-500 text-slate-950 font-black text-[11px] shrink-0 hover:bg-amber-600 transition shadow-xs flex items-center gap-1"
+              className="px-3 py-1 rounded-xl bg-[#A68A64] text-[#F7F7F2] font-black text-[11px] shrink-0 hover:bg-[#8A704C] transition shadow-xs flex items-center gap-1"
             >
               <Sliders className="w-3 h-3" />
               <span>تنظیمات سورس‌ها</span>
@@ -984,13 +1008,13 @@ export const AssetsView: React.FC = () => {
             {/* Search and Filters */}
             <div className="flex flex-wrap items-center gap-2 flex-1">
               <div className="relative flex-1 min-w-[200px] max-w-sm">
-                <Search className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                <Search className="w-4 h-4 absolute right-3.5 top-1/2 -translate-y-1/2 text-[#6B7280]" />
                 <input
                   type="text"
                   value={ratesSearchQuery}
                   onChange={(e) => setRatesSearchQuery(e.target.value)}
                   placeholder="جستجوی طلا، سکه، دلار، تتر..."
-                  className="w-full pr-10 pl-4 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-amber-500/30"
+                  className="w-full pr-10 pl-4 py-2 rounded-xl bg-[#F7F7F2] dark:bg-[#141B22] border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] focus:outline-hidden focus:ring-2 focus:ring-[#A68A64]/30"
                 />
               </div>
 
@@ -1000,29 +1024,29 @@ export const AssetsView: React.FC = () => {
                   onClick={() => setRatesFilter('all')}
                   className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${
                     ratesFilter === 'all'
-                      ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-xs'
-                      : 'bg-white/70 dark:bg-slate-900/70 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-100'
+                      ? 'bg-[#1F2933] dark:bg-[#F7F7F2] text-[#F7F7F2] dark:text-[#1F2933] shadow-xs'
+                      : 'bg-[#F7F7F2]/90 dark:bg-[#1F2933]/60 text-[#6B7280] dark:text-[#D1D5DB] border border-[#6B7280]/15 dark:border-[#D1D5DB]/10'
                   }`}
                 >
-                  همه اقلام ({marketPrices.length})
+                  همه اقلام ({toPersianDigits(marketPrices.length)})
                 </button>
                 <button
                   onClick={() => setRatesFilter('enabled')}
                   className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap flex items-center gap-1 ${
                     ratesFilter === 'enabled'
-                      ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
-                      : 'bg-white/70 dark:bg-slate-900/70 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-100'
+                      ? 'bg-[#A68A64] text-[#F7F7F2] font-black shadow-xs'
+                      : 'bg-[#F7F7F2]/90 dark:bg-[#1F2933]/60 text-[#6B7280] dark:text-[#D1D5DB] border border-[#6B7280]/15 dark:border-[#D1D5DB]/10'
                   }`}
                 >
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  <span>فقط فعال‌ها ({enabledMarketPrices.length})</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#2E7D5B] dark:bg-[#4ADE80]" />
+                  <span>فقط فعال‌ها ({toPersianDigits(enabledMarketPrices.length)})</span>
                 </button>
                 <button
                   onClick={() => setRatesFilter('gold')}
                   className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${
                     ratesFilter === 'gold'
-                      ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
-                      : 'bg-white/70 dark:bg-slate-900/70 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-100'
+                      ? 'bg-[#A68A64] text-[#F7F7F2] font-black shadow-xs'
+                      : 'bg-[#F7F7F2]/90 dark:bg-[#1F2933]/60 text-[#6B7280] dark:text-[#D1D5DB] border border-[#6B7280]/15 dark:border-[#D1D5DB]/10'
                   }`}
                 >
                   طلا و سکه
@@ -1031,8 +1055,8 @@ export const AssetsView: React.FC = () => {
                   onClick={() => setRatesFilter('currency')}
                   className={`px-3 py-1.5 rounded-xl font-bold transition whitespace-nowrap ${
                     ratesFilter === 'currency'
-                      ? 'bg-emerald-500 text-white font-black shadow-xs'
-                      : 'bg-white/70 dark:bg-slate-900/70 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800 hover:bg-slate-100'
+                      ? 'bg-[#2E7D5B] text-[#F7F7F2] font-black shadow-xs'
+                      : 'bg-[#F7F7F2]/90 dark:bg-[#1F2933]/60 text-[#6B7280] dark:text-[#D1D5DB] border border-[#6B7280]/15 dark:border-[#D1D5DB]/10'
                   }`}
                 >
                   اسکناس و ارز
@@ -1043,13 +1067,13 @@ export const AssetsView: React.FC = () => {
             {/* Actions: Unit toggle + Telegram + Refresh */}
             <div className="flex items-center gap-2 self-end lg:self-center">
               {/* Unit Toggle */}
-              <div className="flex items-center bg-white dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold">
+              <div className="flex items-center bg-[#F7F7F2] dark:bg-[#141B22] p-1 rounded-xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-bold">
                 <button
                   onClick={() => setDisplayUnit('toman')}
                   className={`px-2.5 py-1 rounded-lg transition ${
                     displayUnit === 'toman'
-                      ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
-                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                      ? 'bg-[#A68A64] text-[#F7F7F2] font-black shadow-xs'
+                      : 'text-[#6B7280] dark:text-[#D1D5DB]/70'
                   }`}
                 >
                   تومان
@@ -1058,8 +1082,8 @@ export const AssetsView: React.FC = () => {
                   onClick={() => setDisplayUnit('rial')}
                   className={`px-2.5 py-1 rounded-lg transition ${
                     displayUnit === 'rial'
-                      ? 'bg-amber-500 text-slate-950 font-black shadow-xs'
-                      : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                      ? 'bg-[#A68A64] text-[#F7F7F2] font-black shadow-xs'
+                      : 'text-[#6B7280] dark:text-[#D1D5DB]/70'
                   }`}
                 >
                   ریال
@@ -1068,7 +1092,7 @@ export const AssetsView: React.FC = () => {
 
               <button
                 onClick={() => setIsTelegramModalOpen(true)}
-                className="px-3 py-2 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-400/30 text-sky-600 dark:text-sky-300 text-xs font-bold transition flex items-center gap-1.5"
+                className="px-3 py-2 rounded-xl bg-[#4A6FA5]/15 hover:bg-[#4A6FA5]/25 border border-[#4A6FA5]/30 text-[#4A6FA5] dark:text-[#60A5FA] text-xs font-bold transition flex items-center gap-1.5"
                 title="استخراج نرخ‌ها از متن تلگرام"
               >
                 <Send className="w-3.5 h-3.5 -rotate-45" />
@@ -1078,7 +1102,7 @@ export const AssetsView: React.FC = () => {
               <button
                 onClick={handleRefreshRates}
                 disabled={isRefreshing}
-                className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs transition flex items-center gap-1.5 shadow-xs"
+                className="px-3.5 py-2 rounded-xl bg-[#A68A64] hover:bg-[#8A704C] text-[#F7F7F2] font-black text-xs transition flex items-center gap-1.5 shadow-xs"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
                 <span>به‌روزرسانی قیمت‌ها</span>
@@ -1087,11 +1111,11 @@ export const AssetsView: React.FC = () => {
           </div>
 
           {/* Rates Table */}
-          <div className="rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-sm overflow-hidden">
+          <div className="rounded-3xl bg-[#F7F7F2]/90 dark:bg-[#1F2933]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 shadow-xs overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-xs text-right">
                 <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 bg-slate-50/50 dark:bg-slate-800/30">
+                  <tr className="border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/10 text-[#6B7280] dark:text-[#D1D5DB]/70 bg-[#6B7280]/5 dark:bg-[#D1D5DB]/5">
                     <th className="py-3 px-3 font-bold text-center">وضعیت</th>
                     <th className="py-3 px-4 font-bold">نام دارایی / نماد</th>
                     <th className="py-3 px-3 font-bold">دسته‌بندی</th>
@@ -1102,7 +1126,7 @@ export const AssetsView: React.FC = () => {
                     <th className="py-3 px-3 font-bold text-center">عملیات</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                <tbody className="divide-y divide-[#6B7280]/10 dark:divide-[#D1D5DB]/10">
                   {filteredMarketRates.map((item) => {
                     const isItemEnabled = item.isEnabled !== false;
                     const change = item.change24h ?? 0;
@@ -1117,34 +1141,34 @@ export const AssetsView: React.FC = () => {
                         key={item.symbol}
                         className={`transition ${
                           isItemEnabled
-                            ? 'hover:bg-slate-50/70 dark:hover:bg-slate-800/40'
-                            : 'opacity-60 bg-slate-50/20 dark:bg-slate-950/20 hover:opacity-90'
+                            ? 'hover:bg-[#6B7280]/5 dark:hover:bg-[#D1D5DB]/5'
+                            : 'opacity-60 bg-[#6B7280]/5 dark:bg-[#141B22]/30 hover:opacity-90'
                         }`}
                       >
                         {/* On / Off Toggle Column */}
                         <td className="py-3.5 px-3 text-center">
                           <button
                             onClick={() => toggleMarketPriceEnabled(item.symbol)}
-                            className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                            className="p-1 rounded-lg hover:bg-[#6B7280]/10 transition"
                             title={isItemEnabled ? 'کلیک برای غیرفعال‌سازی (خاموش)' : 'کلیک برای فعال‌سازی (روشن)'}
                           >
                             {isItemEnabled ? (
-                              <ToggleRight className="w-6 h-6 text-emerald-500 hover:text-emerald-600 transition" />
+                              <ToggleRight className="w-6 h-6 text-[#2E7D5B] dark:text-[#4ADE80] transition" />
                             ) : (
-                              <ToggleLeft className="w-6 h-6 text-slate-400 hover:text-slate-600 transition" />
+                              <ToggleLeft className="w-6 h-6 text-[#6B7280] transition" />
                             )}
                           </button>
                         </td>
 
                         {/* Name and Symbol */}
-                        <td className="py-3.5 px-4 font-bold text-slate-900 dark:text-white">
+                        <td className="py-3.5 px-4 font-bold text-[#1F2933] dark:text-[#F7F7F2]">
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-[10px] text-slate-400 uppercase bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">
+                            <span className="font-mono text-[10px] text-[#6B7280] uppercase bg-[#6B7280]/10 dark:bg-[#D1D5DB]/10 px-1.5 py-0.5 rounded">
                               {item.symbol}
                             </span>
                             <span>{item.name}</span>
                             {!isItemEnabled && (
-                              <span className="text-[10px] text-slate-400 bg-slate-200/60 dark:bg-slate-800/80 px-1.5 py-0.2 rounded font-normal">
+                              <span className="text-[10px] text-[#6B7280] bg-[#6B7280]/10 px-1.5 py-0.2 rounded font-normal">
                                 خاموش
                               </span>
                             )}
@@ -1152,14 +1176,14 @@ export const AssetsView: React.FC = () => {
                         </td>
 
                         {/* Category */}
-                        <td className="py-3.5 px-3 text-slate-500 dark:text-slate-400">
+                        <td className="py-3.5 px-3 text-[#6B7280] dark:text-[#D1D5DB]/70">
                           {CATEGORY_LABELS[item.category] || item.category}
                         </td>
 
                         {/* Current Price */}
-                        <td className="py-3.5 px-4 font-mono font-black text-sm text-slate-900 dark:text-white">
+                        <td className="py-3.5 px-4 font-mono tabular-nums font-black text-sm text-[#1F2933] dark:text-[#F7F7F2]">
                           {formatted.value}{' '}
-                          <span className="text-[10px] font-normal text-slate-400">
+                          <span className="text-[10px] font-normal text-[#6B7280]">
                             {formatted.unit} / {item.unit}
                           </span>
                         </td>
@@ -1167,12 +1191,12 @@ export const AssetsView: React.FC = () => {
                         {/* 24h Change */}
                         <td className="py-3.5 px-3">
                           <span
-                            className={`inline-flex items-center gap-1 font-mono font-bold px-2 py-0.5 rounded-md dir-ltr ${
+                            className={`inline-flex items-center gap-1 font-mono tabular-nums font-bold px-2 py-0.5 rounded-md dir-ltr ${
                               change > 0
-                                ? 'text-emerald-600 bg-emerald-500/10'
+                                ? 'text-[#2E7D5B] dark:text-[#4ADE80] bg-[#2E7D5B]/10'
                                 : change < 0
-                                ? 'text-rose-600 bg-rose-500/10'
-                                : 'text-slate-500 bg-slate-100 dark:bg-slate-800'
+                                ? 'text-[#C0564B] dark:text-[#F87171] bg-[#C0564B]/10'
+                                : 'text-[#6B7280] bg-[#6B7280]/10'
                             }`}
                           >
                             {change > 0 ? '+' : ''}
@@ -1183,7 +1207,7 @@ export const AssetsView: React.FC = () => {
                         {/* Source Badge */}
                         <td className="py-3.5 px-4 text-xs">
                           {isDedicated ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-700 dark:text-amber-300 font-bold border border-amber-500/20 text-[10px]">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#A68A64]/10 text-[#A68A64] font-bold border border-[#A68A64]/20 text-[10px]">
                               <Sparkles className="w-2.5 h-2.5" />
                               <span>
                                 {item.symbol === 'gold_18k'
@@ -1192,7 +1216,7 @@ export const AssetsView: React.FC = () => {
                               </span>
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px]">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#6B7280]/10 text-[#6B7280] dark:text-[#D1D5DB] text-[10px]">
                               <Globe className="w-2.5 h-2.5" />
                               <span>سایت عمومی (tgju.org)</span>
                             </span>
@@ -1208,7 +1232,7 @@ export const AssetsView: React.FC = () => {
                                 getItemDisplayUnit(item) === 'rial' ? 'toman' : 'rial'
                               )
                             }
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-amber-500/10 hover:text-amber-600 text-slate-600 dark:text-slate-300 text-[11px] font-bold transition border border-slate-200 dark:border-slate-700"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[#F7F7F2] dark:bg-[#141B22] hover:bg-[#A68A64]/15 hover:text-[#A68A64] text-[#1F2933] dark:text-[#D1D5DB] text-[11px] font-bold transition border border-[#6B7280]/15 dark:border-[#D1D5DB]/10"
                             title="تغییر واحد نمایش بین تومان و ریال برای این قلم"
                           >
                             <ArrowRightLeft className="w-2.5 h-2.5" />
@@ -1223,7 +1247,7 @@ export const AssetsView: React.FC = () => {
                               setEditingRateItem(item);
                               setIsEditRateModalOpen(true);
                             }}
-                            className="px-2.5 py-1 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px] font-bold transition border border-amber-500/20"
+                            className="px-2.5 py-1 rounded-xl bg-[#A68A64]/10 hover:bg-[#A68A64]/20 text-[#A68A64] text-[11px] font-bold transition border border-[#A68A64]/20"
                           >
                             ویرایش نرخ
                           </button>
@@ -1241,13 +1265,13 @@ export const AssetsView: React.FC = () => {
       {/* Tab 4: Trades Log */}
       {activeSubTab === 'trades' && (
         <div className="space-y-4">
-          <div className="p-6 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4">
+          <div className="p-6 rounded-3xl bg-[#F7F7F2]/90 dark:bg-[#1F2933]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 shadow-xs space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                <h3 className="text-sm font-bold text-[#1F2933] dark:text-[#F7F7F2]">
                   تاریخچه معاملات خرید و فروش طلا و ارز
                 </h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB]/70">
                   سوابق خرید، فروش و سودهای محقق شده سبد سرمایه‌گذاری
                 </p>
               </div>
@@ -1257,7 +1281,7 @@ export const AssetsView: React.FC = () => {
               <div className="overflow-x-auto">
                 <table className="w-full text-xs text-right">
                   <thead>
-                    <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 pb-2">
+                    <tr className="border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/10 text-[#6B7280] dark:text-[#D1D5DB]/70 pb-2">
                       <th className="py-2.5 px-3 font-bold">نوع معامله</th>
                       <th className="py-2.5 px-3 font-bold">نام دارایی</th>
                       <th className="py-2.5 px-3 font-bold">مقدار</th>
@@ -1268,15 +1292,15 @@ export const AssetsView: React.FC = () => {
                       <th className="py-2.5 px-3 font-bold text-center">حذف</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                  <tbody className="divide-y divide-[#6B7280]/10 dark:divide-[#D1D5DB]/10">
                     {assetTransactions.map((tx) => (
-                      <tr key={tx.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
+                      <tr key={tx.id} className="hover:bg-[#6B7280]/5 dark:hover:bg-[#D1D5DB]/5 transition">
                         <td className="py-3 px-3">
                           <span
                             className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-xl text-[11px] font-bold ${
                               tx.type === 'buy'
-                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
-                                : 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20'
+                                ? 'bg-[#2E7D5B]/10 text-[#2E7D5B] dark:text-[#4ADE80] border border-[#2E7D5B]/20'
+                                : 'bg-[#C0564B]/10 text-[#C0564B] dark:text-[#F87171] border border-[#C0564B]/20'
                             }`}
                           >
                             {tx.type === 'buy' ? (
@@ -1287,39 +1311,41 @@ export const AssetsView: React.FC = () => {
                             <span>{tx.type === 'buy' ? 'خرید' : 'فروش'}</span>
                           </span>
                         </td>
-                        <td className="py-3 px-3 font-bold text-slate-900 dark:text-white">
+                        <td className="py-3 px-3 font-bold text-[#1F2933] dark:text-[#F7F7F2]">
                           {tx.assetName}
                         </td>
-                        <td className="py-3 px-3 font-mono font-bold text-slate-800 dark:text-slate-200">
+                        <td className="py-3 px-3 font-mono tabular-nums font-bold text-[#1F2933] dark:text-[#D1D5DB]">
                           {formatNumber(tx.quantity)}
                         </td>
-                        <td className="py-3 px-3 font-mono text-slate-600 dark:text-slate-400">
+                        <td className="py-3 px-3 font-mono tabular-nums text-[#6B7280] dark:text-[#D1D5DB]/70">
                           {formatNumber(tx.unitPrice)} تومان
                         </td>
-                        <td className="py-3 px-3 font-mono font-black text-slate-900 dark:text-white">
+                        <td className="py-3 px-3 font-mono tabular-nums font-black text-[#1F2933] dark:text-[#F7F7F2]">
                           {formatNumber(tx.totalAmount)} تومان
                         </td>
-                        <td className="py-3 px-3 font-mono font-bold">
+                        <td className="py-3 px-3 font-mono tabular-nums font-bold">
                           {tx.realizedPnl !== undefined ? (
                             <span
                               className={
-                                tx.realizedPnl >= 0 ? 'text-emerald-600' : 'text-rose-600'
+                                tx.realizedPnl >= 0
+                                  ? 'text-[#2E7D5B] dark:text-[#4ADE80]'
+                                  : 'text-[#C0564B] dark:text-[#F87171]'
                               }
                             >
                               {tx.realizedPnl >= 0 ? '+' : ''}
                               {formatNumber(tx.realizedPnl)} تومان
                             </span>
                           ) : (
-                            <span className="text-slate-400">-</span>
+                            <span className="text-[#6B7280]">-</span>
                           )}
                         </td>
-                        <td className="py-3 px-3 font-mono text-slate-500 text-[11px] dir-ltr text-right">
-                          {tx.date}
+                        <td className="py-3 px-3 font-mono tabular-nums text-[#6B7280] text-[11px] dir-ltr text-right">
+                          {toPersianDigits(tx.date)}
                         </td>
                         <td className="py-3 px-3 text-center">
                           <button
                             onClick={() => deleteAssetTransaction(tx.id)}
-                            className="p-1 rounded-lg text-slate-400 hover:text-rose-600 transition"
+                            className="p-1 rounded-lg text-[#6B7280] hover:text-[#C0564B] transition"
                             title="حذف رکورد معامله"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -1331,7 +1357,7 @@ export const AssetsView: React.FC = () => {
                 </table>
               </div>
             ) : (
-              <div className="py-12 text-center text-xs text-slate-400">
+              <div className="py-12 text-center text-xs text-[#6B7280]">
                 هنوز معامله‌ای در تاریخچه ثبت نشده است.
               </div>
             )}
@@ -1342,20 +1368,20 @@ export const AssetsView: React.FC = () => {
       {/* Tab 5: Sources Overview */}
       {activeSubTab === 'sources' && (
         <div className="space-y-4">
-          <div className="p-6 rounded-3xl bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800">
+          <div className="p-6 rounded-3xl bg-[#F7F7F2]/90 dark:bg-[#1F2933]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 shadow-xs space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/10">
               <div>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-amber-500" />
+                <h3 className="text-sm font-bold text-[#1F2933] dark:text-[#F7F7F2] flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-[#A68A64]" />
                   مدیریت سورس‌های تلگرام، وب‌سایت و شخصی‌سازی اقلام
                 </h3>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB]/70">
                   تنظیم اختصاصی سورس دلار و طلای ۱۸ عیار، سامانه عمومی tgju.org و انتخاب واحدهای اعلامی/نمایش
                 </p>
               </div>
               <button
                 onClick={() => setIsSettingsModalOpen(true)}
-                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-black text-xs transition shadow-xs flex items-center gap-1.5 self-start sm:self-auto"
+                className="px-4 py-2 rounded-xl bg-[#A68A64] hover:bg-[#8A704C] text-[#F7F7F2] font-black text-xs transition shadow-xs flex items-center gap-1.5 self-start sm:self-auto"
               >
                 <Sliders className="w-3.5 h-3.5" />
                 <span>پیکربندی کامل سورس‌ها و اقلام</span>
@@ -1364,29 +1390,29 @@ export const AssetsView: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
               {/* Card 1: Dedicated Dollar */}
-              <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 space-y-2">
+              <div className="p-4 rounded-2xl bg-[#2E7D5B]/5 border border-[#2E7D5B]/20 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-emerald-700 dark:text-emerald-300 font-bold flex items-center gap-1.5">
-                    <DollarSign className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="text-[#2E7D5B] dark:text-[#4ADE80] font-bold flex items-center gap-1.5">
+                    <DollarSign className="w-3.5 h-3.5 text-[#2E7D5B]" />
                     سورس دلار آمریکا (USD):
                   </span>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-bold text-[10px]">
+                  <span className="px-2 py-0.5 rounded-full bg-[#2E7D5B]/20 text-[#2E7D5B] dark:text-[#4ADE80] font-bold text-[10px]">
                     {priceSourceConfig.dollarSourceType === 'telegram' ? 'کانال تلگرام' : 'وب‌سایت'}
                   </span>
                 </div>
-                <div className="font-mono font-bold text-slate-900 dark:text-white text-xs truncate dir-ltr text-right">
+                <div className="font-mono font-bold text-[#1F2933] dark:text-[#F7F7F2] text-xs truncate dir-ltr text-right">
                   {priceSourceConfig.dollarTelegramChannel || '@tgju_org'}
                 </div>
-                <div className="text-[11px] text-slate-500 dark:text-slate-400 space-y-0.5 pt-1 border-t border-emerald-500/10">
+                <div className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB]/70 space-y-0.5 pt-1 border-t border-[#2E7D5B]/10">
                   <div className="flex justify-between">
                     <span>واحد کانال:</span>
-                    <span className="font-bold text-slate-700 dark:text-slate-300">
+                    <span className="font-bold text-[#1F2933] dark:text-[#D1D5DB]">
                       {priceSourceConfig.dollarSourceUnit === 'rial' ? 'ریال' : 'تومان'}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>نمایش در برنامه:</span>
-                    <span className="font-bold text-emerald-600 dark:text-emerald-400">
+                    <span className="font-bold text-[#2E7D5B] dark:text-[#4ADE80]">
                       {priceSourceConfig.dollarDisplayUnit === 'rial' ? 'ریال' : 'تومان'}
                     </span>
                   </div>
@@ -1394,29 +1420,29 @@ export const AssetsView: React.FC = () => {
               </div>
 
               {/* Card 2: Dedicated Gold 18k */}
-              <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 space-y-2">
+              <div className="p-4 rounded-2xl bg-[#A68A64]/5 border border-[#A68A64]/20 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-amber-700 dark:text-amber-300 font-bold flex items-center gap-1.5">
-                    <Gem className="w-3.5 h-3.5 text-amber-500" />
+                  <span className="text-[#A68A64] font-bold flex items-center gap-1.5">
+                    <Gem className="w-3.5 h-3.5 text-[#A68A64]" />
                     سورس طلای ۱۸ عیار:
                   </span>
-                  <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 font-bold text-[10px]">
+                  <span className="px-2 py-0.5 rounded-full bg-[#A68A64]/20 text-[#A68A64] font-bold text-[10px]">
                     {priceSourceConfig.goldSourceType === 'telegram' ? 'کانال تلگرام' : 'وب‌سایت'}
                   </span>
                 </div>
-                <div className="font-mono font-bold text-slate-900 dark:text-white text-xs truncate dir-ltr text-right">
+                <div className="font-mono font-bold text-[#1F2933] dark:text-[#F7F7F2] text-xs truncate dir-ltr text-right">
                   {priceSourceConfig.goldTelegramChannel || '@tgju_org'}
                 </div>
-                <div className="text-[11px] text-slate-500 dark:text-slate-400 space-y-0.5 pt-1 border-t border-amber-500/10">
+                <div className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB]/70 space-y-0.5 pt-1 border-t border-[#A68A64]/10">
                   <div className="flex justify-between">
                     <span>واحد کانال:</span>
-                    <span className="font-bold text-slate-700 dark:text-slate-300">
+                    <span className="font-bold text-[#1F2933] dark:text-[#D1D5DB]">
                       {priceSourceConfig.goldSourceUnit === 'rial' ? 'ریال' : 'تومان'}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span>نمایش در برنامه:</span>
-                    <span className="font-bold text-amber-600 dark:text-amber-400">
+                    <span className="font-bold text-[#A68A64]">
                       {priceSourceConfig.goldDisplayUnit === 'rial' ? 'ریال' : 'تومان'}
                     </span>
                   </div>
@@ -1424,45 +1450,45 @@ export const AssetsView: React.FC = () => {
               </div>
 
               {/* Card 3: General Source (tgju.org) */}
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 space-y-2">
+              <div className="p-4 rounded-2xl bg-[#F7F7F2] dark:bg-[#141B22]/50 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-600 dark:text-slate-300 font-bold flex items-center gap-1.5">
-                    <Globe className="w-3.5 h-3.5 text-sky-500" />
+                  <span className="text-[#1F2933] dark:text-[#D1D5DB] font-bold flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5 text-[#4A6FA5]" />
                     سورس عمومی سایر نرخ‌ها:
                   </span>
-                  <span className="px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-600 dark:text-sky-300 font-bold text-[10px]">
+                  <span className="px-2 py-0.5 rounded-full bg-[#4A6FA5]/15 text-[#4A6FA5] dark:text-[#60A5FA] font-bold text-[10px]">
                     سایر اقلام
                   </span>
                 </div>
-                <div className="font-mono text-slate-900 dark:text-white text-xs truncate dir-ltr text-right">
+                <div className="font-mono text-[#1F2933] dark:text-[#F7F7F2] text-xs truncate dir-ltr text-right">
                   {priceSourceConfig.generalMarketSourceUrl || 'https://www.tgju.org'}
                 </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 pt-1 border-t border-slate-200/50 dark:border-slate-700/50 leading-relaxed">
+                <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB]/70 pt-1 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10 leading-relaxed">
                   سایر اقلام (سکه، انس، یورو و...) تنها در صورت روشن شدن از این سایت استعلام می‌شوند.
                 </p>
               </div>
 
               {/* Card 4: Personalization & Refresh Status */}
-              <div className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 space-y-2">
+              <div className="p-4 rounded-2xl bg-[#F7F7F2] dark:bg-[#141B22]/50 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-600 dark:text-slate-300 font-bold">وضعیت اقلام سبد:</span>
-                  <span className="font-mono font-black text-amber-600 dark:text-amber-400 text-xs">
-                    {enabledMarketPrices.length} از {marketPrices.length} فعال
+                  <span className="text-[#1F2933] dark:text-[#D1D5DB] font-bold">وضعیت اقلام سبد:</span>
+                  <span className="font-mono tabular-nums font-black text-[#A68A64] text-xs">
+                    {toPersianDigits(enabledMarketPrices.length)} از {toPersianDigits(marketPrices.length)} فعال
                   </span>
                 </div>
-                <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                <div className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB]/70 truncate">
                   {enabledMarketPrices.map((i) => i.name).join('، ')}
                 </div>
-                <div className="text-[11px] text-slate-500 dark:text-slate-400 space-y-0.5 pt-1 border-t border-slate-200/50 dark:border-slate-700/50">
+                <div className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB]/70 space-y-0.5 pt-1 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10">
                   <div className="flex justify-between items-center">
                     <span>آخرین به‌روزرسانی:</span>
                     <span
                       className={`font-bold ${
                         priceSourceConfig.lastFetchStatus === 'success'
-                          ? 'text-emerald-500'
+                          ? 'text-[#2E7D5B] dark:text-[#4ADE80]'
                           : priceSourceConfig.lastFetchStatus === 'error'
-                          ? 'text-rose-500'
-                          : 'text-slate-400'
+                          ? 'text-[#C0564B] dark:text-[#F87171]'
+                          : 'text-[#6B7280]'
                       }`}
                     >
                       {priceSourceConfig.lastFetchStatus === 'success'
@@ -1472,16 +1498,16 @@ export const AssetsView: React.FC = () => {
                         : 'آماده'}
                     </span>
                   </div>
-                  <div className="text-[10px] text-slate-400 font-mono dir-ltr text-right">
+                  <div className="text-[10px] text-[#6B7280] font-mono tabular-nums dir-ltr text-right">
                     {priceSourceConfig.lastFetchTime || 'دستی'}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-700 dark:text-amber-300 space-y-1">
+            <div className="p-4 rounded-2xl bg-[#A68A64]/10 border border-[#A68A64]/20 text-xs text-[#1F2933] dark:text-[#D1D5DB] space-y-1">
               <span className="font-bold flex items-center gap-1.5">
-                <Info className="w-4 h-4 text-amber-500" />
+                <Info className="w-4 h-4 text-[#A68A64]" />
                 قابلیت‌های کانال‌های مجزا و تبدیل نرخ:
               </span>
               <p className="leading-relaxed text-[11px]">

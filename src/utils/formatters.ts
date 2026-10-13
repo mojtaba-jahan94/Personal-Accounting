@@ -1,12 +1,16 @@
 import { Currency } from '../types';
 
-export function normalizeDigits(str: string): string {
-  if (!str) return '';
+export function normalizeDigits(input: string): string {
+  if (!input || typeof input !== 'string') return '';
   const faDigits = '۰۱۲۳۴۵۶۷۸۹';
   const arDigits = '٠١٢٣٤٥٦٧٨٩';
   let out = '';
-  for (let i = 0; i < str.length; i++) {
-    const char = str[i];
+  for (let i = 0; i < input.length; i++) {
+    const char = input[i];
+    // Strip thousand separators and Persian/Arabic commas
+    if (char === ',' || char === '٬' || char === '،') {
+      continue;
+    }
     const faIdx = faDigits.indexOf(char);
     if (faIdx !== -1) {
       out += faIdx;
@@ -24,15 +28,15 @@ export function normalizeDigits(str: string): string {
 
 /**
  * Parse a user-entered amount string into a number.
- * Handles Persian/Arabic digits, thousand separators (`,` and `٬`), and whitespace.
+ * Handles Persian/Arabic digits, thousand separators (`,`, `٬`, `،`), and whitespace.
  * Returns 0 if the input is invalid.
  */
 export function parseAmount(str: string): number {
   if (!str) return 0;
-  // 1. Normalize Persian/Arabic digits to English
+  // 1. Normalize Persian/Arabic digits to English and strip thousand separators
   let normalized = normalizeDigits(str);
-  // 2. Remove thousand separators and whitespace
-  normalized = normalized.replace(/[,٬\s]/g, '');
+  // 2. Remove whitespace
+  normalized = normalized.replace(/\s/g, '');
   // 3. Parse
   const num = parseFloat(normalized);
   return isNaN(num) ? 0 : num;
@@ -102,10 +106,14 @@ export function formatNumber(amount: number): string {
 }
 
 export function formatCurrency(amount: number, currency: Currency = 'toman', persianDigits = true): string {
-  const actualAmount = currency === 'rial' ? Math.round(amount * 10) : amount;
+  const isNegative = amount < 0;
+  const absAmount = Math.abs(amount);
+  const actualAmount = currency === 'rial' ? Math.round(absAmount * 10) : absAmount;
   const formatted = formatNumber(actualAmount);
-  const text = `${formatted} ${currency === 'toman' ? 'تومان' : 'ریال'}`;
-  return persianDigits ? toPersianDigits(text) : text;
+  const digits = persianDigits ? toPersianDigits(formatted) : formatted;
+  const unit = currency === 'toman' ? 'تومان' : 'ریال';
+  // Use unicode LTR isolation and typographic minus for clean RTL presentation
+  return isNegative ? `\u200E−${digits} ${unit}` : `${digits} ${unit}`;
 }
 
 export function formatCardNumber(card?: string): string {
@@ -151,12 +159,12 @@ function chunkToWords(num: number): string {
   return result;
 }
 
-export function numberToWordsPersian(num: number, currency: Currency = 'toman'): string {
+export function numberToPersianWords(num: number, currency: Currency = 'toman'): string {
   if (!num || isNaN(num) || num === 0) {
     return `صفر ${currency === 'toman' ? 'تومان' : 'ریال'}`;
   }
   if (num < 0) {
-    return 'منفی ' + numberToWordsPersian(Math.abs(num), currency);
+    return 'منفی ' + numberToPersianWords(Math.abs(num), currency);
   }
 
   const actualNum = Math.floor(Math.abs(num));
@@ -193,3 +201,6 @@ export function numberToWordsPersian(num: number, currency: Currency = 'toman'):
   }
   return `${result} ${currency === 'toman' ? 'تومان' : 'ریال'}`;
 }
+
+// Backward-compatibility alias
+export const numberToWordsPersian = numberToPersianWords;

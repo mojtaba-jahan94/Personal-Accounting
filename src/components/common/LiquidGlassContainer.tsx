@@ -66,9 +66,14 @@ export const LiquidGlassContainer: React.FC<LiquidGlassContainerProps> = ({
   return (
     <div
       ref={rootRef}
-      className={`relative ${className} ${!isSupported ? 'liquid-glass-css-fallback' : ''}`}
+      className={`relative ${className} ${
+        !isSupported
+          ? 'bg-[#F7F7F2]/85 dark:bg-[#1F2933]/75 backdrop-blur-xl border border-[#6B7280]/15 dark:border-[#D1D5DB]/15'
+          : ''
+      }`}
     >
       {children}
     </div>
   );
 };
+

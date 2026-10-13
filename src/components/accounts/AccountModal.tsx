@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { Account, AccountType } from '../../types';
-import { X, Check, CreditCard, Scale, Info, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import { X, Check, CreditCard, Scale, CheckCircle2 } from 'lucide-react';
 import {
   formatCardNumber,
   parseAmount,
@@ -9,6 +9,7 @@ import {
   formatAmountInput,
   formatCurrency,
   toPersianDigits,
+  numberToPersianWords,
 } from '../../utils/formatters';
 
 interface AccountModalProps {
@@ -18,14 +19,14 @@ interface AccountModalProps {
 }
 
 const PRESET_COLORS = [
+  '#1F2933', // Nordic Charcoal / Carbon
+  '#A68A64', // Warm Wood
+  '#2E7D5B', // Sage Emerald
+  '#4A6FA5', // Fjord Blue
+  '#C0564B', // Terracotta Rose
   '#dc2626', // Mellat Red
   '#2563eb', // BluBank Blue
-  '#059669', // Cash Green
-  '#d97706', // Pasargad / Gold Amber
-  '#7c3aed', // Purple
-  '#0f172a', // Black / Carbon
-  '#0284c7', // Sky Blue
-  '#db2777', // Pink
+  '#d97706', // Gold Amber
 ];
 
 export const AccountModal: React.FC<AccountModalProps> = ({
@@ -53,7 +54,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
       const displayBalance = currency === 'rial' ? Math.round(startingBal * 10) : startingBal;
       setBalance(formatAmountInput(displayBalance.toString()));
       setBankName(initialAccount.bankName || '');
-      setCardNumber(initialAccount.cardNumber || '');
+      setCardNumber(initialAccount.cardNumber ? formatCardNumber(initialAccount.cardNumber) : '');
       setShaba(initialAccount.shaba || '');
       setColor(initialAccount.color || PRESET_COLORS[0]);
       setIsDefault(!!initialAccount.isDefault);
@@ -107,7 +108,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
         balance: projectedBalance,
         initialBalance: isReconcileMode ? savedAmount - breakdown.netDelta : savedAmount,
         bankName: bankName.trim() || undefined,
-        cardNumber: cardNumber.trim() || undefined,
+        cardNumber: cardNumber.replace(/\D/g, '') || undefined,
         shaba: shaba.trim() || undefined,
         color,
         isDefault,
@@ -119,7 +120,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({
         initialBalance: savedAmount,
         balance: savedAmount,
         bankName: bankName.trim() || undefined,
-        cardNumber: cardNumber.trim() || undefined,
+        cardNumber: cardNumber.replace(/\D/g, '') || undefined,
         shaba: shaba.trim() || undefined,
         color,
         isDefault,
@@ -130,29 +131,41 @@ export const AccountModal: React.FC<AccountModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-      <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
+    <div className="fixed inset-0 z-50 bg-[#1F2933]/75 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+      <div className="w-full sm:max-w-lg max-h-[92dvh] flex flex-col rounded-t-3xl sm:rounded-3xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 bg-[#F7F7F2]/95 dark:bg-[#1F2933]/95 backdrop-blur-2xl text-[#1F2933] dark:text-[#F7F7F2] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
+        {/* Mobile drag handle */}
+        <div className="pt-2 sm:hidden flex justify-center">
+          <div className="w-12 h-1.5 bg-[#6B7280]/30 rounded-full" />
+        </div>
 
-      <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 my-8 z-10 space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-          <div className="flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-indigo-600" />
-            <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-              {initialAccount ? 'ویرایش حساب' : 'افزودن حساب / کارت جدید'}
-            </h3>
+        {/* Sticky Header */}
+        <div className="px-6 py-4 border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/10 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="w-10 h-10 rounded-2xl bg-[#A68A64]/15 border border-[#A68A64]/30 text-[#A68A64] flex items-center justify-center shadow-sm">
+              <CreditCard className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-base sm:text-lg font-black text-[#1F2933] dark:text-[#F7F7F2]">
+                {initialAccount ? 'ویرایش حساب بانکی' : 'افزودن حساب یا کارت جدید'}
+              </h3>
+              <p className="text-xs text-[#6B7280] dark:text-[#D1D5DB]">
+                تنظیم موجودی، مشخصات کارت و شماره شبا
+              </p>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="p-1.5 rounded-xl text-[#6B7280] hover:text-[#1F2933] dark:hover:text-[#F7F7F2] hover:bg-[#6B7280]/10 transition"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Scrollable Body */}
+        <form id="account-form" onSubmit={handleSubmit} className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-4 overscroll-contain">
           <div>
-            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
-              عنوان حساب / کارت
+            <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1">
+              عنوان حساب / کارت <span className="text-[#C0564B]">*</span>
             </label>
             <input
               type="text"
@@ -160,37 +173,37 @@ export const AccountModal: React.FC<AccountModalProps> = ({
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="مثلاً: کارت اصلی بانک سامان"
-              className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium outline-none"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-[#1F2933] dark:text-[#F7F7F2] text-xs font-medium outline-none focus:border-[#A68A64] transition"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1">
                 نوع حساب
               </label>
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value as AccountType)}
-                className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-[#1F2933] dark:text-[#F7F7F2] text-xs outline-none focus:border-[#A68A64] transition"
               >
-                <option value="bank">کارت بانکی</option>
-                <option value="cash">کیف پول نقدی</option>
-                <option value="savings">سپرده پس‌انداز</option>
-                <option value="other">سایر حساب‌ها</option>
+                <option value="bank" className="dark:bg-[#1F2933]">کارت بانکی</option>
+                <option value="cash" className="dark:bg-[#1F2933]">کیف پول نقدی</option>
+                <option value="savings" className="dark:bg-[#1F2933]">سپرده پس‌انداز</option>
+                <option value="other" className="dark:bg-[#1F2933]">سایر حساب‌ها</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1">
                 نام بانک (اختیاری)
               </label>
               <input
                 type="text"
                 value={bankName}
                 onChange={(e) => setBankName(e.target.value)}
-                placeholder="ملت، ملی، بلو..."
-                className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs outline-none"
+                placeholder="سامان، ملت، بلو..."
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-[#1F2933] dark:text-[#F7F7F2] text-xs outline-none focus:border-[#A68A64] transition"
               />
             </div>
           </div>
@@ -198,27 +211,27 @@ export const AccountModal: React.FC<AccountModalProps> = ({
           {/* Account Balance & Reconciliation Section */}
           <div className="space-y-2 pt-1">
             {initialAccount && (
-              <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 space-y-2 text-xs">
-                <div className="flex items-center justify-between font-bold text-slate-700 dark:text-slate-200">
+              <div className="p-3.5 rounded-2xl bg-[#6B7280]/5 dark:bg-[#182028]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 space-y-2.5 text-xs">
+                <div className="flex items-center justify-between font-bold text-[#1F2933] dark:text-[#F7F7F2]">
                   <span className="flex items-center gap-1.5">
-                    <Scale className="w-3.5 h-3.5 text-indigo-500" />
+                    <Scale className="w-3.5 h-3.5 text-[#A68A64]" />
                     <span>تراز و گردش حساب</span>
                   </span>
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB]">
                     {toPersianDigits(breakdown.txCount)} تراکنش ثبت‌شده
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-slate-200/50 dark:border-slate-700/50">
-                  <div className="flex items-center justify-between p-2 rounded-xl bg-white/70 dark:bg-slate-900/50">
-                    <span className="text-slate-500 dark:text-slate-400">گردش خالص:</span>
-                    <span className={`font-mono font-bold ${breakdown.netDelta >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                <div className="grid grid-cols-2 gap-2 text-[11px] pt-1 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10">
+                  <div className="flex items-center justify-between p-2 rounded-xl bg-white/60 dark:bg-[#1F2933]/60">
+                    <span className="text-[#6B7280] dark:text-[#D1D5DB]">گردش خالص:</span>
+                    <span className={`font-mono font-bold ${breakdown.netDelta >= 0 ? 'text-[#2E7D5B] dark:text-[#4ADE80]' : 'text-[#C0564B] dark:text-[#F87171]'}`}>
                       {breakdown.netDelta >= 0 ? '+' : ''}{formatCurrency(breakdown.netDelta, currency)}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between p-2 rounded-xl bg-white/70 dark:bg-slate-900/50">
-                    <span className="text-slate-500 dark:text-slate-400">موجودی فعلی:</span>
-                    <span className="font-mono font-bold text-slate-800 dark:text-slate-100">
+                  <div className="flex items-center justify-between p-2 rounded-xl bg-white/60 dark:bg-[#1F2933]/60">
+                    <span className="text-[#6B7280] dark:text-[#D1D5DB]">موجودی فعلی:</span>
+                    <span className="font-mono font-bold text-[#1F2933] dark:text-[#F7F7F2]">
                       {formatCurrency(initialAccount.balance, currency)}
                     </span>
                   </div>
@@ -236,8 +249,8 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                     }}
                     className={`flex-1 py-1.5 rounded-lg text-[11px] font-bold transition ${
                       !isReconcileMode
-                        ? 'bg-indigo-600 text-white shadow-xs'
-                        : 'bg-slate-200/60 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300'
+                        ? 'bg-[#A68A64] text-[#F7F7F2] shadow-xs'
+                        : 'bg-[#6B7280]/10 text-[#6B7280] dark:text-[#D1D5DB]'
                     }`}
                   >
                     ویرایش موجودی اولیه
@@ -251,8 +264,8 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                     }}
                     className={`flex-1 py-1.5 rounded-lg text-[11px] font-bold transition ${
                       isReconcileMode
-                        ? 'bg-indigo-600 text-white shadow-xs'
-                        : 'bg-slate-200/60 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300'
+                        ? 'bg-[#A68A64] text-[#F7F7F2] shadow-xs'
+                        : 'bg-[#6B7280]/10 text-[#6B7280] dark:text-[#D1D5DB]'
                     }`}
                   >
                     تراز با مانده فعلی بانک
@@ -263,15 +276,15 @@ export const AccountModal: React.FC<AccountModalProps> = ({
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300">
+                <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2]">
                   {isReconcileMode
                     ? `مانده حساب واقعی فعلی (${currency === 'toman' ? 'تومان' : 'ریال'})`
                     : `موجودی اولیه (${currency === 'toman' ? 'تومان' : 'ریال'})`}
                 </label>
-                <span className="text-[10px] text-slate-400">
+                <span className="text-[10px] text-[#6B7280] dark:text-[#D1D5DB]">
                   {isReconcileMode
-                    ? 'مانده فعلی گزارش‌شده توسط پیامک یا اپلیکیشن بانک'
-                    : 'مانده حساب در زمان شروع استفاده از برنامه'}
+                    ? 'مانده فعلی گزارش‌شده توسط پیامک یا اپلیکیشن'
+                    : 'مانده حساب در زمان شروع'}
                 </span>
               </div>
 
@@ -281,14 +294,21 @@ export const AccountModal: React.FC<AccountModalProps> = ({
                 value={balance}
                 onChange={(e) => setBalance(formatAmountInput(sanitizeAmountInput(e.target.value)))}
                 placeholder="0"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold font-mono outline-none"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-[#1F2933] dark:text-[#F7F7F2] text-xs font-bold font-mono outline-none focus:border-[#A68A64] transition text-center"
               />
 
-              {/* Live Preview Box */}
+              {/* Live Persian Words Preview */}
+              {parsedEnteredAmount > 0 && (
+                <div className="mt-1.5 p-2 rounded-xl bg-[#A68A64]/10 dark:bg-[#A68A64]/15 border border-[#A68A64]/20 text-[11px] font-bold text-[#A68A64] dark:text-[#C2A882] text-center">
+                  {numberToPersianWords(parsedEnteredAmount, currency)}
+                </div>
+              )}
+
+              {/* Live Projected Calculation Preview */}
               {initialAccount && (
-                <div className="mt-2 p-2.5 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-100 dark:border-indigo-900/50 flex items-center justify-between text-[11px]">
-                  <span className="text-slate-600 dark:text-slate-400">موجودی محاسبه‌شده پس از ذخیره:</span>
-                  <span className="font-mono font-black text-indigo-700 dark:text-indigo-300">
+                <div className="mt-2 p-2.5 rounded-xl bg-[#6B7280]/5 dark:bg-[#182028]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 flex items-center justify-between text-[11px]">
+                  <span className="text-[#6B7280] dark:text-[#D1D5DB]">موجودی محاسبه‌شده پس از ذخیره:</span>
+                  <span className="font-mono font-black text-[#A68A64]">
                     {formatCurrency(projectedBalance, currency)}
                   </span>
                 </div>
@@ -299,29 +319,32 @@ export const AccountModal: React.FC<AccountModalProps> = ({
           {type === 'bank' && (
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1">
                   شماره کارت (۱۶ رقم)
                 </label>
                 <input
                   type="text"
                   maxLength={19}
                   value={cardNumber}
-                  onChange={(e) => setCardNumber(e.target.value)}
+                  onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
                   placeholder="6037-xxxx-xxxx-xxxx"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono outline-none dir-ltr text-center"
+                  dir="ltr"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-[#1F2933] dark:text-[#F7F7F2] text-xs font-mono outline-none focus:border-[#A68A64] transition text-center"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1">
                   شماره شبا (اختیاری)
                 </label>
                 <input
                   type="text"
+                  maxLength={26}
                   value={shaba}
-                  onChange={(e) => setShaba(e.target.value)}
+                  onChange={(e) => setShaba(e.target.value.toUpperCase())}
                   placeholder="IR..."
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono outline-none dir-ltr text-center"
+                  dir="ltr"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-[#1F2933] dark:text-[#F7F7F2] text-xs font-mono outline-none focus:border-[#A68A64] transition text-center"
                 />
               </div>
             </div>
@@ -329,17 +352,17 @@ export const AccountModal: React.FC<AccountModalProps> = ({
 
           {/* Card Color Theme */}
           <div>
-            <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-2">
-              رنگ کارت
+            <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-2">
+              تم رنگ کارت
             </label>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5 flex-wrap">
               {PRESET_COLORS.map(c => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => setColor(c)}
-                  className={`w-7 h-7 rounded-full transition-transform ${
-                    color === c ? 'scale-125 ring-2 ring-indigo-500 ring-offset-2' : 'hover:scale-110'
+                  className={`w-7 h-7 rounded-full transition-transform border border-white/20 ${
+                    color === c ? 'scale-125 ring-2 ring-[#A68A64] ring-offset-2 dark:ring-offset-[#1F2933]' : 'hover:scale-110'
                   }`}
                   style={{ backgroundColor: c }}
                 />
@@ -353,21 +376,32 @@ export const AccountModal: React.FC<AccountModalProps> = ({
               type="checkbox"
               checked={isDefault}
               onChange={(e) => setIsDefault(e.target.checked)}
-              className="w-4 h-4 text-indigo-600 rounded"
+              className="w-4 h-4 rounded text-[#A68A64] focus:ring-[#A68A64]"
             />
-            <span className="text-xs text-slate-600 dark:text-slate-300">
+            <span className="text-xs text-[#6B7280] dark:text-[#D1D5DB]">
               به عنوان کارت پیش‌فرض انتخاب شود
             </span>
           </label>
+        </form>
 
+        {/* Sticky Footer */}
+        <div className="px-6 py-4 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10 bg-[#F7F7F2]/90 dark:bg-[#182028]/90 flex items-center justify-end gap-3 shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2.5 rounded-xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-[#6B7280] dark:text-[#D1D5DB] hover:bg-[#6B7280]/10 font-bold text-xs transition"
+          >
+            انصراف
+          </button>
           <button
             type="submit"
-            className="w-full py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs sm:text-sm shadow-md transition flex items-center justify-center gap-2"
+            form="account-form"
+            className="px-5 py-2.5 rounded-xl bg-[#A68A64] hover:bg-[#8A704C] text-[#F7F7F2] font-black text-xs shadow-lg shadow-[#A68A64]/25 transition active:scale-95 flex items-center gap-1.5"
           >
-            <Check className="w-4 h-4" />
+            <CheckCircle2 className="w-4 h-4" />
             <span>{initialAccount ? 'ذخیره تغییرات' : 'ایجاد حساب'}</span>
           </button>
-        </form>
+        </div>
       </div>
     </div>
   );

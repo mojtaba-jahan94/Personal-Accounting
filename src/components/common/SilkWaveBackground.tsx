@@ -1,117 +1,202 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
 export const SilkWaveBackground: React.FC = () => {
+  const animFrameRef = useRef<number | null>(null);
+  const phaseRef = useRef<number>(0);
+  const waveRef1 = useRef<SVGPathElement>(null);
+  const waveRef2 = useRef<SVGPathElement>(null);
+  const isHiddenRef = useRef<boolean>(typeof document !== 'undefined' ? document.hidden : false);
+
+  useEffect(() => {
+    let lastTime = performance.now();
+
+    const animate = (currentTime: number) => {
+      // If document is hidden, don't request next frame immediately; wait for visibilitychange
+      if (document.hidden) {
+        return;
+      }
+
+      const delta = (currentTime - lastTime) / 1000;
+      lastTime = currentTime;
+
+      phaseRef.current += delta * 0.45; // Gentle smooth movement
+      const p = phaseRef.current;
+
+      // Subtle dynamic morphing of silk wave curves
+      if (waveRef1.current) {
+        const offset1 = Math.sin(p) * 22;
+        const offset2 = Math.cos(p * 0.8) * 18;
+        waveRef1.current.setAttribute(
+          'd',
+          `M-80,${620 + offset1} C220,${460 - offset2} 520,${720 + offset1 * 0.7} 900,${500 - offset1} C1220,${320 + offset2} 1380,${360 - offset1} 1550,220 C1450,420 1280,620 950,750 C620,880 200,850 -80,820 Z`
+        );
+      }
+
+      if (waveRef2.current) {
+        const offset3 = Math.cos(p * 0.7) * 20;
+        waveRef2.current.setAttribute(
+          'd',
+          `M-100,${550 + offset3} C200,${420 - offset3} 500,${680 + offset3 * 0.8} 850,${520 - offset3} C1200,${360 + offset3} 1400,${600 - offset3 * 0.5} 1600,450 L1600,1050 L-100,1050 Z`
+        );
+      }
+
+      animFrameRef.current = requestAnimationFrame(animate);
+    };
+
+    const handleVisibilityChange = () => {
+      isHiddenRef.current = document.hidden;
+      if (!document.hidden) {
+        // Document became visible, resume loop
+        lastTime = performance.now();
+        if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+        animFrameRef.current = requestAnimationFrame(animate);
+      } else {
+        // Document hidden, cancel pending rAF
+        if (animFrameRef.current) {
+          cancelAnimationFrame(animFrameRef.current);
+          animFrameRef.current = null;
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Initial start if visible
+    if (!document.hidden) {
+      animFrameRef.current = requestAnimationFrame(animate);
+    }
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (animFrameRef.current) {
+        cancelAnimationFrame(animFrameRef.current);
+      }
+    };
+  }, []);
+
   return (
     <div
       data-dynamic
-      className="fixed inset-0 pointer-events-none overflow-hidden z-0 select-none"
+      className="fixed inset-0 pointer-events-none overflow-hidden z-0 select-none transition-colors duration-500"
       aria-hidden="true"
     >
-      {/* 1. Base Gradient Layer */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#bde0fe] via-[#d0e8fc] to-[#e8f4fe] dark:from-[#050b18] dark:via-[#09152e] dark:to-[#040813] transition-colors duration-500" />
+      {/* 1. Base Layer: Nordic Charcoal in Dark Mode, Snow Cream in Light Mode */}
+      <div className="absolute inset-0 bg-[#F7F7F2] dark:bg-[#1F2933] amoled:bg-[#141B22] transition-colors duration-500" />
 
-      {/* 2. Fluid 3D Satin / Silk Wave Layer (Direct visual match to reference image) */}
+      {/* 2. Fluid 3D Satin / Silk Wave Layer (Nordic Warm Wood Palette) */}
       <svg
-        className="absolute inset-0 w-full h-full object-cover opacity-90 dark:opacity-80 transition-opacity duration-500"
+        className="absolute inset-0 w-full h-full object-cover opacity-85 dark:opacity-75 transition-opacity duration-500"
         viewBox="0 0 1440 900"
         preserveAspectRatio="xMidYMid slice"
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          {/* Main Royal Azure Ribbon Gradient */}
-          <linearGradient id="silkRibbon1" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#38bdf8" />
-            <stop offset="25%" stopColor="#1d4ed8" />
-            <stop offset="55%" stopColor="#2563eb" />
-            <stop offset="85%" stopColor="#0284c7" />
-            <stop offset="100%" stopColor="#60a5fa" />
+          {/* Main Warm Wood Ribbon Gradient */}
+          <linearGradient id="nordicSilkRibbon" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#C2A882" />
+            <stop offset="28%" stopColor="#A68A64" />
+            <stop offset="65%" stopColor="#8A704C" />
+            <stop offset="88%" stopColor="#6B7280" />
+            <stop offset="100%" stopColor="#D1D5DB" />
           </linearGradient>
 
-          {/* Deep Shadow Fold */}
-          <linearGradient id="silkShadow" x1="0%" y1="100%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#0f2b69" stopOpacity="0.85" />
-            <stop offset="40%" stopColor="#1e40af" stopOpacity="0.6" />
-            <stop offset="100%" stopColor="#1d4ed8" stopOpacity="0.1" />
+          {/* Deep Shadow Fold Gradient (Charcoal Anchor) */}
+          <linearGradient id="nordicSilkShadow" x1="0%" y1="100%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#141B22" stopOpacity="0.85" />
+            <stop offset="45%" stopColor="#1F2933" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="#6B7280" stopOpacity="0.1" />
           </linearGradient>
 
-          {/* Cyan High-Light Edge */}
-          <linearGradient id="silkHighlight" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#ffffff" stopOpacity="0.85" />
-            <stop offset="30%" stopColor="#7dd3fc" stopOpacity="0.75" />
-            <stop offset="70%" stopColor="#38bdf8" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="#2563eb" stopOpacity="0.0" />
+          {/* Warm Cream Specular Highlight Edge */}
+          <linearGradient id="nordicSilkHighlight" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.9" />
+            <stop offset="35%" stopColor="#F7F7F2" stopOpacity="0.8" />
+            <stop offset="70%" stopColor="#C2A882" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="#A68A64" stopOpacity="0.0" />
           </linearGradient>
 
-          {/* Secondary Soft Ambient Wave */}
-          <linearGradient id="silkSecondary" x1="100%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.4" />
-            <stop offset="50%" stopColor="#3b82f6" stopOpacity="0.25" />
-            <stop offset="100%" stopColor="#6366f1" stopOpacity="0.15" />
+          {/* Secondary Fjord Slate Ambient Wave Gradient */}
+          <linearGradient id="nordicSilkSecondary" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stopColor="#A68A64" stopOpacity="0.35" />
+            <stop offset="50%" stopColor="#6B7280" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="#D1D5DB" stopOpacity="0.12" />
           </linearGradient>
 
           {/* Soft Blur Filter for Silk Folds */}
-          <filter id="silkBlur" x="-10%" y="-10%" width="120%" height="120%">
-            <feGaussianBlur stdDeviation="8" />
+          <filter id="nordicSilkBlur" x="-10%" y="-10%" width="120%" height="120%">
+            <feGaussianBlur stdDeviation="7" />
           </filter>
-          <filter id="silkGlow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="25" />
+          <filter id="nordicSilkGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="30" />
           </filter>
         </defs>
 
-        {/* Deep ambient glow underneath */}
-        <circle cx="950" cy="550" r="420" fill="#2563eb" filter="url(#silkGlow)" opacity="0.35" />
-        <circle cx="350" cy="750" r="380" fill="#0284c7" filter="url(#silkGlow)" opacity="0.3" />
+        {/* Ambient radial glows of Warm Wood and Fjord Gray */}
+        <circle
+          cx="960"
+          cy="520"
+          r="440"
+          fill="#A68A64"
+          filter="url(#nordicSilkGlow)"
+          className="opacity-10 dark:opacity-12"
+        />
+        <circle
+          cx="340"
+          cy="740"
+          r="400"
+          fill="#6B7280"
+          filter="url(#nordicSilkGlow)"
+          className="opacity-25 dark:opacity-14"
+        />
 
         {/* Secondary Back Wave Ribbon */}
         <path
+          ref={waveRef2}
           d="M-100,550 C200,420 500,680 850,520 C1200,360 1400,600 1600,450 L1600,1050 L-100,1050 Z"
-          fill="url(#silkSecondary)"
-          className="animate-float-alt"
-          style={{ transformOrigin: 'center', animationDuration: '14s' }}
+          fill="url(#nordicSilkSecondary)"
         />
 
-        {/* Primary 3D Silk Ribbon Wave (Deep Fold) */}
+        {/* Primary 3D Silk Ribbon Wave (Shadow Underneath) */}
         <path
           d="M-50,680 C250,520 480,760 880,560 C1250,380 1380,480 1550,320 L1550,1000 L-50,1000 Z"
-          fill="url(#silkShadow)"
+          fill="url(#nordicSilkShadow)"
         />
 
-        {/* Primary 3D Silk Ribbon Body (Vivid Royal Azure) */}
+        {/* Primary 3D Silk Ribbon Body (Warm Wood & Fjord Gray) */}
         <path
+          ref={waveRef1}
           d="M-80,620 C220,460 520,720 900,500 C1220,320 1380,360 1550,220 C1450,420 1280,620 950,750 C620,880 200,850 -80,820 Z"
-          fill="url(#silkRibbon1)"
-          className="animate-float-optimized"
-          style={{ transformOrigin: '70% 50%', animationDuration: '10s' }}
+          fill="url(#nordicSilkRibbon)"
         />
 
         {/* Specular Silk Ridge Highlight */}
         <path
           d="M-80,622 C220,462 520,722 900,502 C1220,322 1380,362 1550,222"
-          stroke="url(#silkHighlight)"
-          strokeWidth="6"
+          stroke="url(#nordicSilkHighlight)"
+          strokeWidth="5"
           fill="none"
           strokeLinecap="round"
-          filter="url(#silkBlur)"
+          filter="url(#nordicSilkBlur)"
         />
         <path
           d="M-80,622 C220,462 520,722 900,502 C1220,322 1380,362 1550,222"
-          stroke="#ffffff"
-          strokeWidth="2.5"
+          stroke="#F7F7F2"
+          strokeWidth="2"
           fill="none"
           strokeLinecap="round"
           opacity="0.8"
         />
 
-        {/* Crest Arc in Foreground (Matches the exact curve behind the music widget) */}
+        {/* Crest Arc in Foreground */}
         <path
           d="M320,800 C600,680 880,420 1320,360 C1450,340 1520,370 1600,420 C1480,620 1150,780 750,860 C520,910 380,880 320,800 Z"
-          fill="url(#silkRibbon1)"
-          opacity="0.9"
+          fill="url(#nordicSilkRibbon)"
+          opacity="0.85"
         />
         <path
           d="M320,800 C600,680 880,420 1320,360"
-          stroke="url(#silkHighlight)"
-          strokeWidth="4"
+          stroke="url(#nordicSilkHighlight)"
+          strokeWidth="3.5"
           fill="none"
           strokeLinecap="round"
         />
@@ -119,4 +204,6 @@ export const SilkWaveBackground: React.FC = () => {
     </div>
   );
 };
+
 export default SilkWaveBackground;
+

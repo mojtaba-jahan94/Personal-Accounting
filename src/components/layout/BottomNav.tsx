@@ -4,15 +4,15 @@ import {
   LayoutDashboard,
   ReceiptText,
   Plus,
-  PieChart,
+  Coins,
   Menu,
   X,
   CreditCard,
+  PieChart,
   Target,
   FileCheck2,
   BarChart3,
   Settings,
-  Coins,
 } from 'lucide-react';
 
 interface BottomNavProps {
@@ -34,19 +34,19 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   const touchStartX = React.useRef<number | null>(null);
   const touchStartY = React.useRef<number | null>(null);
 
+  // Secondary views displayed inside the "More" bottom sheet drawer
   const moreItems: { id: TabType; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-    { id: 'assets', label: 'مدیریت دارایی و طلا', icon: Coins },
     { id: 'accounts', label: 'حساب‌ها و کارت‌ها', icon: CreditCard },
-    { id: 'budgets', label: 'بودجه‌بندی ماهانه', icon: PieChart },
-    { id: 'goals', label: 'اهداف و پس‌انداز', icon: Target },
     { id: 'debts', label: 'بدهی، طلب و چک', icon: FileCheck2 },
+    { id: 'budgets', label: 'بودجه‌بندی ماهانه', icon: PieChart },
+    { id: 'goals', label: 'اهداف مالی و پس‌انداز', icon: Target },
+    { id: 'reports', label: 'گزارش‌ها و تحلیل', icon: BarChart3 },
     { id: 'settings', label: 'تنظیمات و ظاهر', icon: Settings },
   ];
 
   const activeMoreItem = moreItems.find((item) => item.id === currentTab);
   const isMoreActive = !!activeMoreItem;
-  const MoreIcon = activeMoreItem ? activeMoreItem.icon : Menu;
-  const moreLabel = activeMoreItem ? activeMoreItem.label.split(' ')[0] : 'سایر';
+  const moreLabel = activeMoreItem ? activeMoreItem.label.split(' ')[0] : 'بیشتر';
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
@@ -60,7 +60,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
     touchStartX.current = null;
     touchStartY.current = null;
 
-    if (Math.abs(deltaX) > 35 && Math.abs(deltaX) > Math.abs(deltaY)) {
+    if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY) * 1.3) {
       if (deltaX < 0) {
         onSwipeNext?.();
       } else {
@@ -71,26 +71,30 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
   return (
     <>
-      {/* Mobile Drawer Menu for More Tabs */}
+      {/* Mobile Drawer Bottom Sheet for Secondary Navigation Views */}
       {moreMenuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end">
           <div
-            className="fixed inset-0 bg-slate-950/50 backdrop-blur-xs transition-opacity duration-300"
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300"
             onClick={() => setMoreMenuOpen(false)}
           />
           <div
-            className="relative z-10 mx-3 mb-24 sm:mx-auto sm:w-[440px] rounded-3xl bg-white/98 dark:bg-slate-900/98 p-4 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-3 animate-in slide-in-from-bottom-4 duration-200"
+            className="relative z-10 w-full max-w-md mx-auto rounded-t-3xl bg-[#F7F7F2] dark:bg-[#1F2933] p-5 shadow-2xl border-t border-[#6B7280]/20 dark:border-[#D1D5DB]/15 space-y-4 animate-in slide-in-from-bottom duration-250 select-none pb-8"
           >
-            <div className="flex items-center justify-between pb-2 border-b border-slate-200/70 dark:border-slate-800">
-              <span className="text-xs font-bold text-slate-900 dark:text-white">سایر بخش‌های برنامه</span>
+            {/* Grab handle indicator */}
+            <div className="w-12 h-1 rounded-full bg-[#6B7280]/30 mx-auto -mt-1 mb-2" />
+
+            <div className="flex items-center justify-between pb-3 border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/15">
+              <span className="text-sm font-bold text-[#1F2933] dark:text-[#F7F7F2]">سایر بخش‌های برنامه</span>
               <button
                 onClick={() => setMoreMenuOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white transition"
+                className="p-1.5 rounded-xl text-[#6B7280] hover:text-[#1F2933] dark:text-[#D1D5DB] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <div className="grid grid-cols-2 gap-2 pt-1">
+
+            <div className="grid grid-cols-2 gap-2.5 pt-1">
               {moreItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = currentTab === item.id;
@@ -101,14 +105,20 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                       onSelectTab(item.id);
                       setMoreMenuOpen(false);
                     }}
-                    className={`flex items-center gap-2.5 p-3 rounded-2xl text-xs font-bold transition-all text-right active:scale-95 ${
+                    className={`flex items-center gap-3 p-3.5 rounded-2xl text-xs font-bold transition-all text-right active:scale-95 ${
                       isActive
-                        ? 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200/80 dark:border-indigo-800/50'
-                        : 'bg-slate-50 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        ? 'bg-[#A68A64] text-[#F7F7F2] shadow-md shadow-[#A68A64]/25'
+                        : 'bg-black/5 dark:bg-white/5 text-[#1F2933] dark:text-[#D1D5DB] hover:bg-black/10 dark:hover:bg-white/10'
                     }`}
                   >
-                    <Icon className="w-4 h-4 shrink-0 text-indigo-500" />
-                    <span>{item.label}</span>
+                    <div
+                      className={`p-2 rounded-xl ${
+                        isActive ? 'bg-white/20 text-[#F7F7F2]' : 'bg-[#A68A64]/15 text-[#A68A64]'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4 shrink-0" />
+                    </div>
+                    <span className="truncate">{item.label}</span>
                   </button>
                 );
               })}
@@ -117,72 +127,102 @@ export const BottomNav: React.FC<BottomNavProps> = ({
         </div>
       )}
 
-      {/* Floating Capsule Bottom Navigation Bar (حالت کپسولی مدرن با پشتیبانی از اسلاید) */}
+      {/* 5-Slot Ergonomic Bottom Dock on Mobile */}
       <nav
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className="lg:hidden fixed bottom-4 inset-x-3 sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2 sm:w-[440px] z-50 rounded-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border border-slate-200/90 dark:border-slate-800/90 px-3 py-2 shadow-2xl transition-all select-none touch-pan-y"
+        className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-[#F7F7F2]/95 dark:bg-[#1F2933]/95 backdrop-blur-xl border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/15 px-3 py-1.5 pb-safe shadow-2xl transition-all select-none"
       >
-        <div className="flex items-center justify-between gap-1 w-full">
-          {/* Dashboard */}
+        <div className="flex items-center justify-around max-w-md mx-auto relative">
+          {/* Primary Tab 1: داشبورد */}
           <button
             onClick={() => onSelectTab('dashboard')}
-            className={`flex items-center gap-1.5 py-1.5 px-3 rounded-full transition-all duration-150 active:scale-95 ${
+            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition-all duration-150 active:scale-95 ${
               currentTab === 'dashboard'
-                ? 'bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 font-bold shadow-xs'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'text-[#A68A64] font-bold'
+                : 'text-[#6B7280] dark:text-[#D1D5DB]/80 hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
             }`}
           >
-            <LayoutDashboard className="w-4 h-4 shrink-0" />
-            {currentTab === 'dashboard' && <span className="text-[11px] whitespace-nowrap">پیشخوان</span>}
+            <div
+              className={`p-1.5 rounded-xl transition-all ${
+                currentTab === 'dashboard' ? 'bg-[#A68A64]/15' : ''
+              }`}
+            >
+              <LayoutDashboard className="w-5 h-5" />
+            </div>
+            <span className="text-[10px] mt-0.5 whitespace-nowrap">داشبورد</span>
           </button>
 
-          {/* Transactions */}
+          {/* Primary Tab 2: تراکنش‌ها */}
           <button
             onClick={() => onSelectTab('transactions')}
-            className={`flex items-center gap-1.5 py-1.5 px-3 rounded-full transition-all duration-150 active:scale-95 ${
+            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition-all duration-150 active:scale-95 ${
               currentTab === 'transactions'
-                ? 'bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 font-bold shadow-xs'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                ? 'text-[#A68A64] font-bold'
+                : 'text-[#6B7280] dark:text-[#D1D5DB]/80 hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
             }`}
           >
-            <ReceiptText className="w-4 h-4 shrink-0" />
-            {currentTab === 'transactions' && <span className="text-[11px] whitespace-nowrap">تراکنش‌ها</span>}
+            <div
+              className={`p-1.5 rounded-xl transition-all ${
+                currentTab === 'transactions' ? 'bg-[#A68A64]/15' : ''
+              }`}
+            >
+              <ReceiptText className="w-5 h-5" />
+            </div>
+            <span className="text-[10px] mt-0.5 whitespace-nowrap">تراکنش‌ها</span>
           </button>
 
-          {/* Center Capsule Action Button */}
-          <button
-            onClick={onOpenTransactionModal}
-            className="w-10 h-10 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/35 flex items-center justify-center shrink-0 active:scale-90 transition-all ring-2 ring-white/60 dark:ring-slate-800"
-            title="ثبت سریع تراکنش"
-          >
-            <Plus className="w-5 h-5 stroke-[2.5]" />
-          </button>
+          {/* Center Prominent Action Button (+) */}
+          <div className="flex flex-col items-center justify-center -mt-5">
+            <button
+              onClick={onOpenTransactionModal}
+              className="w-12 h-12 rounded-full bg-[#A68A64] hover:bg-[#8A704C] text-[#F7F7F2] shadow-lg shadow-[#A68A64]/35 flex items-center justify-center active:scale-90 transition-all border-3 border-[#F7F7F2] dark:border-[#1F2933]"
+              title="ثبت سریع تراکنش جدید"
+            >
+              <Plus className="w-6 h-6 stroke-[2.5]" />
+            </button>
+            <span className="text-[9px] font-bold text-[#A68A64] mt-0.5">تراکنش جدید</span>
+          </div>
 
-          {/* Reports & Analytics */}
+          {/* Primary Tab 3: دارایی‌ها */}
           <button
-            onClick={() => onSelectTab('reports')}
-            className={`flex items-center gap-1.5 py-1.5 px-3 rounded-full transition-all duration-150 active:scale-95 ${
-              currentTab === 'reports'
-                ? 'bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 font-bold shadow-xs'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+            onClick={() => onSelectTab('assets')}
+            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition-all duration-150 active:scale-95 ${
+              currentTab === 'assets'
+                ? 'text-[#A68A64] font-bold'
+                : 'text-[#6B7280] dark:text-[#D1D5DB]/80 hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
             }`}
           >
-            <BarChart3 className="w-4 h-4 shrink-0" />
-            {currentTab === 'reports' && <span className="text-[11px] whitespace-nowrap">گزارش‌ها</span>}
+            <div
+              className={`p-1.5 rounded-xl transition-all ${
+                currentTab === 'assets' ? 'bg-[#A68A64]/15' : ''
+              }`}
+            >
+              <Coins className="w-5 h-5" />
+            </div>
+            <span className="text-[10px] mt-0.5 whitespace-nowrap">دارایی‌ها</span>
           </button>
 
-          {/* More Menu */}
+          {/* 5. بیشتر (More) Tab */}
           <button
-            onClick={() => setMoreMenuOpen(!moreMenuOpen)}
-            className={`flex items-center gap-1.5 py-1.5 px-3 rounded-full transition-all duration-150 active:scale-95 ${
-              moreMenuOpen || isMoreActive
-                ? 'bg-indigo-50 dark:bg-indigo-950/70 text-indigo-600 dark:text-indigo-400 font-bold shadow-xs'
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+            onClick={() => setMoreMenuOpen(true)}
+            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl transition-all duration-150 active:scale-95 ${
+              isMoreActive || moreMenuOpen
+                ? 'text-[#A68A64] font-bold'
+                : 'text-[#6B7280] dark:text-[#D1D5DB]/80 hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
             }`}
           >
-            <MoreIcon className="w-4 h-4 shrink-0 text-indigo-500" />
-            {(moreMenuOpen || isMoreActive) && <span className="text-[11px] whitespace-nowrap">{moreLabel}</span>}
+            <div
+              className={`p-1.5 rounded-xl transition-all relative ${
+                isMoreActive ? 'bg-[#A68A64]/15' : ''
+              }`}
+            >
+              <Menu className="w-5 h-5" />
+              {isMoreActive && (
+                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#A68A64]" />
+              )}
+            </div>
+            <span className="text-[10px] mt-0.5 whitespace-nowrap">{moreLabel}</span>
           </button>
         </div>
       </nav>
@@ -191,3 +231,4 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 };
 
 export default BottomNav;
+

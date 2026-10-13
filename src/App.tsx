@@ -38,8 +38,8 @@ const ALL_TABS: TabType[] = [
 const ViewLoadingFallback: React.FC = () => (
   <div className="flex items-center justify-center min-h-[300px] w-full">
     <div className="flex flex-col items-center gap-3">
-      <div className="w-8 h-8 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin" />
-      <span className="text-xs font-bold text-slate-500 dark:text-slate-400">در حال بارگذاری...</span>
+      <div className="w-8 h-8 rounded-full border-2 border-[#A68A64] border-t-transparent animate-spin" />
+      <span className="text-xs font-bold text-[#6B7280] dark:text-[#D1D5DB]">در حال بارگذاری...</span>
     </div>
   </div>
 );
@@ -232,6 +232,7 @@ const MainApp: React.FC = () => {
       <MinimalBackground />
 
       <Header
+        currentTab={currentTab}
         onOpenTransactionModal={() => handleOpenTransactionModal()}
         onOpenTransferModal={() => setIsTransferModalOpen(true)}
         onOpenSmsModal={() => setIsSmsModalOpen(true)}
@@ -243,7 +244,7 @@ const MainApp: React.FC = () => {
         <main
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
-          className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 pb-28 lg:pb-12 overflow-x-hidden touch-pan-y"
+          className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 pb-28 lg:pb-10 overflow-x-hidden touch-pan-y"
         >
           <div key={currentTab} className={`w-full ${animationClass}`}>
             {renderCurrentView()}
@@ -292,10 +293,10 @@ const AuthenticatedApp: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-slate-900 text-white" dir="rtl">
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#1F2933] text-[#F7F7F2]" dir="rtl">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 rounded-full border-3 border-indigo-500 border-t-transparent animate-spin" />
-          <span className="text-xs font-bold text-slate-400">در حال بررسی اطلاعات کاربری...</span>
+          <div className="w-10 h-10 rounded-full border-3 border-[#A68A64] border-t-transparent animate-spin" />
+          <span className="text-xs font-bold text-[#D1D5DB]">در حال بررسی اطلاعات کاربری...</span>
         </div>
       </div>
     );

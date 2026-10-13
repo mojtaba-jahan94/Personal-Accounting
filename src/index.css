@@ -3,26 +3,93 @@
 @tailwind utilities;
 
 :root {
-  /* Default Accent: Indigo */
-  --primary-color: #6366f1;
-  --primary-rgb: 99, 102, 241;
-  --primary-hover: #4f46e5;
-  --primary-glow: rgba(99, 102, 241, 0.3);
+  /* Default Brand Accent: Nordic Warm Wood */
+  --primary-color: #A68A64;
+  --primary-rgb: 166, 138, 100;
+  --primary-hover: #8A704C;
+  --primary-glow: rgba(166, 138, 100, 0.35);
 
-  /* Glass Intensity Defaults (Medium) */
+  /* Nordic Light Mode Surface & Content Tokens */
+  --bg-base: #F7F7F2;
+  --bg-surface: #FFFFFF;
+  --bg-surface-secondary: #D1D5DB;
+  --text-primary: #1F2933;
+  --text-muted: #6B7280;
+  --border-subtle: rgba(107, 114, 128, 0.2);
+  --border-cloud: #D1D5DB;
+
+  /* Nordic Glass Presets (Light Mode) */
   --glass-blur: 16px;
   --glass-saturate: 160%;
-  --glass-bg-light: rgba(255, 255, 255, 0.78);
-  --glass-bg-dark: rgba(17, 24, 39, 0.7);
-  --glass-border-light: rgba(255, 255, 255, 0.6);
-  --glass-border-dark: rgba(255, 255, 255, 0.1);
+  --glass-bg-light: rgba(247, 247, 242, 0.88);
+  --glass-bg-dark: rgba(31, 41, 51, 0.85);
+  --glass-border-light: rgba(209, 213, 219, 0.7);
+  --glass-border-dark: rgba(247, 247, 242, 0.12);
 
   /* Animation Speed: Fast & Snappy by default (150ms) */
   --anim-duration: 150ms;
   --anim-ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+.dark {
+  /* Nordic Dark Mode Surface & Content Tokens */
+  --bg-base: #1F2933;
+  --bg-surface: #263340;
+  --bg-surface-secondary: rgba(31, 41, 51, 0.75);
+  --text-primary: #F7F7F2;
+  --text-muted: #D1D5DB;
+  --border-subtle: rgba(209, 213, 219, 0.15);
+  --border-cloud: rgba(209, 213, 219, 0.22);
+}
+
+/* Enforce tabular-nums globally across all numeric elements and inputs */
+*,
+*::before,
+*::after,
+input,
+select,
+textarea,
+button,
+table,
+td,
+th {
+  font-variant-numeric: tabular-nums;
+}
+
 /* Accent Color Variations with System-wide Overrides */
+[data-accent="wood"] {
+  --primary-color: #A68A64;
+  --primary-rgb: 166, 138, 100;
+  --primary-hover: #8A704C;
+  --primary-glow: rgba(166, 138, 100, 0.35);
+}
+[data-accent="wood"] .bg-indigo-600,
+[data-accent="wood"] .bg-indigo-500,
+[data-accent="wood"] [class*="from-indigo-600"] {
+  background-color: #A68A64 !important;
+  --tw-gradient-from: #A68A64 !important;
+}
+[data-accent="wood"] [class*="to-indigo-500"],
+[data-accent="wood"] [class*="to-indigo-600"] {
+  --tw-gradient-to: #8A704C !important;
+}
+[data-accent="wood"] .text-indigo-600,
+[data-accent="wood"] .text-indigo-500,
+[data-accent="wood"] .text-indigo-700,
+[data-accent="wood"] .dark\:text-indigo-400,
+[data-accent="wood"] .dark\:text-indigo-300 {
+  color: #A68A64 !important;
+}
+[data-accent="wood"] .border-indigo-500,
+[data-accent="wood"] .border-indigo-600,
+[data-accent="wood"] .focus\:border-indigo-500:focus {
+  border-color: #A68A64 !important;
+}
+[data-accent="wood"] .bg-indigo-50,
+[data-accent="wood"] .bg-indigo-500\/15,
+[data-accent="wood"] .dark\:bg-indigo-950\/60 {
+  background-color: rgba(166, 138, 100, 0.15) !important;
+}
 
 [data-accent="emerald"] {
   --primary-color: #10b981;
@@ -384,34 +451,34 @@ html:not(.dark).no-glass .liquid-glass-card {
 .dark .liquid-glass,
 .dark .liquid-glass-card,
 .dark .liquid-glass-crystal {
-  background: rgba(15, 23, 42, calc(var(--glass-bg-opacity, 0.86) * 0.85)) !important;
+  background: rgba(31, 41, 51, calc(var(--glass-bg-opacity, 0.86) * 0.9)) !important;
   backdrop-filter: blur(var(--glass-blur, 14px)) saturate(var(--glass-saturate, 160%)) !important;
   -webkit-backdrop-filter: blur(var(--glass-blur, 14px)) saturate(var(--glass-saturate, 160%)) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(209, 213, 219, 0.12) !important;
   box-shadow: 
-    0 1px 2px 0 rgba(0, 0, 0, 0.4),
-    0 8px 24px -4px rgba(0, 0, 0, 0.6),
-    inset 0 1px 0 rgba(255, 255, 255, calc(var(--glass-refraction, 0.5) * 0.25)) !important;
+    0 1px 2px 0 rgba(0, 0, 0, 0.35),
+    0 8px 24px -4px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(247, 247, 242, calc(var(--glass-refraction, 0.5) * 0.15)) !important;
 }
 
 .dark .liquid-glass:hover,
 .dark .liquid-glass-card:hover,
 .dark .liquid-glass-crystal:hover {
-  border-color: rgba(var(--primary-rgb), 0.4) !important;
+  border-color: rgba(var(--primary-rgb), 0.5) !important;
   box-shadow: 
-    0 4px 12px 0 rgba(0, 0, 0, 0.5),
-    0 12px 30px -4px rgba(0, 0, 0, 0.7),
+    0 4px 12px 0 rgba(0, 0, 0, 0.4),
+    0 12px 30px -4px rgba(0, 0, 0, 0.6),
     0 0 15px -2px var(--primary-glow),
-    inset 0 1px 0 rgba(255, 255, 255, calc(var(--glass-refraction, 0.5) * 0.35)) !important;
+    inset 0 1px 0 rgba(247, 247, 242, calc(var(--glass-refraction, 0.5) * 0.25)) !important;
 }
 
 /* Floating Clean Header Capsule */
 .glass-capsule-bar {
   position: relative;
-  background: rgba(255, 255, 255, 0.88) !important;
+  background: rgba(247, 247, 242, 0.9) !important;
   backdrop-filter: blur(16px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
-  border: 1px solid rgba(226, 232, 240, 0.85) !important;
+  border: 1px solid rgba(209, 213, 219, 0.8) !important;
   box-shadow: 
     0 2px 8px -2px rgba(0, 0, 0, 0.03),
     0 10px 25px -4px rgba(0, 0, 0, 0.05) !important;
@@ -420,20 +487,20 @@ html:not(.dark).no-glass .liquid-glass-card {
 }
 
 .dark .glass-capsule-bar {
-  background: rgba(15, 23, 42, 0.75) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: rgba(31, 41, 51, 0.82) !important;
+  border: 1px solid rgba(209, 213, 219, 0.15) !important;
   box-shadow: 
-    0 4px 12px 0 rgba(0, 0, 0, 0.5),
-    0 16px 36px -6px rgba(0, 0, 0, 0.7) !important;
+    0 4px 12px 0 rgba(0, 0, 0, 0.4),
+    0 16px 36px -6px rgba(0, 0, 0, 0.6) !important;
 }
 
 /* Floating Glass Dock / Sidebar */
 .glass-dock {
   position: relative;
-  background: rgba(255, 255, 255, 0.88) !important;
+  background: rgba(247, 247, 242, 0.9) !important;
   backdrop-filter: blur(16px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
-  border: 1px solid rgba(226, 232, 240, 0.85) !important;
+  border: 1px solid rgba(209, 213, 219, 0.8) !important;
   box-shadow: 
     0 4px 12px -2px rgba(0, 0, 0, 0.04),
     0 12px 30px -4px rgba(0, 0, 0, 0.06) !important;
@@ -441,11 +508,11 @@ html:not(.dark).no-glass .liquid-glass-card {
 }
 
 .dark .glass-dock {
-  background: rgba(15, 23, 42, 0.75) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: rgba(31, 41, 51, 0.85) !important;
+  border: 1px solid rgba(209, 213, 219, 0.15) !important;
   box-shadow: 
-    0 6px 18px 0 rgba(0, 0, 0, 0.5),
-    0 18px 40px -6px rgba(0, 0, 0, 0.75) !important;
+    0 6px 18px 0 rgba(0, 0, 0, 0.4),
+    0 18px 40px -6px rgba(0, 0, 0, 0.6) !important;
 }
 
 /* Minimalist Glass Pills */

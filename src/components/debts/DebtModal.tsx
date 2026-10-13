@@ -2,10 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { Debt, DebtType } from '../../types';
 import { getTodayJalali } from '../../utils/jalali';
-import { numberToWordsPersian, parseAmount, sanitizeAmountInput, formatAmountInput } from '../../utils/formatters';
+import {
+  numberToPersianWords,
+  parseAmount,
+  sanitizeAmountInput,
+  formatAmountInput,
+} from '../../utils/formatters';
 import { PersonManagerModal } from '../contacts/PersonManagerModal';
 import { JalaliDatePicker } from '../common/JalaliDatePicker';
-import { X, Check, Users, UserPlus, Phone, Calendar, Tag } from 'lucide-react';
+import { X, Check, Users, UserPlus, Phone, CheckCircle2 } from 'lucide-react';
 
 interface DebtModalProps {
   isOpen: boolean;
@@ -112,56 +117,67 @@ export const DebtModal: React.FC<DebtModalProps> = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={onClose} />
+      <div className="fixed inset-0 z-50 bg-[#1F2933]/75 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+        <div className="w-full sm:max-w-lg max-h-[92dvh] flex flex-col rounded-t-3xl sm:rounded-3xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 bg-[#F7F7F2]/95 dark:bg-[#1F2933]/95 backdrop-blur-2xl text-[#1F2933] dark:text-[#F7F7F2] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
+          {/* Mobile drag handle */}
+          <div className="pt-2 sm:hidden flex justify-center">
+            <div className="w-12 h-1.5 bg-[#6B7280]/30 rounded-full" />
+          </div>
 
-        <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 my-8 z-10 space-y-4">
-          {/* Header */}
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-indigo-600" />
-              <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white">
-                {initialDebt ? 'ویرایش بدهی / طلب' : 'ثبت بدهی، طلب یا وام جدید'}
-              </h3>
+          {/* Sticky Header */}
+          <div className="px-6 py-4 border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/10 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-2xl bg-[#A68A64]/15 border border-[#A68A64]/30 text-[#A68A64] flex items-center justify-center shadow-sm">
+                <Users className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base sm:text-lg font-black text-[#1F2933] dark:text-[#F7F7F2]">
+                  {initialDebt ? 'ویرایش بدهی / طلب' : 'ثبت بدهی، طلب یا وام جدید'}
+                </h3>
+                <p className="text-xs text-[#6B7280] dark:text-[#D1D5DB]">
+                  مدیریت مطالبات، بدهکاری‌ها و تعهدات مالی
+                </p>
+              </div>
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-full text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+              className="p-1.5 rounded-xl text-[#6B7280] hover:text-[#1F2933] dark:hover:text-[#F7F7F2] hover:bg-[#6B7280]/10 transition"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Scrollable Body */}
+          <form id="debt-form" onSubmit={handleSubmit} className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-4 overscroll-contain">
             {/* Type Switcher */}
-            <div className="grid grid-cols-2 gap-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl">
+            <div className="grid grid-cols-2 gap-2 p-1 bg-[#6B7280]/10 dark:bg-[#182028]/60 rounded-2xl border border-[#6B7280]/15 dark:border-[#D1D5DB]/10">
               <button
                 type="button"
                 onClick={() => setType('credit')}
-                className={`py-2 rounded-xl text-xs font-bold transition ${
+                className={`py-2 rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 ${
                   type === 'credit'
-                    ? 'bg-emerald-600 text-white shadow-sm'
-                    : 'text-slate-600 dark:text-slate-400'
+                    ? 'bg-[#2E7D5B] text-[#F7F7F2] shadow-sm'
+                    : 'text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
                 }`}
               >
-                طلب من از دیگران
+                <span>طلب من از دیگران (+)</span>
               </button>
               <button
                 type="button"
                 onClick={() => setType('debt')}
-                className={`py-2 rounded-xl text-xs font-bold transition ${
+                className={`py-2 rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 ${
                   type === 'debt'
-                    ? 'bg-rose-600 text-white shadow-sm'
-                    : 'text-slate-600 dark:text-slate-400'
+                    ? 'bg-[#C0564B] text-[#F7F7F2] shadow-sm'
+                    : 'text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
                 }`}
               >
-                بدهی من به دیگران / وام
+                <span>بدهی من به دیگران / وام (-)</span>
               </button>
             </div>
 
             {/* Category / Nature of debt */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1">
                 دسته‌بندی موضوع
               </label>
               <div className="grid grid-cols-4 gap-1.5 text-xs">
@@ -177,8 +193,8 @@ export const DebtModal: React.FC<DebtModalProps> = ({
                     onClick={() => setCategory(cat.id as any)}
                     className={`py-1.5 px-2 rounded-xl text-[11px] font-bold border transition ${
                       category === cat.id
-                        ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300'
-                        : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50'
+                        ? 'border-[#A68A64] bg-[#A68A64] text-[#F7F7F2]'
+                        : 'border-[#6B7280]/20 bg-white/60 dark:bg-[#182028]/60 text-[#6B7280] dark:text-[#D1D5DB] hover:bg-[#A68A64]/10'
                     }`}
                   >
                     {cat.label}
@@ -190,13 +206,13 @@ export const DebtModal: React.FC<DebtModalProps> = ({
             {/* Person Selector & Custom Name */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  طرف‌حساب (شخص یا بانک/نهاد) *
+                <label className="text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2]">
+                  طرف‌حساب (شخص، بانک یا نهاد) <span className="text-[#C0564B]">*</span>
                 </label>
                 <button
                   type="button"
                   onClick={() => setIsPersonModalOpen(true)}
-                  className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1"
+                  className="text-[11px] font-bold text-[#A68A64] hover:underline flex items-center gap-1"
                 >
                   <UserPlus className="w-3.5 h-3.5" />
                   <span>مدیریت مخاطبین</span>
@@ -208,11 +224,11 @@ export const DebtModal: React.FC<DebtModalProps> = ({
                   <select
                     value={personId || ''}
                     onChange={e => handleSelectPerson(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold outline-none"
+                    className="w-full px-3 py-2 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-bold outline-none text-[#1F2933] dark:text-[#F7F7F2]"
                   >
-                    <option value="">-- انتخاب از میان مخاطبین ثبت‌شده --</option>
+                    <option value="" className="dark:bg-[#1F2933]">-- انتخاب از میان مخاطبین ثبت‌شده --</option>
                     {persons.map(p => (
-                      <option key={p.id} value={p.id}>
+                      <option key={p.id} value={p.id} className="dark:bg-[#1F2933]">
                         {p.name} {p.relation ? `(${p.relation})` : ''}
                       </option>
                     ))}
@@ -229,24 +245,24 @@ export const DebtModal: React.FC<DebtModalProps> = ({
                   setPersonId(undefined);
                 }}
                 placeholder="نام شخص، دوست، بانک، کاسب..."
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs outline-none focus:border-indigo-500"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs outline-none focus:border-[#A68A64] text-[#1F2933] dark:text-[#F7F7F2] transition"
               />
             </div>
 
             {/* Phone Number */}
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                شماره تماس (اختیاری جهت یادآوری و تماس)
+              <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1">
+                شماره تماس (اختیاری جهت یادآوری)
               </label>
               <div className="relative">
-                <Phone className="w-4 h-4 absolute right-3 top-3 text-slate-400" />
+                <Phone className="w-4 h-4 absolute right-3 top-3 text-[#6B7280]" />
                 <input
                   type="tel"
                   dir="ltr"
                   value={phoneNumber}
                   onChange={e => setPhoneNumber(e.target.value)}
                   placeholder="0912..."
-                  className="w-full pr-9 pl-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono text-left outline-none focus:border-indigo-500"
+                  className="w-full pr-9 pl-3 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-mono text-left outline-none focus:border-[#A68A64] text-[#1F2933] dark:text-[#F7F7F2] transition"
                 />
               </div>
             </div>
@@ -254,8 +270,8 @@ export const DebtModal: React.FC<DebtModalProps> = ({
             {/* Amount and Paid */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  کل مبلغ ({currency === 'toman' ? 'تومان' : 'ریال'}) *
+                <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1">
+                  کل مبلغ ({currency === 'toman' ? 'تومان' : 'ریال'}) <span className="text-[#C0564B]">*</span>
                 </label>
                 <input
                   type="text"
@@ -264,13 +280,13 @@ export const DebtModal: React.FC<DebtModalProps> = ({
                   value={amount}
                   onChange={e => setAmount(formatAmountInput(sanitizeAmountInput(e.target.value)))}
                   placeholder="0"
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold outline-none focus:border-indigo-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-mono font-bold outline-none focus:border-[#A68A64] text-[#1F2933] dark:text-[#F7F7F2] text-center"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  مبلغ تسویه‌شده تا الان ({currency === 'toman' ? 'تومان' : 'ریال'})
+                <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1">
+                  مبلغ تسویه‌شده ({currency === 'toman' ? 'تومان' : 'ریال'})
                 </label>
                 <input
                   type="text"
@@ -278,15 +294,16 @@ export const DebtModal: React.FC<DebtModalProps> = ({
                   value={paidAmount}
                   onChange={e => setPaidAmount(formatAmountInput(sanitizeAmountInput(e.target.value)))}
                   placeholder="0"
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono outline-none focus:border-indigo-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-mono outline-none focus:border-[#A68A64] text-[#1F2933] dark:text-[#F7F7F2] text-center"
                 />
               </div>
             </div>
 
+            {/* Live Words Preview */}
             {numAmount > 0 && (
-              <p className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">
-                معادل: {numberToWordsPersian(numAmount, currency)}
-              </p>
+              <div className="p-2 rounded-xl bg-[#A68A64]/10 dark:bg-[#A68A64]/15 border border-[#A68A64]/20 text-[11px] font-bold text-[#A68A64] dark:text-[#C2A882] text-center">
+                {numberToPersianWords(numAmount, currency)}
+              </div>
             )}
 
             {/* Due Date & Description */}
@@ -301,7 +318,7 @@ export const DebtModal: React.FC<DebtModalProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1">
                   توضیحات و بابت (اختیاری)
                 </label>
                 <input
@@ -309,29 +326,30 @@ export const DebtModal: React.FC<DebtModalProps> = ({
                   value={description}
                   onChange={e => setDescription(e.target.value)}
                   placeholder="مثلاً: قسط ماه ۱۲، قرض بدون بهره..."
-                  className="w-full px-3 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs outline-none focus:border-indigo-500"
+                  className="w-full px-3 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs outline-none focus:border-[#A68A64] text-[#1F2933] dark:text-[#F7F7F2] transition"
                 />
               </div>
             </div>
-
-            {/* Footer buttons */}
-            <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100 dark:border-slate-800">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-100 dark:hover:bg-slate-800 transition"
-              >
-                انصراف
-              </button>
-              <button
-                type="submit"
-                className="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md shadow-indigo-500/25 transition active:scale-95 flex items-center gap-1.5"
-              >
-                <Check className="w-4 h-4 stroke-[3]" />
-                <span>{initialDebt ? 'ذخیره تغییرات' : 'ثبت سند بدهی / طلب'}</span>
-              </button>
-            </div>
           </form>
+
+          {/* Sticky Footer */}
+          <div className="px-6 py-4 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10 bg-[#F7F7F2]/90 dark:bg-[#182028]/90 flex items-center justify-end gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2.5 rounded-xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-[#6B7280] dark:text-[#D1D5DB] hover:bg-[#6B7280]/10 font-bold text-xs transition"
+            >
+              انصراف
+            </button>
+            <button
+              type="submit"
+              form="debt-form"
+              className="px-5 py-2.5 rounded-xl bg-[#A68A64] hover:bg-[#8A704C] text-[#F7F7F2] font-black text-xs shadow-lg shadow-[#A68A64]/25 transition active:scale-95 flex items-center gap-1.5"
+            >
+              <CheckCircle2 className="w-4 h-4" />
+              <span>{initialDebt ? 'ذخیره تغییرات' : 'ثبت سند بدهی / طلب'}</span>
+            </button>
+          </div>
         </div>
       </div>
 

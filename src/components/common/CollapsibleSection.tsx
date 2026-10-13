@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
-import { LIQUID_GLASS_PRESETS } from '../../utils/liquidGlassPresets';
+import { ChevronDown } from 'lucide-react';
 
 interface CollapsibleSectionProps {
   title: React.ReactNode;
@@ -22,7 +21,7 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   children,
   defaultExpanded = true,
   storageKey,
-  className = 'liquid-glass p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs',
+  className = 'bg-[#F7F7F2]/85 dark:bg-[#1F2933]/75 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-[#6B7280]/15 dark:border-[#D1D5DB]/15 shadow-sm',
   headerClassName = '',
 }) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(() => {
@@ -46,9 +45,7 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   };
 
   return (
-    <div
-      className={`${className} transition-all duration-200`}
-    >
+    <div className={`${className} transition-all duration-200`}>
       {/* Header */}
       <div
         className={`flex items-center justify-between cursor-pointer select-none ${
@@ -57,13 +54,13 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
         onClick={toggle}
       >
         <div className="flex items-center gap-2.5 min-w-0 flex-1 pl-2">
-          {icon && <div className="shrink-0">{icon}</div>}
+          {icon && <div className="shrink-0 text-[#A68A64]">{icon}</div>}
           <div className="min-w-0">
-            <div className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2 truncate">
+            <div className="text-sm sm:text-base font-bold text-[#1F2933] dark:text-[#F7F7F2] flex items-center gap-2 truncate">
               {title}
             </div>
             {subtitle && (
-              <div className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
+              <div className="text-[11px] sm:text-xs text-[#6B7280] dark:text-[#D1D5DB]/80 truncate mt-0.5">
                 {subtitle}
               </div>
             )}
@@ -75,20 +72,23 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
           <button
             type="button"
             onClick={toggle}
-            className="p-1.5 rounded-xl hover:bg-slate-200/50 dark:hover:bg-white/10 text-slate-400 hover:text-slate-700 dark:hover:text-white transition"
+            className="p-1.5 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 text-[#6B7280] hover:text-[#1F2933] dark:text-[#D1D5DB] dark:hover:text-white transition"
             title={isExpanded ? 'بستن کشویی' : 'باز کردن کشویی'}
           >
-            {isExpanded ? (
-              <ChevronUp className="w-4 h-4" />
-            ) : (
-              <ChevronDown className="w-4 h-4" />
-            )}
+            <ChevronDown
+              className={`w-4 h-4 transition-transform duration-300 ease-out ${
+                isExpanded ? 'rotate-180' : 'rotate-0'
+              }`}
+            />
           </button>
         </div>
       </div>
 
       {/* Collapsible Body */}
-      {isExpanded && <div className="animate-fadeIn">{children}</div>}
+      {isExpanded && <div className="animate-in fade-in duration-200">{children}</div>}
     </div>
   );
 };
+
+export default CollapsibleSection;
+

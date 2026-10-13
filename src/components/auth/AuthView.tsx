@@ -70,7 +70,6 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
   const handleQuickDemo = async () => {
     setIsSubmitting(true);
     setErrorMsg(null);
-    // Try to login with demo user, or register if doesn't exist
     const loginRes = await login('demo', '123456', true);
     if (!loginRes.success) {
       const regRes = await register('demo', '123456', 'کاربر آزمایشی');
@@ -84,26 +83,30 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
   return (
     <div
       dir="rtl"
-      className="min-h-screen w-full flex items-center justify-center p-4 sm:p-6 bg-gradient-to-br from-slate-100 via-indigo-50/30 to-slate-200 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 text-slate-900 dark:text-white"
+      className="min-h-screen w-full flex items-center justify-center p-4 sm:p-6 bg-[#F7F7F2] dark:bg-[#1F2933] text-[#1F2933] dark:text-[#F7F7F2] relative overflow-hidden"
     >
-      <div className="w-full max-w-md">
+      {/* Soft Ambient Radiance */}
+      <div className="absolute top-1/4 -right-20 w-80 h-80 bg-[#A68A64]/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 -left-20 w-80 h-80 bg-[#2E7D5B]/10 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="w-full max-w-md relative z-10">
         {/* Brand / Logo header */}
         <div className="text-center mb-6 space-y-2">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-3xl bg-indigo-600 text-white shadow-xl shadow-indigo-600/30 mb-2">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-3xl bg-[#A68A64] text-[#F7F7F2] shadow-xl shadow-[#A68A64]/20 mb-2">
             <Sparkles className="w-7 h-7" />
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-2xl font-black tracking-tight text-[#1F2933] dark:text-[#F7F7F2]">
             حسابداری شخصی
           </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-            مدیریت دخل و خرج، بودجه‌بندی و دارایی‌ها
+          <p className="text-xs text-[#6B7280] dark:text-[#D1D5DB]/70 font-medium">
+            مدیریت دخل و خرج، بودجه‌بندی و پایش هوشمند دارایی‌ها
           </p>
         </div>
 
         {/* Card */}
-        <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+        <div className="bg-[#F7F7F2]/90 dark:bg-[#141B22]/80 backdrop-blur-xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
           {/* Tab selector */}
-          <div className="grid grid-cols-2 gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl text-xs font-bold">
+          <div className="grid grid-cols-2 gap-1.5 p-1 bg-[#6B7280]/15 dark:bg-[#D1D5DB]/15 rounded-2xl text-xs font-bold">
             <button
               type="button"
               onClick={() => {
@@ -112,8 +115,8 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
               }}
               className={`py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 ${
                 activeTab === 'login'
-                  ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                  ? 'bg-[#A68A64] text-[#F7F7F2] shadow-xs'
+                  : 'text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
               }`}
             >
               <LogIn className="w-3.5 h-3.5" />
@@ -127,8 +130,8 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
               }}
               className={`py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 ${
                 activeTab === 'register'
-                  ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow-sm'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
+                  ? 'bg-[#A68A64] text-[#F7F7F2] shadow-xs'
+                  : 'text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
               }`}
             >
               <UserPlus className="w-3.5 h-3.5" />
@@ -138,7 +141,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
 
           {/* Error Message */}
           {errorMsg && (
-            <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 flex items-start gap-2.5 text-xs font-bold text-rose-600 dark:text-rose-400 animate-in fade-in duration-200">
+            <div className="p-3.5 rounded-2xl bg-[#C0564B]/15 border border-[#C0564B]/30 flex items-start gap-2.5 text-xs font-bold text-[#C0564B] dark:text-[#F87171] animate-in fade-in duration-200">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span className="leading-relaxed">{errorMsg}</span>
             </div>
@@ -148,7 +151,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
           {activeTab === 'login' && (
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                <label className="block text-xs font-bold text-[#1F2933] dark:text-[#D1D5DB] mb-1.5">
                   نام کاربری
                 </label>
                 <div className="relative">
@@ -159,16 +162,16 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="مثال: ali_reza"
                     dir="ltr"
-                    className="w-full pl-3.5 pr-10 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold text-slate-900 dark:text-white outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-800 transition"
+                    className="w-full pl-3.5 pr-10 py-3 rounded-2xl bg-white dark:bg-[#1F2933] border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-mono font-bold text-[#1F2933] dark:text-[#F7F7F2] outline-none focus:border-[#A68A64] focus:ring-1 focus:ring-[#A68A64] transition"
                   />
-                  <div className="absolute right-3.5 top-3.5 text-slate-400 pointer-events-none">
+                  <div className="absolute right-3.5 top-3.5 text-[#6B7280] pointer-events-none">
                     <User className="w-4 h-4" />
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                <label className="block text-xs font-bold text-[#1F2933] dark:text-[#D1D5DB] mb-1.5">
                   کلمه عبور
                 </label>
                 <div className="relative">
@@ -179,15 +182,15 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="کلمه عبور خود را وارد نمایید"
                     dir="ltr"
-                    className="w-full pl-10 pr-10 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold text-slate-900 dark:text-white outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-800 transition"
+                    className="w-full pl-10 pr-10 py-3 rounded-2xl bg-white dark:bg-[#1F2933] border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-mono font-bold text-[#1F2933] dark:text-[#F7F7F2] outline-none focus:border-[#A68A64] focus:ring-1 focus:ring-[#A68A64] transition"
                   />
-                  <div className="absolute right-3.5 top-3.5 text-slate-400 pointer-events-none">
+                  <div className="absolute right-3.5 top-3.5 text-[#6B7280] pointer-events-none">
                     <Lock className="w-4 h-4" />
                   </div>
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute left-3.5 top-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
+                    className="absolute left-3.5 top-3.5 text-[#6B7280] hover:text-[#1F2933] dark:hover:text-[#F7F7F2] transition"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -200,9 +203,9 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"
+                    className="w-4 h-4 rounded text-[#A68A64] focus:ring-[#A68A64] accent-[#A68A64]"
                   />
-                  <span className="font-bold text-slate-600 dark:text-slate-400">
+                  <span className="font-bold text-[#6B7280] dark:text-[#D1D5DB]/70">
                     مرا به خاطر بسپار
                   </span>
                 </label>
@@ -211,10 +214,10 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] text-white font-black text-xs sm:text-sm shadow-lg shadow-indigo-600/25 transition flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-3.5 rounded-2xl bg-[#A68A64] hover:bg-[#8A704C] active:scale-[0.99] text-[#F7F7F2] font-black text-xs sm:text-sm shadow-lg shadow-[#A68A64]/20 transition flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isSubmitting ? (
-                  <div className="w-5 h-5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                  <div className="w-5 h-5 rounded-full border-2 border-[#F7F7F2] border-t-transparent animate-spin" />
                 ) : (
                   <>
                     <LogIn className="w-4 h-4" />
@@ -229,7 +232,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
           {activeTab === 'register' && (
             <form onSubmit={handleRegisterSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                <label className="block text-xs font-bold text-[#1F2933] dark:text-[#D1D5DB] mb-1.5">
                   نام کاربری (انگلیسی)
                 </label>
                 <div className="relative">
@@ -240,16 +243,16 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="مثال: mohammad_94"
                     dir="ltr"
-                    className="w-full pl-3.5 pr-10 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold text-slate-900 dark:text-white outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-800 transition"
+                    className="w-full pl-3.5 pr-10 py-3 rounded-2xl bg-white dark:bg-[#1F2933] border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-mono font-bold text-[#1F2933] dark:text-[#F7F7F2] outline-none focus:border-[#A68A64] focus:ring-1 focus:ring-[#A68A64] transition"
                   />
-                  <div className="absolute right-3.5 top-3.5 text-slate-400 pointer-events-none">
+                  <div className="absolute right-3.5 top-3.5 text-[#6B7280] pointer-events-none">
                     <User className="w-4 h-4" />
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                <label className="block text-xs font-bold text-[#1F2933] dark:text-[#D1D5DB] mb-1.5">
                   نام و نام خانوادگی (اختیاری)
                 </label>
                 <input
@@ -257,12 +260,12 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="مثال: محمد احمدی"
-                  className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-900 dark:text-white outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-800 transition"
+                  className="w-full px-4 py-3 rounded-2xl bg-white dark:bg-[#1F2933] border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] outline-none focus:border-[#A68A64] focus:ring-1 focus:ring-[#A68A64] transition"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                <label className="block text-xs font-bold text-[#1F2933] dark:text-[#D1D5DB] mb-1.5">
                   کلمه عبور (حداقل ۶ کاراکتر)
                 </label>
                 <div className="relative">
@@ -273,15 +276,15 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="حداقل ۶ کاراکتر"
                     dir="ltr"
-                    className="w-full pl-10 pr-10 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold text-slate-900 dark:text-white outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-800 transition"
+                    className="w-full pl-10 pr-10 py-3 rounded-2xl bg-white dark:bg-[#1F2933] border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-mono font-bold text-[#1F2933] dark:text-[#F7F7F2] outline-none focus:border-[#A68A64] focus:ring-1 focus:ring-[#A68A64] transition"
                   />
-                  <div className="absolute right-3.5 top-3.5 text-slate-400 pointer-events-none">
+                  <div className="absolute right-3.5 top-3.5 text-[#6B7280] pointer-events-none">
                     <Lock className="w-4 h-4" />
                   </div>
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute left-3.5 top-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"
+                    className="absolute left-3.5 top-3.5 text-[#6B7280] hover:text-[#1F2933] dark:hover:text-[#F7F7F2] transition"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -289,7 +292,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                <label className="block text-xs font-bold text-[#1F2933] dark:text-[#D1D5DB] mb-1.5">
                   تکرار کلمه عبور
                 </label>
                 <input
@@ -299,17 +302,17 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="تکرار کلمه عبور"
                   dir="ltr"
-                  className="w-full px-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 text-xs font-mono font-bold text-slate-900 dark:text-white outline-none focus:border-indigo-500 focus:bg-white dark:focus:bg-slate-800 transition"
+                  className="w-full px-4 py-3 rounded-2xl bg-white dark:bg-[#1F2933] border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-mono font-bold text-[#1F2933] dark:text-[#F7F7F2] outline-none focus:border-[#A68A64] focus:ring-1 focus:ring-[#A68A64] transition"
                 />
               </div>
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] text-white font-black text-xs sm:text-sm shadow-lg shadow-indigo-600/25 transition flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-3.5 rounded-2xl bg-[#A68A64] hover:bg-[#8A704C] active:scale-[0.99] text-[#F7F7F2] font-black text-xs sm:text-sm shadow-lg shadow-[#A68A64]/20 transition flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isSubmitting ? (
-                  <div className="w-5 h-5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                  <div className="w-5 h-5 rounded-full border-2 border-[#F7F7F2] border-t-transparent animate-spin" />
                 ) : (
                   <>
                     <UserPlus className="w-4 h-4" />
@@ -321,12 +324,12 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
           )}
 
           {/* Quick Demo Option */}
-          <div className="pt-3 border-t border-slate-200/60 dark:border-slate-800/80 flex items-center justify-center text-xs">
+          <div className="pt-3 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10 flex items-center justify-center text-xs">
             <button
               type="button"
               onClick={handleQuickDemo}
               disabled={isSubmitting}
-              className="text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold transition flex items-center gap-1.5 py-1.5 px-3 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800/60"
+              className="text-[#A68A64] hover:underline font-bold transition flex items-center gap-1.5 py-1.5 px-3 rounded-xl hover:bg-[#A68A64]/10"
             >
               <span>ورود سریع با کاربر آزمایشی</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -337,3 +340,5 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
     </div>
   );
 };
+
+export default AuthView;

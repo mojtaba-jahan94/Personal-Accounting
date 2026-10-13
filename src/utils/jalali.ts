@@ -62,6 +62,11 @@ export const PERSIAN_WEEKDAYS = [
   'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنجشنبه', 'جمعه', 'شنبه'
 ];
 
+export function getPersianDayOfWeek(date: Date = new Date()): string {
+  return PERSIAN_WEEKDAYS[date.getDay()] || '';
+}
+
+
 export function getTodayJalali(): string {
   const now = new Date();
   const [jy, jm, jd] = gregorianToJalali(now.getFullYear(), now.getMonth() + 1, now.getDate());
@@ -85,30 +90,51 @@ export function formatJalaliLong(dateStr: string): string {
   return `${jd} ${monthName} ${jy}`;
 }
 
+export function formatJalaliDate(year: number, month: number, day: number): string {
+  return `${year}/${String(month).padStart(2, '0')}/${String(day).padStart(2, '0')}`;
+}
+
+export function isJalaliLeapYear(year: number): boolean {
+  return (((year - (year > 0 ? 474 : 473)) % 2820 + 474 + 38) * 682) % 2816 < 682;
+}
+
 export function getDaysInJalaliMonth(year: number, month: number): number {
   if (month <= 6) return 31;
   if (month <= 11) return 30;
   // Leap year calculation for Jalali
-  const isLeap = (((year - (year > 0 ? 474 : 473)) % 2820 + 474 + 38) * 682) % 2816 < 682;
-  return isLeap ? 30 : 29;
+  return isJalaliLeapYear(year) ? 30 : 29;
 }
 
 export function normalizeJalaliDate(dateStr: string): string {
   if (!dateStr) return '';
   const clean = normalizeDigits(dateStr).trim();
-  const parts = clean.replace(/-/g, '/').split('/');
+  const parts = clean.replace(/[-.]/g, '/').split('/');
   if (parts.length !== 3) return clean;
-  const y = parts[0].padStart(4, '0');
-  const m = parts[1].padStart(2, '0');
-  const d = parts[2].padStart(2, '0');
-  return `${y}/${m}/${d}`;
+
+  let y = parts[0];
+  let m = parts[1];
+  let d = parts[2];
+
+  // If provided as DD/MM/YYYY (common in user inputs or bank SMS)
+  if (d.length === 4 && y.length <= 2) {
+    const temp = y;
+    y = d;
+    d = temp;
+  }
+
+  if (y.length === 2) {
+    const numY = parseInt(y, 10);
+    y = numY >= 80 ? `13${y}` : `14${y}`;
+  }
+
+  return `${y.padStart(4, '0')}/${m.padStart(2, '0')}/${d.padStart(2, '0')}`;
 }
 
 export function getJalaliDaysAgo(days: number): string {
   const now = new Date();
   now.setDate(now.getDate() - days);
   const [jy, jm, jd] = gregorianToJalali(now.getFullYear(), now.getMonth() + 1, now.getDate());
-  return `${jy}/${String(jm).padStart(2, '0')}/${String(jd).padStart(2, '0')}`;
+  return formatJalaliDate(jy, jm, jd);
 }
 
 export function getJalaliThisMonthRange(): { start: string; end: string } {

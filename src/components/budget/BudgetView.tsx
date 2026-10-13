@@ -11,7 +11,6 @@ import {
   Trash2,
   AlertCircle,
   CheckCircle2,
-  TrendingUp,
   PieChart,
   Layers,
   Scale,
@@ -27,11 +26,11 @@ export const BudgetView: React.FC = () => {
   let totalBudgetAmount = 0;
   let totalSpentAmount = 0;
 
-  const budgetItemsWithStats = budgets.map(b => {
-    const cat = categories.find(c => c.id === b.categoryId);
+  const budgetItemsWithStats = budgets.map((b) => {
+    const cat = categories.find((c) => c.id === b.categoryId);
     const normalizedMonth = b.month ? b.month.replace(/-/g, '/') : '';
     const spent = transactions
-      .filter(t => {
+      .filter((t) => {
         if (t.type !== 'expense' || t.categoryId !== b.categoryId) return false;
         if (!normalizedMonth) return true;
         return t.date.replace(/-/g, '/').startsWith(normalizedMonth);
@@ -69,11 +68,11 @@ export const BudgetView: React.FC = () => {
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
+          <h2 className="text-xl sm:text-2xl font-black text-[#1F2933] dark:text-[#F7F7F2]">
             بودجه‌بندی هوشمند
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            کنترل مخارج ماهانه و جلوگیری از هزینه‌های غیرضروری
+          <p className="text-xs text-[#6B7280] dark:text-[#D1D5DB]/70">
+            کنترل مخارج ماهانه و جلوگیری از هزینه‌های مازاد و غیرضروری
           </p>
         </div>
 
@@ -82,7 +81,7 @@ export const BudgetView: React.FC = () => {
             setEditingBudget(null);
             setIsModalOpen(true);
           }}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 text-white text-xs font-black shadow-md shadow-indigo-500/20 transition self-start sm:self-auto active:scale-95"
+          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#A68A64] hover:bg-[#8A704C] text-[#F7F7F2] text-xs font-black shadow-md shadow-[#A68A64]/20 transition self-start sm:self-auto active:scale-95"
         >
           <Plus className="w-4 h-4 stroke-[3]" />
           <span>تعریف بودجه جدید</span>
@@ -94,18 +93,18 @@ export const BudgetView: React.FC = () => {
         storageKey="budget_overview_card"
         title="خلاصه کلی وضعیت بودجه ماهانه"
         subtitle={`مصرف ${toPersianDigits(overallPercent)}٪ از کل سقف تعیین‌شده`}
-        icon={<Scale className="w-5 h-5 text-indigo-500" />}
+        icon={<Scale className="w-5 h-5 text-[#A68A64]" />}
         defaultExpanded={true}
       >
         <div className="pt-1">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-5">
             <div>
-              <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
+              <span className="text-xs font-semibold text-[#A68A64]">
                 مجموع مصارف در برابر سقف کل
               </span>
-              <div className="text-2xl font-black text-slate-900 dark:text-white mt-1 font-mono">
+              <div className="text-2xl font-black text-[#1F2933] dark:text-[#F7F7F2] mt-1 font-mono tabular-nums">
                 {formatCurrency(totalSpentAmount, currency)}
-                <span className="text-xs font-normal text-slate-400 mr-2">
+                <span className="text-xs font-normal text-[#6B7280] dark:text-[#D1D5DB]/70 mr-2">
                   از مجموع {formatCurrency(totalBudgetAmount, currency)}
                 </span>
               </div>
@@ -113,30 +112,32 @@ export const BudgetView: React.FC = () => {
 
             <div className="flex items-center gap-4">
               <div className="text-left">
-                <span className="text-xs text-slate-400 block">باقیمانده آزاد:</span>
+                <span className="text-xs text-[#6B7280] dark:text-[#D1D5DB]/70 block">باقیمانده آزاد:</span>
                 <span
-                  className={`text-base font-bold font-mono ${
-                    totalBudgetAmount - totalSpentAmount >= 0 ? 'text-emerald-600' : 'text-rose-600'
+                  className={`text-base font-bold font-mono tabular-nums ${
+                    totalBudgetAmount - totalSpentAmount >= 0
+                      ? 'text-[#2E7D5B] dark:text-[#4ADE80]'
+                      : 'text-[#C0564B] dark:text-[#F87171]'
                   }`}
                 >
                   {formatCurrency(totalBudgetAmount - totalSpentAmount, currency)}
                 </span>
               </div>
-              <div className="px-3 py-1.5 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 text-sm font-black">
+              <div className="px-3.5 py-1.5 rounded-2xl bg-[#A68A64]/15 text-[#A68A64] text-sm font-black font-mono tabular-nums">
                 {toPersianDigits(overallPercent)}٪ مصرف شده
               </div>
             </div>
           </div>
 
           {/* Global Progress Bar */}
-          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-3.5 overflow-hidden p-0.5">
+          <div className="w-full bg-[#6B7280]/15 dark:bg-[#D1D5DB]/15 rounded-full h-3.5 overflow-hidden p-0.5">
             <div
-              className={`h-full rounded-full transition-all duration-300 ${
+              className={`h-full rounded-full transition-all duration-500 ${
                 overallPercent > 100
-                  ? 'bg-rose-500'
+                  ? 'bg-[#C0564B]'
                   : overallPercent > 80
-                  ? 'bg-amber-500'
-                  : 'bg-indigo-600'
+                  ? 'bg-[#C2A882]'
+                  : 'bg-[#A68A64]'
               }`}
               style={{ width: `${Math.min(100, overallPercent)}%` }}
             />
@@ -149,16 +150,16 @@ export const BudgetView: React.FC = () => {
         storageKey="budget_items_grid"
         title="سقف بودجه‌های دسته‌بندی‌شده"
         subtitle={`${toPersianDigits(budgetItemsWithStats.length)} دسته‌بندی با سقف بودجه معین`}
-        icon={<Layers className="w-5 h-5 text-indigo-500" />}
+        icon={<Layers className="w-5 h-5 text-[#A68A64]" />}
         defaultExpanded={true}
         headerAction={
           <button
-            onClick={e => {
+            onClick={(e) => {
               e.stopPropagation();
               setEditingBudget(null);
               setIsModalOpen(true);
             }}
-            className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 px-2 py-1"
+            className="text-xs font-bold text-[#A68A64] hover:underline flex items-center gap-1 px-2 py-1"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>بودجه جدید</span>
@@ -167,20 +168,20 @@ export const BudgetView: React.FC = () => {
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
           {budgetItemsWithStats.length === 0 ? (
-            <div className="col-span-2 text-center py-10 text-xs text-slate-400">
+            <div className="col-span-2 text-center py-10 text-xs text-[#6B7280]">
               هنوز بودجه‌ای تعریف نکرده‌اید. با دکمه بالا بودجه جدید تعریف کنید.
             </div>
           ) : (
-            budgetItemsWithStats.map(item => (
+            budgetItemsWithStats.map((item) => (
               <div
                 key={item.id}
-                className="p-5 rounded-2xl liquid-glass border border-slate-200/50 dark:border-white/10 space-y-4 hover:shadow-md transition"
+                className="p-5 rounded-2xl bg-[#F7F7F2]/90 dark:bg-[#1F2933]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 space-y-4 hover:border-[#A68A64]/30 transition shadow-xs"
               >
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     <div
                       className="w-11 h-11 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-xs"
-                      style={{ backgroundColor: item.category?.color || '#6366f1' }}
+                      style={{ backgroundColor: item.category?.color || '#A68A64' }}
                     >
                       {item.category ? (
                         getCategoryIcon(item.category.icon)
@@ -189,10 +190,10 @@ export const BudgetView: React.FC = () => {
                       )}
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                      <h4 className="text-sm font-bold text-[#1F2933] dark:text-[#F7F7F2]">
                         {item.category?.name || 'دسته‌بندی'}
                       </h4>
-                      <span className="text-[11px] text-slate-400">
+                      <span className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB]/70">
                         دوره: {toPersianDigits(item.month)}
                       </span>
                     </div>
@@ -204,14 +205,14 @@ export const BudgetView: React.FC = () => {
                         setEditingBudget(item);
                         setIsModalOpen(true);
                       }}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                      className="p-1.5 rounded-lg text-[#6B7280] hover:text-[#A68A64] hover:bg-[#6B7280]/10 transition"
                       title="ویرایش بودجه"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDelete(item.id)}
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                      className="p-1.5 rounded-lg text-[#6B7280] hover:text-[#C0564B] hover:bg-[#C0564B]/10 transition"
                       title="حذف بودجه"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -222,30 +223,30 @@ export const BudgetView: React.FC = () => {
                 {/* Progress bar */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-500 font-mono">
+                    <span className="text-[#6B7280] dark:text-[#D1D5DB]/70 font-mono tabular-nums">
                       مصرف: {formatCurrency(item.spent, currency)}
                     </span>
                     <span
-                      className={`font-bold font-mono ${
+                      className={`font-bold font-mono tabular-nums ${
                         item.isExceeded
-                          ? 'text-rose-600'
+                          ? 'text-[#C0564B] dark:text-[#F87171]'
                           : item.isNearLimit
-                          ? 'text-amber-500'
-                          : 'text-indigo-600 dark:text-indigo-400'
+                          ? 'text-[#A68A64]'
+                          : 'text-[#2E7D5B] dark:text-[#4ADE80]'
                       }`}
                     >
                       {toPersianDigits(item.percent)}٪
                     </span>
                   </div>
 
-                  <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                  <div className="w-full bg-[#6B7280]/15 dark:bg-[#D1D5DB]/15 rounded-full h-2.5 overflow-hidden">
                     <div
-                      className={`h-full rounded-full transition-all duration-300 ${
+                      className={`h-full rounded-full transition-all duration-500 ${
                         item.isExceeded
-                          ? 'bg-rose-500'
+                          ? 'bg-[#C0564B]'
                           : item.isNearLimit
-                          ? 'bg-amber-500'
-                          : 'bg-indigo-600'
+                          ? 'bg-[#C2A882]'
+                          : 'bg-[#A68A64]'
                       }`}
                       style={{ width: `${Math.min(100, item.percent)}%` }}
                     />
@@ -253,26 +254,26 @@ export const BudgetView: React.FC = () => {
                 </div>
 
                 {/* Status Message Footer */}
-                <div className="pt-2 border-t border-slate-100 dark:border-white/5 flex items-center justify-between text-xs">
+                <div className="pt-2 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10 flex items-center justify-between text-xs">
                   {item.isExceeded ? (
-                    <div className="flex items-center gap-1.5 text-rose-600 font-semibold text-[11px]">
+                    <div className="flex items-center gap-1.5 text-[#C0564B] dark:text-[#F87171] font-semibold text-[11px]">
                       <AlertCircle className="w-4 h-4 shrink-0" />
                       <span>
                         عبور از سقف به مقدار {formatCurrency(Math.abs(item.remaining), currency)}
                       </span>
                     </div>
                   ) : item.isNearLimit ? (
-                    <div className="flex items-center gap-1.5 text-amber-600 font-semibold text-[11px]">
+                    <div className="flex items-center gap-1.5 text-[#A68A64] font-semibold text-[11px]">
                       <AlertCircle className="w-4 h-4 shrink-0" />
                       <span>نزدیک به سقف (باقیمانده: {formatCurrency(item.remaining, currency)})</span>
                     </div>
                   ) : (
-                    <div className="flex items-center gap-1.5 text-emerald-600 font-medium text-[11px]">
+                    <div className="flex items-center gap-1.5 text-[#2E7D5B] dark:text-[#4ADE80] font-medium text-[11px]">
                       <CheckCircle2 className="w-4 h-4 shrink-0" />
                       <span>مناسب (باقیمانده: {formatCurrency(item.remaining, currency)})</span>
                     </div>
                   )}
-                  <span className="text-[11px] text-slate-400 font-mono">
+                  <span className="text-[11px] text-[#6B7280] font-mono tabular-nums">
                     سقف: {formatCurrency(item.amount, currency)}
                   </span>
                 </div>

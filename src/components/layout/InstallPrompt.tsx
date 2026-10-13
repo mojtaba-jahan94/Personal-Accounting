@@ -14,8 +14,10 @@ export const InstallPrompt: React.FC = () => {
 
   useEffect(() => {
     // Check if already in standalone mode (already installed)
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
-      (window.navigator as any).standalone === true;
+    const isStandalone =
+      (typeof window !== 'undefined' &&
+        window.matchMedia('(display-mode: standalone)').matches) ||
+      (typeof window !== 'undefined' && (window.navigator as any).standalone === true);
 
     if (isStandalone) {
       setIsInstalled(true);
@@ -47,7 +49,6 @@ export const InstallPrompt: React.FC = () => {
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) {
-      // If browser doesn't support beforeinstallprompt or manual install needed, show guide
       setShowGuide(true);
       return;
     }
@@ -71,18 +72,18 @@ export const InstallPrompt: React.FC = () => {
     <>
       {/* Floating Bottom Banner on Mobile / Tablet */}
       {isVisible && (
-        <div className="fixed bottom-20 sm:bottom-6 right-4 left-4 sm:left-auto sm:right-6 sm:max-w-md z-40 animate-in slide-in-from-bottom duration-300">
-          <div className="liquid-glass p-4 rounded-2xl shadow-xl border border-indigo-200/50 dark:border-indigo-500/30 flex items-center justify-between gap-3">
+        <div className="fixed bottom-24 sm:bottom-6 right-4 left-4 sm:left-auto sm:right-6 sm:max-w-md z-40 animate-in slide-in-from-bottom duration-300 select-none">
+          <div className="bg-[#F7F7F2]/95 dark:bg-[#1F2933]/90 backdrop-blur-xl p-4 rounded-3xl shadow-2xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+              <div className="w-10 h-10 rounded-2xl bg-[#A68A64] text-[#F7F7F2] flex items-center justify-center shrink-0 shadow-md shadow-[#A68A64]/25">
                 <Smartphone className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white">
+                <h4 className="text-xs sm:text-sm font-bold text-[#1F2933] dark:text-[#F7F7F2]">
                   نصب برنامه حسابداری
                 </h4>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  دسترسی سریع و اجرای آفلاین روی گوشی
+                <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB]/80">
+                  دسترسی سریع و اجرای تمام‌صفحه و آفلاین
                 </p>
               </div>
             </div>
@@ -90,14 +91,14 @@ export const InstallPrompt: React.FC = () => {
             <div className="flex items-center gap-1.5 shrink-0">
               <button
                 onClick={handleInstallClick}
-                className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-md transition flex items-center gap-1.5"
+                className="px-3.5 py-2 rounded-xl bg-[#A68A64] hover:bg-[#8A704C] text-[#F7F7F2] text-xs font-bold shadow-md shadow-[#A68A64]/25 transition flex items-center gap-1.5 active:scale-95"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>نصب</span>
               </button>
               <button
                 onClick={handleDismiss}
-                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg"
+                className="p-1.5 text-[#6B7280] hover:text-[#1F2933] dark:text-[#D1D5DB] dark:hover:text-white rounded-lg transition"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -108,26 +109,26 @@ export const InstallPrompt: React.FC = () => {
 
       {/* Manual Guide Modal */}
       {showGuide && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-md">
-          <div className="liquid-glass-card max-w-sm w-full p-6 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs select-none">
+          <div className="bg-[#F7F7F2] dark:bg-[#1F2933] max-w-sm w-full p-6 rounded-3xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between pb-3 border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/15">
               <div className="flex items-center gap-2">
-                <Smartphone className="w-5 h-5 text-indigo-500" />
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                  راهنمای نصب روی صفحه گوشی
+                <Smartphone className="w-5 h-5 text-[#A68A64]" />
+                <h4 className="text-sm font-bold text-[#1F2933] dark:text-[#F7F7F2]">
+                  راهنمای نصب روی صفحه اصلی
                 </h4>
               </div>
               <button
                 onClick={() => setShowGuide(false)}
-                className="p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full"
+                className="p-1.5 text-[#6B7280] hover:text-[#1F2933] dark:text-[#D1D5DB] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 rounded-xl transition"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="space-y-3 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-              <div className="p-3 rounded-2xl bg-indigo-50/60 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/40 space-y-1.5">
-                <span className="font-bold text-indigo-700 dark:text-indigo-300 block">
+            <div className="space-y-3 text-xs text-[#1F2933] dark:text-[#D1D5DB] leading-relaxed">
+              <div className="p-3.5 rounded-2xl bg-black/5 dark:bg-white/5 border border-[#6B7280]/15 dark:border-[#D1D5DB]/15 space-y-1.5">
+                <span className="font-bold text-[#A68A64] block">
                   در گوشی‌های اندروید (Chrome / Samsung):
                 </span>
                 <p>
@@ -137,8 +138,8 @@ export const InstallPrompt: React.FC = () => {
                 </p>
               </div>
 
-              <div className="p-3 rounded-2xl bg-purple-50/60 dark:bg-purple-950/40 border border-purple-100 dark:border-purple-900/40 space-y-1.5">
-                <span className="font-bold text-purple-700 dark:text-purple-300 block">
+              <div className="p-3.5 rounded-2xl bg-[#A68A64]/10 border border-[#A68A64]/25 space-y-1.5">
+                <span className="font-bold text-[#A68A64] block">
                   در گوشی‌های آیفون (Safari):
                 </span>
                 <p>
@@ -151,7 +152,7 @@ export const InstallPrompt: React.FC = () => {
 
             <button
               onClick={() => setShowGuide(false)}
-              className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs"
+              className="w-full py-2.5 rounded-xl bg-[#A68A64] hover:bg-[#8A704C] text-[#F7F7F2] font-bold text-xs shadow-md shadow-[#A68A64]/25 transition"
             >
               متوجه شدم
             </button>
@@ -161,3 +162,6 @@ export const InstallPrompt: React.FC = () => {
     </>
   );
 };
+
+export default InstallPrompt;
+
