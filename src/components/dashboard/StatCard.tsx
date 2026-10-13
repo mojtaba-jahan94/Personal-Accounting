@@ -30,7 +30,7 @@ export const StatCard: React.FC<StatCardProps> = ({
       : 'bg-[#A68A64]/15 text-[#A68A64] border-[#A68A64]/25';
 
   return (
-    <div className="p-5 rounded-3xl bg-[#F7F7F2]/90 dark:bg-[#1F2933]/70 backdrop-blur-xl border border-[#6B7280]/15 dark:border-[#D1D5DB]/15 shadow-sm hover:shadow-md hover:border-[#A68A64]/40 transition-all duration-200 relative overflow-hidden select-none group">
+    <div className="p-5 rounded-3xl bg-white/85 dark:bg-[#1F2933]/70 backdrop-blur-xl border border-[#6B7280]/15 dark:border-[#D1D5DB]/15 shadow-sm hover:shadow-md hover:border-[#A68A64]/40 transition-all duration-200 relative overflow-hidden select-none group">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold text-[#6B7280] dark:text-[#D1D5DB]/80 mb-1.5 whitespace-nowrap truncate">

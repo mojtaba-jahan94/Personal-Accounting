@@ -354,9 +354,9 @@ export const AssetsView: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. Portfolio Hero Banner (Nordic Charcoal & Warm Wood Luxury Panel) */}
+      {/* 2. Portfolio Hero Banner */}
       <LiquidGlassContainer
-        className="rounded-3xl border border-[#A68A64]/30 p-6 sm:p-8 shadow-2xl bg-gradient-to-br from-[#1F2933] via-[#141B22] to-[#1F2933] text-[#F7F7F2] relative overflow-hidden"
+        className="rounded-3xl border border-[#A68A64]/30 p-6 sm:p-8 shadow-lg dark:shadow-2xl bg-gradient-to-br from-white via-[#F7F7F2] to-[#EAE4DC] text-[#1F2933] dark:from-[#1F2933] dark:via-[#141B22] dark:to-[#1F2933] dark:text-[#F7F7F2] relative overflow-hidden"
       >
         {/* Soft Ambient Radiance */}
         <div className="absolute top-0 right-0 w-80 h-80 bg-[#A68A64]/10 rounded-full blur-3xl pointer-events-none" />
@@ -366,23 +366,23 @@ export const AssetsView: React.FC = () => {
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
             <div className="space-y-2">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="px-3 py-1 rounded-full bg-[#A68A64]/20 text-[#C2A882] border border-[#A68A64]/30 text-[11px] font-black tracking-wide flex items-center gap-1.5">
-                  <Gem className="w-3.5 h-3.5 text-[#C2A882]" />
+                <span className="px-3 py-1 rounded-full bg-[#A68A64]/20 text-[#A68A64] dark:text-[#C2A882] border border-[#A68A64]/30 text-[11px] font-black tracking-wide flex items-center gap-1.5">
+                  <Gem className="w-3.5 h-3.5 text-[#A68A64] dark:text-[#C2A882]" />
                   پرتفوی دارایی‌های سرمایه‌گذاری
                 </span>
 
-                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#2E7D5B]/20 border border-[#2E7D5B]/30 text-[#4ADE80] text-[11px] font-bold">
-                  <span className="w-2 h-2 rounded-full bg-[#4ADE80] animate-pulse" />
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#2E7D5B]/15 dark:bg-[#2E7D5B]/20 border border-[#2E7D5B]/30 text-[#2E7D5B] dark:text-[#4ADE80] text-[11px] font-bold">
+                  <span className="w-2 h-2 rounded-full bg-[#2E7D5B] dark:bg-[#4ADE80] animate-pulse" />
                   <span>
                     سورس‌ها: {priceSourceConfig.dollarTelegramChannel || '@tgju_org'}
                   </span>
                 </div>
               </div>
 
-              <h1 className="text-xl sm:text-2xl font-black text-[#F7F7F2] tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-black text-[#1F2933] dark:text-[#F7F7F2] tracking-tight">
                 مدیریت سبد طلا، سکه، ارز و سرمایه‌گذاری
               </h1>
-              <p className="text-xs text-[#D1D5DB]/80 max-w-2xl leading-relaxed">
+              <p className="text-xs text-[#6B7280] dark:text-[#D1D5DB]/80 max-w-2xl leading-relaxed">
                 ارزش روز دارایی‌ها، سود و زیان محقق‌نشده، توزیع ریسک و اتصال لحظه‌ای به منابع مظنه بازار
               </p>
             </div>
@@ -407,9 +407,9 @@ export const AssetsView: React.FC = () => {
                   setTradingAsset(assets[0] || null);
                   setIsTradeModalOpen(true);
                 }}
-                className="px-3.5 py-2.5 rounded-2xl bg-[#F7F7F2]/10 hover:bg-[#F7F7F2]/15 border border-[#D1D5DB]/20 text-[#F7F7F2] text-xs font-bold transition flex items-center gap-1.5 active:scale-95"
+                className="px-3.5 py-2.5 rounded-2xl bg-[#1F2933]/5 hover:bg-[#1F2933]/10 dark:bg-[#F7F7F2]/10 dark:hover:bg-[#F7F7F2]/15 border border-[#6B7280]/20 dark:border-[#D1D5DB]/20 text-[#1F2933] dark:text-[#F7F7F2] text-xs font-bold transition flex items-center gap-1.5 active:scale-95"
               >
-                <ArrowRightLeft className="w-4 h-4 text-[#C2A882]" />
+                <ArrowRightLeft className="w-4 h-4 text-[#A68A64] dark:text-[#C2A882]" />
                 <span>ثبت خرید/فروش</span>
               </button>
 
@@ -417,37 +417,37 @@ export const AssetsView: React.FC = () => {
               <button
                 onClick={handleRefreshRates}
                 disabled={isRefreshing}
-                className="p-2.5 sm:px-3.5 sm:py-2.5 rounded-2xl bg-[#F7F7F2]/10 hover:bg-[#F7F7F2]/15 border border-[#D1D5DB]/20 text-[#F7F7F2] text-xs font-bold transition flex items-center gap-2 active:scale-95 disabled:opacity-50"
+                className="p-2.5 sm:px-3.5 sm:py-2.5 rounded-2xl bg-[#1F2933]/5 hover:bg-[#1F2933]/10 dark:bg-[#F7F7F2]/10 dark:hover:bg-[#F7F7F2]/15 border border-[#6B7280]/20 dark:border-[#D1D5DB]/20 text-[#1F2933] dark:text-[#F7F7F2] text-xs font-bold transition flex items-center gap-2 active:scale-95 disabled:opacity-50"
                 title="به‌روزرسانی قیمت‌ها"
               >
-                <RefreshCw className={`w-4 h-4 text-[#C2A882] ${isRefreshing ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 text-[#A68A64] dark:text-[#C2A882] ${isRefreshing ? 'animate-spin' : ''}`} />
                 <span className="hidden sm:inline">بروزرسانی آنلاین نرخ‌ها</span>
               </button>
 
               {/* Telegram Paste Button */}
               <button
                 onClick={() => setIsTelegramModalOpen(true)}
-                className="px-3.5 py-2.5 rounded-2xl bg-[#4A6FA5]/25 hover:bg-[#4A6FA5]/35 border border-[#4A6FA5]/40 text-[#60A5FA] text-xs font-bold transition flex items-center gap-1.5 active:scale-95 shadow-xs"
+                className="px-3.5 py-2.5 rounded-2xl bg-[#4A6FA5]/15 hover:bg-[#4A6FA5]/25 dark:bg-[#4A6FA5]/25 dark:hover:bg-[#4A6FA5]/35 border border-[#4A6FA5]/30 dark:border-[#4A6FA5]/40 text-[#4A6FA5] dark:text-[#60A5FA] text-xs font-bold transition flex items-center gap-1.5 active:scale-95 shadow-xs"
                 title="پیست متن مظنه از تلگرام"
               >
-                <Send className="w-4 h-4 text-[#60A5FA] -rotate-45" />
+                <Send className="w-4 h-4 text-[#4A6FA5] dark:text-[#60A5FA] -rotate-45" />
                 <span>خواندن از تلگرام</span>
               </button>
 
               {/* Price Sources Settings */}
               <button
                 onClick={() => setIsSettingsModalOpen(true)}
-                className="px-3.5 py-2.5 rounded-2xl bg-[#F7F7F2]/10 hover:bg-[#F7F7F2]/15 border border-[#D1D5DB]/20 text-[#D1D5DB] text-xs font-bold transition flex items-center gap-1.5 active:scale-95"
+                className="px-3.5 py-2.5 rounded-2xl bg-[#1F2933]/5 hover:bg-[#1F2933]/10 dark:bg-[#F7F7F2]/10 dark:hover:bg-[#F7F7F2]/15 border border-[#6B7280]/20 dark:border-[#D1D5DB]/20 text-[#6B7280] dark:text-[#D1D5DB] text-xs font-bold transition flex items-center gap-1.5 active:scale-95"
                 title="تنظیمات منابع قیمت"
               >
-                <Sliders className="w-4 h-4 text-[#C2A882]" />
+                <Sliders className="w-4 h-4 text-[#A68A64] dark:text-[#C2A882]" />
                 <span className="hidden sm:inline">تنظیمات منابع قیمت</span>
               </button>
 
               {/* Terminal Zen Mode Toggle */}
               <button
                 onClick={() => setIsTerminalMode(!isTerminalMode)}
-                className="p-2.5 rounded-2xl bg-[#F7F7F2]/10 hover:bg-[#F7F7F2]/15 border border-[#D1D5DB]/20 text-[#D1D5DB] transition"
+                className="p-2.5 rounded-2xl bg-[#1F2933]/5 hover:bg-[#1F2933]/10 dark:bg-[#F7F7F2]/10 dark:hover:bg-[#F7F7F2]/15 border border-[#6B7280]/20 dark:border-[#D1D5DB]/20 text-[#6B7280] dark:text-[#D1D5DB] transition"
                 title={isTerminalMode ? 'خروج از حالت تمام‌صفحه' : 'حالت ترمینال مستقل'}
               >
                 {isTerminalMode ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
@@ -456,13 +456,13 @@ export const AssetsView: React.FC = () => {
           </div>
 
           {/* Hero 3-Pillar Valuation KPI Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-[#D1D5DB]/15">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/15">
             {/* 1. Total Market Value */}
-            <div className="p-4 rounded-2xl bg-[#F7F7F2]/10 border border-[#D1D5DB]/15 space-y-1">
-              <span className="text-xs text-[#D1D5DB]/70 font-medium">ارزش روز کل دارایی‌ها</span>
-              <div className="text-2xl font-black font-mono tabular-nums text-[#F7F7F2] dir-ltr text-right">
+            <div className="p-4 rounded-2xl bg-white/70 dark:bg-[#F7F7F2]/10 border border-[#6B7280]/15 dark:border-[#D1D5DB]/15 space-y-1">
+              <span className="text-xs text-[#6B7280] dark:text-[#D1D5DB]/70 font-medium">ارزش روز کل دارایی‌ها</span>
+              <div className="text-2xl font-black font-mono tabular-nums text-[#1F2933] dark:text-[#F7F7F2] dir-ltr text-right">
                 {formatNumber(totalPortfolioValueToman)}
-                <span className="text-xs font-sans font-bold text-[#D1D5DB]/70 mr-1.5">تومان</span>
+                <span className="text-xs font-sans font-bold text-[#6B7280] dark:text-[#D1D5DB]/70 mr-1.5">تومان</span>
               </div>
               <div className="text-xs font-mono tabular-nums font-bold text-[#A68A64] dir-ltr text-right">
                 ≈ {formatNumber(Math.round(totalPortfolioValueUsd))} USD $
@@ -470,32 +470,32 @@ export const AssetsView: React.FC = () => {
             </div>
 
             {/* 2. Total Buy Cost */}
-            <div className="p-4 rounded-2xl bg-[#F7F7F2]/10 border border-[#D1D5DB]/15 space-y-1">
-              <span className="text-xs text-[#D1D5DB]/70 font-medium">بهای تمام‌شده کل دارایی‌ها</span>
-              <div className="text-2xl font-black font-mono tabular-nums text-[#F7F7F2] dir-ltr text-right">
+            <div className="p-4 rounded-2xl bg-white/70 dark:bg-[#F7F7F2]/10 border border-[#6B7280]/15 dark:border-[#D1D5DB]/15 space-y-1">
+              <span className="text-xs text-[#6B7280] dark:text-[#D1D5DB]/70 font-medium">بهای تمام‌شده کل دارایی‌ها</span>
+              <div className="text-2xl font-black font-mono tabular-nums text-[#1F2933] dark:text-[#F7F7F2] dir-ltr text-right">
                 {formatNumber(totalPortfolioCostToman)}
-                <span className="text-xs font-sans font-bold text-[#D1D5DB]/70 mr-1.5">تومان</span>
+                <span className="text-xs font-sans font-bold text-[#6B7280] dark:text-[#D1D5DB]/70 mr-1.5">تومان</span>
               </div>
-              <div className="text-xs text-[#D1D5DB]/60">
+              <div className="text-xs text-[#6B7280] dark:text-[#D1D5DB]/60">
                 مجموع سرمایه اولیه اختصاص داده شده
               </div>
             </div>
 
             {/* 3. Total Profit / Loss */}
-            <div className="p-4 rounded-2xl bg-[#F7F7F2]/10 border border-[#D1D5DB]/15 space-y-1">
-              <span className="text-xs text-[#D1D5DB]/70 font-medium">سود / زیان کل سبد</span>
+            <div className="p-4 rounded-2xl bg-white/70 dark:bg-[#F7F7F2]/10 border border-[#6B7280]/15 dark:border-[#D1D5DB]/15 space-y-1">
+              <span className="text-xs text-[#6B7280] dark:text-[#D1D5DB]/70 font-medium">سود / زیان کل سبد</span>
               <div
                 className={`text-2xl font-black font-mono tabular-nums dir-ltr text-right ${
-                  totalPortfolioPnlToman >= 0 ? 'text-[#4ADE80]' : 'text-[#F87171]'
+                  totalPortfolioPnlToman >= 0 ? 'text-[#2E7D5B] dark:text-[#4ADE80]' : 'text-[#C0564B] dark:text-[#F87171]'
                 }`}
               >
                 {totalPortfolioPnlToman >= 0 ? '+' : ''}
                 {formatNumber(totalPortfolioPnlToman)}
-                <span className="text-xs font-sans font-bold text-[#D1D5DB]/70 mr-1.5">تومان</span>
+                <span className="text-xs font-sans font-bold text-[#6B7280] dark:text-[#D1D5DB]/70 mr-1.5">تومان</span>
               </div>
               <div
                 className={`text-xs font-mono tabular-nums font-bold dir-ltr text-right flex items-center justify-end gap-1 ${
-                  totalPortfolioPnlPercent >= 0 ? 'text-[#4ADE80]' : 'text-[#F87171]'
+                  totalPortfolioPnlPercent >= 0 ? 'text-[#2E7D5B] dark:text-[#4ADE80]' : 'text-[#C0564B] dark:text-[#F87171]'
                 }`}
               >
                 {totalPortfolioPnlPercent >= 0 ? (

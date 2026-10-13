@@ -102,10 +102,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         return (
           <div key="hero" className="space-y-4">
             {/* 1. Luxury Nordic Net Worth Hero Banner */}
-            <div className="rounded-3xl p-6 sm:p-7 bg-[#1F2933] text-[#F7F7F2] border border-[#6B7280]/20 shadow-2xl relative overflow-hidden select-none">
+            <div className="rounded-3xl p-6 sm:p-7 bg-gradient-to-br from-white via-[#F7F7F2] to-[#EAE4DC] text-[#1F2933] border border-[#A68A64]/30 shadow-lg dark:from-[#1F2933] dark:via-[#141B22] dark:to-[#1F2933] dark:text-[#F7F7F2] dark:border-[#6B7280]/20 dark:shadow-2xl relative overflow-hidden select-none">
               {/* Subtle Warm Wood Radial Ambient Glow */}
-              <div className="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-[#A68A64]/15 blur-3xl pointer-events-none" />
-              <div className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-[#6B7280]/15 blur-3xl pointer-events-none" />
+              <div className="absolute -top-24 -left-24 w-80 h-80 rounded-full bg-[#A68A64]/10 dark:bg-[#A68A64]/15 blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-24 -right-24 w-72 h-72 rounded-full bg-[#6B7280]/10 dark:bg-[#6B7280]/15 blur-3xl pointer-events-none" />
 
               <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div>
@@ -116,11 +116,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     </span>
                   </div>
 
-                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black font-mono tracking-tight text-[#F7F7F2]">
+                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black font-mono tracking-tight text-[#1F2933] dark:text-[#F7F7F2]">
                     {formatCurrency(totalNetWorth, currency)}
                   </h2>
 
-                  <p className="text-xs text-[#D1D5DB]/80 mt-1.5 flex items-center gap-2">
+                  <p className="text-xs text-[#6B7280] dark:text-[#D1D5DB]/80 mt-1.5 flex items-center gap-2">
                     <span>موجودی نقد + ارزش پورتفوی طلا و ارز + طلب‌ها − بدهی‌ها</span>
                   </p>
                 </div>
@@ -128,9 +128,9 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 {/* Wealth Breakdown Capsules */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full lg:w-auto">
                   {/* Liquid Cash */}
-                  <div className="p-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
-                    <span className="text-[10px] text-[#D1D5DB]/70 block font-medium">موجودی نقد</span>
-                    <span className="font-bold font-mono text-xs sm:text-sm text-[#F7F7F2] block mt-0.5 truncate">
+                  <div className="p-3 rounded-2xl bg-white/70 dark:bg-white/5 border border-[#6B7280]/15 dark:border-white/10 backdrop-blur-md">
+                    <span className="text-[10px] text-[#6B7280] dark:text-[#D1D5DB]/70 block font-medium">موجودی نقد</span>
+                    <span className="font-bold font-mono text-xs sm:text-sm text-[#1F2933] dark:text-[#F7F7F2] block mt-0.5 truncate">
                       {formatCurrency(totalBalance, currency)}
                     </span>
                   </div>
@@ -138,23 +138,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   {/* Portfolio Assets */}
                   <div className="p-3 rounded-2xl bg-[#A68A64]/15 border border-[#A68A64]/30 backdrop-blur-md">
                     <span className="text-[10px] text-[#A68A64] block font-bold">سبد دارایی و طلا</span>
-                    <span className="font-bold font-mono text-xs sm:text-sm text-[#F7F7F2] block mt-0.5 truncate">
+                    <span className="font-bold font-mono text-xs sm:text-sm text-[#1F2933] dark:text-[#F7F7F2] block mt-0.5 truncate">
                       {formatCurrency(totalPortfolioValueToman, currency)}
                     </span>
                   </div>
 
                   {/* Receivables */}
                   <div className="p-3 rounded-2xl bg-[#2E7D5B]/15 border border-[#2E7D5B]/30 backdrop-blur-md">
-                    <span className="text-[10px] text-[#4ADE80] block font-bold">طلب‌ها</span>
-                    <span className="font-bold font-mono text-xs sm:text-sm text-[#4ADE80] block mt-0.5 truncate">
+                    <span className="text-[10px] text-[#2E7D5B] dark:text-[#4ADE80] block font-bold">طلب‌ها</span>
+                    <span className="font-bold font-mono text-xs sm:text-sm text-[#2E7D5B] dark:text-[#4ADE80] block mt-0.5 truncate">
                       +{formatCurrency(totalReceivables, currency)}
                     </span>
                   </div>
 
                   {/* Debts */}
                   <div className="p-3 rounded-2xl bg-[#C0564B]/15 border border-[#C0564B]/30 backdrop-blur-md">
-                    <span className="text-[10px] text-[#F87171] block font-bold">بدهی‌ها</span>
-                    <span className="font-bold font-mono text-xs sm:text-sm text-[#F87171] block mt-0.5 truncate">
+                    <span className="text-[10px] text-[#C0564B] dark:text-[#F87171] block font-bold">بدهی‌ها</span>
+                    <span className="font-bold font-mono text-xs sm:text-sm text-[#C0564B] dark:text-[#F87171] block mt-0.5 truncate">
                       -{formatCurrency(totalPayableDebts, currency)}
                     </span>
                   </div>
@@ -162,7 +162,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
 
               {/* Action Toolbar */}
-              <div className="mt-6 pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
+              <div className="mt-6 pt-4 border-t border-[#6B7280]/15 dark:border-white/10 flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <button
                     onClick={onOpenTransactionModal}
@@ -174,7 +174,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                   <button
                     onClick={onOpenTransferModal}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-[#F7F7F2] font-bold text-xs transition active:scale-95"
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#1F2933]/5 hover:bg-[#1F2933]/10 dark:bg-white/10 dark:hover:bg-white/15 text-[#1F2933] dark:text-[#F7F7F2] font-bold text-xs transition active:scale-95 border border-[#6B7280]/20 dark:border-transparent"
                   >
                     <ArrowLeftRight className="w-3.5 h-3.5 text-[#A68A64]" />
                     <span>انتقال وجه</span>
@@ -183,7 +183,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                 <button
                   onClick={() => onSelectTab('assets')}
-                  className="flex items-center gap-1.5 text-xs font-bold text-[#A68A64] hover:text-[#C2A882] transition"
+                  className="flex items-center gap-1.5 text-xs font-bold text-[#A68A64] hover:text-[#8A704C] transition"
                 >
                   <span>مدیریت سبد طلا، سکه و ارز</span>
                   <ChevronLeft className="w-4 h-4" />
@@ -262,30 +262,30 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 {accounts.map((acc) => (
                   <div
                     key={acc.id}
-                    className="rounded-3xl p-5 text-[#F7F7F2] bg-[#1F2933] border border-[#6B7280]/20 relative overflow-hidden shadow-md flex flex-col justify-between h-40 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl group"
+                    className="rounded-3xl p-5 bg-gradient-to-br from-[#F7F7F2] via-[#EAE6DF] to-[#D1D5DB]/70 text-[#1F2933] border border-[#A68A64]/30 shadow-md dark:from-[#1F2933] dark:via-[#141B22] dark:to-[#1F2933] dark:text-[#F7F7F2] dark:border-[#6B7280]/20 dark:shadow-xl relative overflow-hidden flex flex-col justify-between h-40 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl group"
                   >
                     {/* Nordic warm ambient corner shine */}
-                    <div className="absolute top-0 right-0 w-28 h-28 bg-[#A68A64]/15 rounded-full blur-2xl pointer-events-none group-hover:bg-[#A68A64]/25 transition" />
+                    <div className="absolute top-0 right-0 w-28 h-28 bg-[#A68A64]/10 dark:bg-[#A68A64]/15 rounded-full blur-2xl pointer-events-none group-hover:bg-[#A68A64]/25 transition" />
 
                     <div className="flex items-start justify-between relative z-10">
                       <div>
-                        <span className="text-[11px] font-medium text-[#D1D5DB]/70">{acc.bankName || 'حساب بانکی'}</span>
-                        <h4 className="text-sm font-black truncate mt-0.5">{acc.name}</h4>
+                        <span className="text-[11px] font-medium text-[#6B7280] dark:text-[#D1D5DB]/70">{acc.bankName || 'حساب بانکی'}</span>
+                        <h4 className="text-sm font-black truncate mt-0.5 text-[#1F2933] dark:text-[#F7F7F2]">{acc.name}</h4>
                       </div>
-                      <span className="p-2 rounded-2xl bg-white/10 backdrop-blur-md text-[#A68A64]">
+                      <span className="p-2 rounded-2xl bg-black/5 dark:bg-white/10 backdrop-blur-md text-[#A68A64]">
                         <Landmark className="w-4 h-4" />
                       </span>
                     </div>
 
                     {acc.cardNumber && (
-                      <div className="font-mono text-xs tracking-widest text-[#D1D5DB] dir-ltr text-center font-bold relative z-10">
+                      <div className="font-mono text-xs tracking-widest text-[#6B7280] dark:text-[#D1D5DB] dir-ltr text-center font-bold relative z-10">
                         {formatCardNumber(acc.cardNumber)}
                       </div>
                     )}
 
-                    <div className="pt-2.5 border-t border-white/10 flex items-center justify-between relative z-10">
-                      <span className="text-[11px] text-[#D1D5DB]/70">موجودی:</span>
-                      <span className="font-black font-mono text-sm text-[#F7F7F2]">
+                    <div className="pt-2.5 border-t border-[#6B7280]/15 dark:border-white/10 flex items-center justify-between relative z-10">
+                      <span className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB]/70">موجودی:</span>
+                      <span className="font-black font-mono text-sm text-[#1F2933] dark:text-[#F7F7F2]">
                         {formatCurrency(acc.balance, currency)}
                       </span>
                     </div>

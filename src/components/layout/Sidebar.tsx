@@ -136,14 +136,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
                 <button
                   key={item.id}
                   onClick={() => onSelectTab(item.id)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl text-xs transition-all duration-200 relative ${
+                  className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-full text-xs transition-all duration-200 relative ${
                     isActive
                       ? 'bg-[#A68A64] text-[#F7F7F2] shadow-md shadow-[#A68A64]/25 font-semibold'
                       : 'text-[#6B7280] hover:bg-[#1F2933]/5 hover:text-[#1F2933] dark:text-[#D1D5DB] dark:hover:bg-white/5 dark:hover:text-[#F7F7F2] font-medium'
                   }`}
                 >
                   <div
-                    className={`w-7 h-7 rounded-xl flex items-center justify-center transition-all ${
+                    className={`w-7 h-7 rounded-full flex items-center justify-center transition-all ${
                       isActive
                         ? 'bg-white/20 text-[#F7F7F2]'
                         : 'bg-black/5 dark:bg-white/5 text-[#6B7280] dark:text-[#D1D5DB]'
@@ -155,7 +155,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
 
                   {item.badge && (
                     <span
-                      className={`mr-auto px-1.5 py-0.5 rounded-lg text-[10px] font-black ${
+                      className={`mr-auto px-2 py-0.5 rounded-full text-[10px] font-black ${
                         isActive
                           ? 'bg-white/25 text-[#F7F7F2]'
                           : 'bg-[#A68A64]/15 text-[#A68A64]'

@@ -235,12 +235,12 @@ export const TursoConfigModal: React.FC<TursoConfigModalProps> = ({ isOpen, onCl
                 <ol className="list-decimal list-inside space-y-1 text-[11px] text-[#6B7280] dark:text-[#D1D5DB]">
                   <li>ورود یا ثبت‌نام رایگان در سایت <a href="https://turso.tech" target="_blank" rel="noreferrer" className="text-[#A68A64] underline inline-flex items-center gap-0.5">turso.tech <ExternalLink className="w-2.5 h-2.5" /></a></li>
                   <li>اجرای دستور ساخت دیتابیس در ترمینال:
-                    <div className="mt-1 p-2 rounded-lg bg-[#1F2933] text-[#F7F7F2] font-mono text-[10px] select-all" dir="ltr">
+                    <div className="mt-1 p-2 rounded-lg bg-black/5 dark:bg-[#141B22] border border-[#6B7280]/15 dark:border-white/10 text-[#1F2933] dark:text-[#F7F7F2] font-mono text-[10px] select-all" dir="ltr">
                       turso db create personal-accounting
                     </div>
                   </li>
                   <li>دریافت آدرس و ایجاد توکن دائمی:
-                    <div className="mt-1 p-2 rounded-lg bg-[#1F2933] text-[#F7F7F2] font-mono text-[10px] select-all" dir="ltr">
+                    <div className="mt-1 p-2 rounded-lg bg-black/5 dark:bg-[#141B22] border border-[#6B7280]/15 dark:border-white/10 text-[#1F2933] dark:text-[#F7F7F2] font-mono text-[10px] select-all" dir="ltr">
                       turso db show personal-accounting --url<br/>
                       turso db tokens create personal-accounting -e none
                     </div>
@@ -252,7 +252,7 @@ export const TursoConfigModal: React.FC<TursoConfigModalProps> = ({ isOpen, onCl
         </form>
 
         {/* Sticky Footer */}
-        <div className="px-6 py-4 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10 bg-[#F7F7F2]/90 dark:bg-[#182028]/90 flex items-center justify-between gap-2 shrink-0">
+        <div className="px-6 py-4 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10 bg-[#F7F7F2]/90 dark:bg-[#1F2933]/90 flex items-center justify-between gap-2 shrink-0">
           <div className="flex items-center gap-2">
             <button
               type="button"

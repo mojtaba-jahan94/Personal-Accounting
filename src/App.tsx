@@ -10,6 +10,7 @@ import { DashboardView } from './components/dashboard/DashboardView';
 import { TransactionModal } from './components/transactions/TransactionModal';
 import { TransferModal } from './components/accounts/TransferModal';
 import { MinimalBackground } from './components/common/MinimalBackground';
+import { SilkWaveBackground } from './components/common/SilkWaveBackground';
 import { Transaction } from './types';
 
 // Code-split views for optimal bundle loading & performance
@@ -228,8 +229,12 @@ const MainApp: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col transition-colors relative">
-      {/* Minimal clean ambient background */}
-      <MinimalBackground />
+      {/* Ambient background: Silk Wave or Clean Minimal Nordic */}
+      {themeConfig.backgroundStyle === 'silk_wave' ? (
+        <SilkWaveBackground />
+      ) : (
+        <MinimalBackground />
+      )}
 
       <Header
         currentTab={currentTab}

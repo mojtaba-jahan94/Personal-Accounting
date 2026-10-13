@@ -21,7 +21,7 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   children,
   defaultExpanded = true,
   storageKey,
-  className = 'bg-[#F7F7F2]/85 dark:bg-[#1F2933]/75 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-[#6B7280]/15 dark:border-[#D1D5DB]/15 shadow-sm',
+  className = 'bg-white/85 dark:bg-[#1F2933]/75 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-[#6B7280]/15 dark:border-[#D1D5DB]/15 shadow-sm',
   headerClassName = '',
 }) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(() => {

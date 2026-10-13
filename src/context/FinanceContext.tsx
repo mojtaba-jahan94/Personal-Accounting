@@ -541,7 +541,14 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const saved = localStorage.getItem(STORAGE_KEYS.THEME_CONFIG);
     if (saved) {
       try {
-        return { ...DEFAULT_THEME_CONFIG, ...JSON.parse(saved) };
+        const parsed = JSON.parse(saved);
+        return {
+          ...DEFAULT_THEME_CONFIG,
+          ...parsed,
+          accent: 'wood',
+          customAccentHex: '#A68A64',
+          amoledMode: false,
+        };
       } catch (e) {
         return DEFAULT_THEME_CONFIG;
       }
@@ -551,20 +558,22 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const darkMode = themeConfig.mode === 'dark';
 
-  // Apply Theme Settings to Root Document
+  // Apply Theme Settings to Root Document & Body
   useEffect(() => {
     const root = document.documentElement;
+    const body = document.body;
+
     if (themeConfig.mode === 'dark') {
       root.classList.add('dark');
+      body?.classList.add('dark');
     } else {
       root.classList.remove('dark');
+      body?.classList.remove('dark');
     }
 
-    if (themeConfig.amoledMode && themeConfig.mode === 'dark') {
-      root.classList.add('amoled');
-    } else {
-      root.classList.remove('amoled');
-    }
+    // Always clear legacy AMOLED class to prevent light mode overrides
+    root.classList.remove('amoled');
+    body?.classList.remove('amoled');
 
     // Liquid Glass On/Off
     if (themeConfig.liquidGlass === false || themeConfig.performanceMode) {
@@ -580,9 +589,15 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       root.classList.remove('perf-mode');
     }
 
-    root.setAttribute('data-accent', themeConfig.accent);
-    root.setAttribute('data-glass', themeConfig.glassIntensity);
-    root.setAttribute('data-anim', themeConfig.animationSpeed);
+    // Permanently enforce Nordic Warm Wood Accent tokens
+    root.setAttribute('data-accent', 'wood');
+    root.style.setProperty('--primary-color', '#A68A64');
+    root.style.setProperty('--primary-rgb', '166, 138, 100');
+    root.style.setProperty('--primary-hover', '#8A704C');
+    root.style.setProperty('--primary-glow', 'rgba(166, 138, 100, 0.35)');
+
+    root.setAttribute('data-glass', themeConfig.glassIntensity || 'medium');
+    root.setAttribute('data-anim', themeConfig.animationSpeed || 'fast');
     root.setAttribute('data-radius', themeConfig.borderRadius || 'smooth');
     root.setAttribute('data-glow', themeConfig.ambientGlow || 'subtle');
     root.setAttribute('data-light-style', themeConfig.lightStyle || 'frost');
@@ -592,23 +607,6 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     root.style.setProperty('--glass-blur', `${themeConfig.glassBlur ?? 14}px`);
     root.style.setProperty('--glass-refraction', String(themeConfig.glassRefraction ?? 0.5));
     root.style.setProperty('--glass-saturate', `${themeConfig.glassSaturation ?? 160}%`);
-
-    // Dynamic Custom Accent Color if selected
-    if (themeConfig.accent === 'custom' && themeConfig.customAccentHex) {
-      const hex = themeConfig.customAccentHex;
-      const r = parseInt(hex.slice(1, 3), 16) || 99;
-      const g = parseInt(hex.slice(3, 5), 16) || 102;
-      const b = parseInt(hex.slice(5, 7), 16) || 241;
-      root.style.setProperty('--primary-color', hex);
-      root.style.setProperty('--primary-rgb', `${r}, ${g}, ${b}`);
-      root.style.setProperty('--primary-hover', hex);
-      root.style.setProperty('--primary-glow', `rgba(${r}, ${g}, ${b}, 0.28)`);
-    } else {
-      root.style.removeProperty('--primary-color');
-      root.style.removeProperty('--primary-rgb');
-      root.style.removeProperty('--primary-hover');
-      root.style.removeProperty('--primary-glow');
-    }
 
     localStorage.setItem(STORAGE_KEYS.THEME_CONFIG, JSON.stringify(themeConfig));
   }, [themeConfig]);
@@ -624,6 +622,8 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setThemeConfig(prev => ({
       ...prev,
       ...updates,
+      accent: 'wood',
+      customAccentHex: '#A68A64',
     }));
   };
 

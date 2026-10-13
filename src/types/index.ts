@@ -135,14 +135,14 @@ export interface Cheque {
 
 export type Currency = 'toman' | 'rial';
 
-// Theme Studio Pro Types
-export type AccentColor = 'wood' | 'indigo' | 'emerald' | 'rose' | 'amber' | 'cyan' | 'purple' | 'custom';
+// Theme Studio Pro Types (Nordic Warm Wood Palette)
+export type AccentColor = 'wood';
 export type GlassIntensity = 'low' | 'medium' | 'high';
 export type AnimationSpeed = 'fast' | 'normal' | 'none';
 export type BorderRadius = 'sharp' | 'smooth' | 'round';
 export type AmbientGlow = 'off' | 'subtle' | 'vibrant';
 export type LightStyle = 'pure_white' | 'frost' | 'warm_cream' | 'soft_slate';
-export type BackgroundStyle = 'clean_minimal' | 'subtle_mesh' | 'dot_matrix' | 'soft_aurora' | 'pure_solid';
+export type BackgroundStyle = 'clean_minimal' | 'silk_wave';
 
 export type DashboardSectionKey =
   | 'showHero'
@@ -172,9 +172,9 @@ export interface ThemeConfig {
   liquidGlass: boolean; // Toggle Liquid Glass on/off
   performanceMode: boolean; // Ultra-light mode for mid-range phones
   lightStyle: LightStyle; // Light Mode Customization
-  backgroundStyle?: BackgroundStyle; // Customizable Background Style
-  spotlight1Color?: string; // Independent Color for Spotlight 1
-  spotlight2Color?: string; // Independent Color for Spotlight 2
+  backgroundStyle?: BackgroundStyle; // Customizable Background Style (clean_minimal | silk_wave)
+  spotlight1Color?: string;
+  spotlight2Color?: string;
   glassIntensity: GlassIntensity;
   glassOpacity?: number; // 0.2 to 1.0 (Transparency)
   glassBlur?: number; // 4 to 32 (Blur intensity in px)

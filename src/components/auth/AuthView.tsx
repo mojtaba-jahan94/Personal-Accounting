@@ -104,7 +104,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
         </div>
 
         {/* Card */}
-        <div className="bg-[#F7F7F2]/90 dark:bg-[#141B22]/80 backdrop-blur-xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+        <div className="bg-white/90 dark:bg-[#141B22]/80 backdrop-blur-xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
           {/* Tab selector */}
           <div className="grid grid-cols-2 gap-1.5 p-1 bg-[#6B7280]/15 dark:bg-[#D1D5DB]/15 rounded-2xl text-xs font-bold">
             <button
