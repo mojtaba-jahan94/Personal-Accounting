@@ -361,6 +361,7 @@ export const DEFAULT_DASHBOARD_CONFIG: DashboardSectionConfig = {
 
 const DEFAULT_THEME_CONFIG: ThemeConfig = {
   mode: 'light',
+  palette: 'nordic',
   accent: 'wood',
   customAccentHex: '#A68A64',
   amoledMode: false,
@@ -542,11 +543,13 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
+        const palette = parsed.palette || 'nordic';
         return {
           ...DEFAULT_THEME_CONFIG,
           ...parsed,
+          palette,
           accent: 'wood',
-          customAccentHex: '#A68A64',
+          customAccentHex: palette === 'juniper_coral' ? '#7D2826' : '#A68A64',
           amoledMode: false,
         };
       } catch (e) {
@@ -589,12 +592,71 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       root.classList.remove('perf-mode');
     }
 
-    // Permanently enforce Nordic Warm Wood Accent tokens
-    root.setAttribute('data-accent', 'wood');
-    root.style.setProperty('--primary-color', '#A68A64');
-    root.style.setProperty('--primary-rgb', '166, 138, 100');
-    root.style.setProperty('--primary-hover', '#8A704C');
-    root.style.setProperty('--primary-glow', 'rgba(166, 138, 100, 0.35)');
+    // Apply Palette Identity (Nordic vs Juniper & Coral)
+    const currentPalette = themeConfig.palette || 'nordic';
+    root.setAttribute('data-theme', currentPalette);
+    body?.setAttribute('data-theme', currentPalette);
+
+    if (currentPalette === 'juniper_coral') {
+      root.setAttribute('data-accent', 'coral');
+      const isDark = themeConfig.mode === 'dark';
+      const coralAccent = isDark ? '#E26865' : '#7D2826';
+      const coralHover = isDark ? '#F87171' : '#631E1D';
+      const coralRgb = isDark ? '226, 104, 101' : '125, 40, 38';
+
+      root.style.setProperty('--primary-color', coralAccent);
+      root.style.setProperty('--primary-rgb', coralRgb);
+      root.style.setProperty('--primary-hover', coralHover);
+      root.style.setProperty('--primary-glow', 'rgba(125, 40, 38, 0.35)');
+
+      // Palette core tokens
+      root.style.setProperty('--color-candle', '#EFE9D7');
+      root.style.setProperty('--color-coral', '#7D2826');
+      root.style.setProperty('--color-leaf', '#898861');
+      root.style.setProperty('--color-juniper', '#343723');
+
+      if (isDark) {
+        root.style.setProperty('--bg-base', '#202316');
+        root.style.setProperty('--bg-surface', '#343723');
+        root.style.setProperty('--bg-surface-secondary', 'rgba(52, 55, 35, 0.75)');
+        root.style.setProperty('--text-primary', '#EFE9D7');
+        root.style.setProperty('--text-muted', '#C5C3A5');
+        root.style.setProperty('--border-subtle', 'rgba(137, 136, 97, 0.25)');
+        root.style.setProperty('--border-cloud', 'rgba(239, 233, 215, 0.2)');
+      } else {
+        root.style.setProperty('--bg-base', '#EFE9D7');
+        root.style.setProperty('--bg-surface', '#FFFFFF');
+        root.style.setProperty('--bg-surface-secondary', '#E5DEC8');
+        root.style.setProperty('--text-primary', '#343723');
+        root.style.setProperty('--text-muted', '#626647');
+        root.style.setProperty('--border-subtle', 'rgba(137, 136, 97, 0.25)');
+        root.style.setProperty('--border-cloud', '#D6CEBA');
+      }
+    } else {
+      root.setAttribute('data-accent', 'wood');
+      root.style.setProperty('--primary-color', '#A68A64');
+      root.style.setProperty('--primary-rgb', '166, 138, 100');
+      root.style.setProperty('--primary-hover', '#8A704C');
+      root.style.setProperty('--primary-glow', 'rgba(166, 138, 100, 0.35)');
+
+      if (themeConfig.mode === 'dark') {
+        root.style.setProperty('--bg-base', '#1F2933');
+        root.style.setProperty('--bg-surface', '#263340');
+        root.style.setProperty('--bg-surface-secondary', 'rgba(31, 41, 51, 0.75)');
+        root.style.setProperty('--text-primary', '#F7F7F2');
+        root.style.setProperty('--text-muted', '#D1D5DB');
+        root.style.setProperty('--border-subtle', 'rgba(209, 213, 219, 0.15)');
+        root.style.setProperty('--border-cloud', 'rgba(209, 213, 219, 0.22)');
+      } else {
+        root.style.setProperty('--bg-base', '#F7F7F2');
+        root.style.setProperty('--bg-surface', '#FFFFFF');
+        root.style.setProperty('--bg-surface-secondary', '#D1D5DB');
+        root.style.setProperty('--text-primary', '#1F2933');
+        root.style.setProperty('--text-muted', '#6B7280');
+        root.style.setProperty('--border-subtle', 'rgba(107, 114, 128, 0.2)');
+        root.style.setProperty('--border-cloud', '#D1D5DB');
+      }
+    }
 
     root.setAttribute('data-glass', themeConfig.glassIntensity || 'medium');
     root.setAttribute('data-anim', themeConfig.animationSpeed || 'fast');
@@ -619,12 +681,17 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   };
 
   const updateThemeConfig = (updates: Partial<ThemeConfig>) => {
-    setThemeConfig(prev => ({
-      ...prev,
-      ...updates,
-      accent: 'wood',
-      customAccentHex: '#A68A64',
-    }));
+    setThemeConfig(prev => {
+      const nextPalette = updates.palette !== undefined ? updates.palette : (prev.palette || 'nordic');
+      const nextAccentHex = nextPalette === 'juniper_coral' ? '#7D2826' : '#A68A64';
+      return {
+        ...prev,
+        ...updates,
+        palette: nextPalette,
+        accent: 'wood',
+        customAccentHex: updates.customAccentHex || nextAccentHex,
+      };
+    });
   };
 
   const [dashboardConfig, setDashboardConfig] = useState<DashboardSectionConfig>(() => {

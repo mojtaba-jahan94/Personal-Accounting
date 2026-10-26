@@ -91,6 +91,295 @@ th {
   background-color: rgba(166, 138, 100, 0.15) !important;
 }
 
+/* ==========================================================================
+   Theme Palette: Juniper & Coral (Candle #EFE9D7, Coral #7D2826, Leaf #898861, Juniper #343723)
+   ========================================================================== */
+[data-theme="juniper_coral"] {
+  --primary-color: #7D2826;
+  --primary-rgb: 125, 40, 38;
+  --primary-hover: #631E1D;
+  --primary-glow: rgba(125, 40, 38, 0.35);
+
+  --bg-base: #EFE9D7;
+  --bg-surface: #FFFFFF;
+  --bg-surface-secondary: #E5DEC8;
+  --text-primary: #343723;
+  --text-muted: #5D6043;
+  --border-subtle: rgba(137, 136, 97, 0.25);
+  --border-cloud: #D6CEBA;
+}
+
+[data-theme="juniper_coral"].dark,
+.dark[data-theme="juniper_coral"],
+.dark [data-theme="juniper_coral"] {
+  --primary-color: #E26865;
+  --primary-rgb: 226, 104, 101;
+  --primary-hover: #F87171;
+  --primary-glow: rgba(226, 104, 101, 0.35);
+
+  --bg-base: #202316;
+  --bg-surface: #343723;
+  --bg-surface-secondary: rgba(52, 55, 35, 0.75);
+  --text-primary: #EFE9D7;
+  --text-muted: #C5C3A5;
+  --border-subtle: rgba(137, 136, 97, 0.25);
+  --border-cloud: rgba(239, 233, 215, 0.2);
+}
+
+/* Primary Accents (Wood #A68A64 -> Coral #7D2826) */
+[data-theme="juniper_coral"] .bg-\[\#A68A64\] {
+  background-color: #7D2826 !important;
+}
+.dark[data-theme="juniper_coral"] .bg-\[\#A68A64\],
+[data-theme="juniper_coral"].dark .bg-\[\#A68A64\] {
+  background-color: #C84643 !important;
+}
+
+[data-theme="juniper_coral"] .hover\:bg-\[\#8A704C\]:hover {
+  background-color: #631E1D !important;
+}
+.dark[data-theme="juniper_coral"] .hover\:bg-\[\#8A704C\]:hover,
+[data-theme="juniper_coral"].dark .hover\:bg-\[\#8A704C\]:hover {
+  background-color: #A33330 !important;
+}
+
+[data-theme="juniper_coral"] .bg-\[\#A68A64\]\/10 {
+  background-color: rgba(125, 40, 38, 0.12) !important;
+}
+.dark[data-theme="juniper_coral"] .bg-\[\#A68A64\]\/10,
+[data-theme="juniper_coral"].dark .bg-\[\#A68A64\]\/10 {
+  background-color: rgba(226, 104, 101, 0.15) !important;
+}
+
+[data-theme="juniper_coral"] .bg-\[\#A68A64\]\/15 {
+  background-color: rgba(125, 40, 38, 0.16) !important;
+}
+.dark[data-theme="juniper_coral"] .bg-\[\#A68A64\]\/15,
+[data-theme="juniper_coral"].dark .bg-\[\#A68A64\]\/15 {
+  background-color: rgba(226, 104, 101, 0.20) !important;
+}
+
+[data-theme="juniper_coral"] .bg-\[\#A68A64\]\/20 {
+  background-color: rgba(125, 40, 38, 0.22) !important;
+}
+.dark[data-theme="juniper_coral"] .bg-\[\#A68A64\]\/20,
+[data-theme="juniper_coral"].dark .bg-\[\#A68A64\]\/20 {
+  background-color: rgba(226, 104, 101, 0.25) !important;
+}
+
+[data-theme="juniper_coral"] .bg-\[\#A68A64\]\/25 {
+  background-color: rgba(125, 40, 38, 0.28) !important;
+}
+
+[data-theme="juniper_coral"] .text-\[\#A68A64\] {
+  color: #7D2826 !important;
+}
+.dark[data-theme="juniper_coral"] .text-\[\#A68A64\],
+[data-theme="juniper_coral"].dark .text-\[\#A68A64\] {
+  color: #E26865 !important;
+}
+
+[data-theme="juniper_coral"] .text-\[\#C2A882\],
+[data-theme="juniper_coral"] .dark\:text-\[\#C2A882\] {
+  color: #E26865 !important;
+}
+
+[data-theme="juniper_coral"] .border-\[\#A68A64\] {
+  border-color: #7D2826 !important;
+}
+.dark[data-theme="juniper_coral"] .border-\[\#A68A64\],
+[data-theme="juniper_coral"].dark .border-\[\#A68A64\] {
+  border-color: #E26865 !important;
+}
+
+[data-theme="juniper_coral"] .border-\[\#A68A64\]\/20 {
+  border-color: rgba(125, 40, 38, 0.22) !important;
+}
+[data-theme="juniper_coral"] .border-\[\#A68A64\]\/25 {
+  border-color: rgba(125, 40, 38, 0.28) !important;
+}
+[data-theme="juniper_coral"] .border-\[\#A68A64\]\/30 {
+  border-color: rgba(125, 40, 38, 0.35) !important;
+}
+.dark[data-theme="juniper_coral"] .border-\[\#A68A64\]\/20,
+.dark[data-theme="juniper_coral"] .border-\[\#A68A64\]\/25,
+.dark[data-theme="juniper_coral"] .border-\[\#A68A64\]\/30 {
+  border-color: rgba(226, 104, 101, 0.35) !important;
+}
+
+[data-theme="juniper_coral"] .focus\:border-\[\#A68A64\]:focus {
+  border-color: #7D2826 !important;
+}
+[data-theme="juniper_coral"] .focus\:ring-\[\#A68A64\]:focus {
+  --tw-ring-color: #7D2826 !important;
+}
+.dark[data-theme="juniper_coral"] .focus\:border-\[\#A68A64\]:focus {
+  border-color: #E26865 !important;
+}
+.dark[data-theme="juniper_coral"] .focus\:ring-\[\#A68A64\]:focus {
+  --tw-ring-color: #E26865 !important;
+}
+
+[data-theme="juniper_coral"] .hover\:border-\[\#A68A64\]\/40:hover,
+[data-theme="juniper_coral"] .hover\:border-\[\#A68A64\]\/30:hover {
+  border-color: rgba(125, 40, 38, 0.45) !important;
+}
+.dark[data-theme="juniper_coral"] .hover\:border-\[\#A68A64\]\/40:hover,
+.dark[data-theme="juniper_coral"] .hover\:border-\[\#A68A64\]\/30:hover {
+  border-color: rgba(226, 104, 101, 0.5) !important;
+}
+
+[data-theme="juniper_coral"] .shadow-\[\#A68A64\]\/25,
+[data-theme="juniper_coral"] .shadow-\[\#A68A64\]\/30,
+[data-theme="juniper_coral"] .shadow-\[\#A68A64\]\/40,
+[data-theme="juniper_coral"] .shadow-\[\#A68A64\]\/15,
+[data-theme="juniper_coral"] .shadow-\[\#A68A64\]\/10 {
+  --tw-shadow-color: rgba(125, 40, 38, 0.25) !important;
+}
+.dark[data-theme="juniper_coral"] .shadow-\[\#A68A64\]\/25,
+.dark[data-theme="juniper_coral"] .shadow-\[\#A68A64\]\/30,
+.dark[data-theme="juniper_coral"] .shadow-\[\#A68A64\]\/40 {
+  --tw-shadow-color: rgba(226, 104, 101, 0.3) !important;
+}
+
+/* Light Mode Surfaces & Text: Candle (#EFE9D7), Juniper (#343723), Leaf (#898861) */
+html:not(.dark)[data-theme="juniper_coral"] body {
+  background-color: #EFE9D7 !important;
+  color: #343723 !important;
+}
+
+html:not(.dark)[data-theme="juniper_coral"] .bg-\[\#F7F7F2\] {
+  background-color: #EFE9D7 !important;
+}
+html:not(.dark)[data-theme="juniper_coral"] .bg-\[\#F7F7F2\]\/90 {
+  background-color: rgba(239, 233, 215, 0.92) !important;
+}
+html:not(.dark)[data-theme="juniper_coral"] .bg-\[\#F7F7F2\]\/80 {
+  background-color: rgba(239, 233, 215, 0.82) !important;
+}
+html:not(.dark)[data-theme="juniper_coral"] .bg-\[\#F7F7F2\]\/60 {
+  background-color: rgba(239, 233, 215, 0.65) !important;
+}
+html:not(.dark)[data-theme="juniper_coral"] .bg-\[\#F7F7F2\]\/50 {
+  background-color: rgba(239, 233, 215, 0.55) !important;
+}
+
+html:not(.dark)[data-theme="juniper_coral"] .text-\[\#1F2933\] {
+  color: #343723 !important;
+}
+
+html:not(.dark)[data-theme="juniper_coral"] .text-\[\#6B7280\] {
+  color: #5D6043 !important;
+}
+
+html:not(.dark)[data-theme="juniper_coral"] .border-\[\#6B7280\]\/10,
+html:not(.dark)[data-theme="juniper_coral"] .border-\[\#6B7280\]\/15,
+html:not(.dark)[data-theme="juniper_coral"] .border-\[\#6B7280\]\/20 {
+  border-color: rgba(137, 136, 97, 0.22) !important;
+}
+html:not(.dark)[data-theme="juniper_coral"] .border-\[\#D1D5DB\] {
+  border-color: rgba(137, 136, 97, 0.35) !important;
+}
+
+/* Dark Mode Surfaces & Text: Juniper (#343723), Candle (#EFE9D7), Leaf (#898861) */
+.dark[data-theme="juniper_coral"] body {
+  background-color: #202316 !important;
+  color: #EFE9D7 !important;
+}
+
+.dark[data-theme="juniper_coral"] .dark\:bg-\[\#1F2933\],
+.dark[data-theme="juniper_coral"] .bg-\[\#1F2933\] {
+  background-color: #343723 !important;
+}
+.dark[data-theme="juniper_coral"] .dark\:bg-\[\#1F2933\]\/60 {
+  background-color: rgba(52, 55, 35, 0.65) !important;
+}
+.dark[data-theme="juniper_coral"] .dark\:bg-\[\#1F2933\]\/70 {
+  background-color: rgba(52, 55, 35, 0.72) !important;
+}
+.dark[data-theme="juniper_coral"] .dark\:bg-\[\#1F2933\]\/80 {
+  background-color: rgba(52, 55, 35, 0.82) !important;
+}
+.dark[data-theme="juniper_coral"] .dark\:bg-\[\#1F2933\]\/85 {
+  background-color: rgba(52, 55, 35, 0.86) !important;
+}
+.dark[data-theme="juniper_coral"] .dark\:bg-\[\#1F2933\]\/90 {
+  background-color: rgba(52, 55, 35, 0.92) !important;
+}
+.dark[data-theme="juniper_coral"] .dark\:bg-\[\#1F2933\]\/95 {
+  background-color: rgba(52, 55, 35, 0.95) !important;
+}
+
+.dark[data-theme="juniper_coral"] .dark\:bg-\[\#141B22\],
+.dark[data-theme="juniper_coral"] .bg-\[\#141B22\] {
+  background-color: #202316 !important;
+}
+.dark[data-theme="juniper_coral"] .dark\:bg-\[\#141B22\]\/50 {
+  background-color: rgba(32, 35, 22, 0.55) !important;
+}
+.dark[data-theme="juniper_coral"] .dark\:bg-\[\#141B22\]\/60 {
+  background-color: rgba(32, 35, 22, 0.65) !important;
+}
+
+.dark[data-theme="juniper_coral"] .dark\:text-\[\#F7F7F2\],
+.dark[data-theme="juniper_coral"] .text-\[\#F7F7F2\] {
+  color: #EFE9D7 !important;
+}
+
+.dark[data-theme="juniper_coral"] .dark\:text-\[\#D1D5DB\],
+.dark[data-theme="juniper_coral"] .dark\:text-\[\#D1D5DB\]\/70,
+.dark[data-theme="juniper_coral"] .dark\:text-\[\#D1D5DB\]\/80,
+.dark[data-theme="juniper_coral"] .text-\[\#D1D5DB\] {
+  color: #C5C3A5 !important;
+}
+
+.dark[data-theme="juniper_coral"] .dark\:border-\[\#D1D5DB\]\/10,
+.dark[data-theme="juniper_coral"] .dark\:border-\[\#D1D5DB\]\/15,
+.dark[data-theme="juniper_coral"] .dark\:border-\[\#D1D5DB\]\/20 {
+  border-color: rgba(137, 136, 97, 0.28) !important;
+}
+
+/* Glass Surfaces for Juniper & Coral */
+[data-theme="juniper_coral"] .liquid-glass,
+[data-theme="juniper_coral"] .liquid-glass-card,
+[data-theme="juniper_coral"] .liquid-glass-crystal {
+  background: rgba(239, 233, 215, var(--glass-bg-opacity, 0.88)) !important;
+  color: #343723 !important;
+  border-color: rgba(137, 136, 97, 0.3) !important;
+}
+
+.dark[data-theme="juniper_coral"] .liquid-glass,
+.dark[data-theme="juniper_coral"] .liquid-glass-card,
+.dark[data-theme="juniper_coral"] .liquid-glass-crystal {
+  background: rgba(52, 55, 35, calc(var(--glass-bg-opacity, 0.86) * 0.92)) !important;
+  color: #EFE9D7 !important;
+  border-color: rgba(137, 136, 97, 0.25) !important;
+}
+
+[data-theme="juniper_coral"] .glass-capsule-bar,
+[data-theme="juniper_coral"] .glass-dock {
+  background: rgba(239, 233, 215, 0.92) !important;
+  border-color: rgba(137, 136, 97, 0.32) !important;
+}
+
+.dark[data-theme="juniper_coral"] .glass-capsule-bar,
+.dark[data-theme="juniper_coral"] .glass-dock {
+  background: rgba(32, 35, 22, 0.9) !important;
+  border-color: rgba(137, 136, 97, 0.25) !important;
+}
+
+[data-theme="juniper_coral"] .liquid-glass-pill-lens:hover {
+  border-color: rgba(125, 40, 38, 0.4) !important;
+}
+.dark[data-theme="juniper_coral"] .liquid-glass-pill-lens:hover {
+  border-color: rgba(226, 104, 101, 0.5) !important;
+}
+
+[data-theme="juniper_coral"] ::selection {
+  background-color: #7D2826 !important;
+  color: #EFE9D7 !important;
+}
+
 /* Glass Intensity Presets */
 [data-glass="low"] {
   --glass-blur: 8px;

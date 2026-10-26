@@ -1,6 +1,10 @@
 import React, { useEffect, useRef } from 'react';
+import { useFinance } from '../../context/FinanceContext';
 
 export const SilkWaveBackground: React.FC = () => {
+  const { themeConfig } = useFinance();
+  const isJuniper = themeConfig.palette === 'juniper_coral';
+
   const animFrameRef = useRef<number | null>(null);
   const phaseRef = useRef<number>(0);
   const waveRef1 = useRef<SVGPathElement>(null);
@@ -80,10 +84,16 @@ export const SilkWaveBackground: React.FC = () => {
       className="fixed inset-0 pointer-events-none overflow-hidden z-0 select-none transition-colors duration-500"
       aria-hidden="true"
     >
-      {/* 1. Base Layer: Nordic Charcoal in Dark Mode, Snow Cream in Light Mode */}
-      <div className="absolute inset-0 bg-[#F7F7F2] dark:bg-[#1F2933] amoled:bg-[#141B22] transition-colors duration-500" />
+      {/* 1. Base Layer */}
+      <div
+        className={`absolute inset-0 transition-colors duration-500 ${
+          isJuniper
+            ? 'bg-[#EFE9D7] dark:bg-[#202316]'
+            : 'bg-[#F7F7F2] dark:bg-[#1F2933]'
+        }`}
+      />
 
-      {/* 2. Fluid 3D Satin / Silk Wave Layer (Nordic Warm Wood Palette) */}
+      {/* 2. Fluid 3D Satin / Silk Wave Layer */}
       <svg
         className="absolute inset-0 w-full h-full object-cover opacity-85 dark:opacity-75 transition-opacity duration-500"
         viewBox="0 0 1440 900"
@@ -91,35 +101,78 @@ export const SilkWaveBackground: React.FC = () => {
         xmlns="http://www.w3.org/2000/svg"
       >
         <defs>
-          {/* Main Warm Wood Ribbon Gradient */}
+          {/* Main Ribbon Gradient */}
           <linearGradient id="nordicSilkRibbon" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#C2A882" />
-            <stop offset="28%" stopColor="#A68A64" />
-            <stop offset="65%" stopColor="#8A704C" />
-            <stop offset="88%" stopColor="#6B7280" />
-            <stop offset="100%" stopColor="#D1D5DB" />
+            {isJuniper ? (
+              <>
+                <stop offset="0%" stopColor="#A33330" />
+                <stop offset="28%" stopColor="#7D2826" />
+                <stop offset="65%" stopColor="#631E1D" />
+                <stop offset="88%" stopColor="#898861" />
+                <stop offset="100%" stopColor="#343723" />
+              </>
+            ) : (
+              <>
+                <stop offset="0%" stopColor="#C2A882" />
+                <stop offset="28%" stopColor="#A68A64" />
+                <stop offset="65%" stopColor="#8A704C" />
+                <stop offset="88%" stopColor="#6B7280" />
+                <stop offset="100%" stopColor="#D1D5DB" />
+              </>
+            )}
           </linearGradient>
 
-          {/* Deep Shadow Fold Gradient (Charcoal Anchor) */}
+          {/* Deep Shadow Fold Gradient */}
           <linearGradient id="nordicSilkShadow" x1="0%" y1="100%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#141B22" stopOpacity="0.85" />
-            <stop offset="45%" stopColor="#1F2933" stopOpacity="0.6" />
-            <stop offset="100%" stopColor="#6B7280" stopOpacity="0.1" />
+            {isJuniper ? (
+              <>
+                <stop offset="0%" stopColor="#15170D" stopOpacity="0.85" />
+                <stop offset="45%" stopColor="#202316" stopOpacity="0.6" />
+                <stop offset="100%" stopColor="#343723" stopOpacity="0.1" />
+              </>
+            ) : (
+              <>
+                <stop offset="0%" stopColor="#141B22" stopOpacity="0.85" />
+                <stop offset="45%" stopColor="#1F2933" stopOpacity="0.6" />
+                <stop offset="100%" stopColor="#6B7280" stopOpacity="0.1" />
+              </>
+            )}
           </linearGradient>
 
-          {/* Warm Cream Specular Highlight Edge */}
+          {/* Specular Highlight Edge */}
           <linearGradient id="nordicSilkHighlight" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.9" />
-            <stop offset="35%" stopColor="#F7F7F2" stopOpacity="0.8" />
-            <stop offset="70%" stopColor="#C2A882" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#A68A64" stopOpacity="0.0" />
+            {isJuniper ? (
+              <>
+                <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.9" />
+                <stop offset="35%" stopColor="#EFE9D7" stopOpacity="0.8" />
+                <stop offset="70%" stopColor="#898861" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#7D2826" stopOpacity="0.0" />
+              </>
+            ) : (
+              <>
+                <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.9" />
+                <stop offset="35%" stopColor="#F7F7F2" stopOpacity="0.8" />
+                <stop offset="70%" stopColor="#C2A882" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#A68A64" stopOpacity="0.0" />
+              </>
+            )}
           </linearGradient>
 
-          {/* Secondary Fjord Slate Ambient Wave Gradient */}
+          {/* Secondary Ambient Wave Gradient */}
           <linearGradient id="nordicSilkSecondary" x1="100%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stopColor="#A68A64" stopOpacity="0.35" />
-            <stop offset="50%" stopColor="#6B7280" stopOpacity="0.25" />
-            <stop offset="100%" stopColor="#D1D5DB" stopOpacity="0.12" />
+            {isJuniper ? (
+              <>
+                <stop offset="0%" stopColor="#7D2826" stopOpacity="0.35" />
+                <stop offset="50%" stopColor="#898861" stopOpacity="0.25" />
+                <stop offset="100%" stopColor="#343723" stopOpacity="0.12" />
+              </>
+            ) : (
+              <>
+                <stop offset="0%" stopColor="#A68A64" stopOpacity="0.35" />
+                <stop offset="50%" stopColor="#6B7280" stopOpacity="0.25" />
+                <stop offset="100%" stopColor="#D1D5DB" stopOpacity="0.12" />
+              </>
+            )}
           </linearGradient>
 
           {/* Soft Blur Filter for Silk Folds */}
@@ -131,12 +184,12 @@ export const SilkWaveBackground: React.FC = () => {
           </filter>
         </defs>
 
-        {/* Ambient radial glows of Warm Wood and Fjord Gray */}
+        {/* Ambient radial glows */}
         <circle
           cx="960"
           cy="520"
           r="440"
-          fill="#A68A64"
+          fill={isJuniper ? '#7D2826' : '#A68A64'}
           filter="url(#nordicSilkGlow)"
           className="opacity-10 dark:opacity-12"
         />
@@ -144,7 +197,7 @@ export const SilkWaveBackground: React.FC = () => {
           cx="340"
           cy="740"
           r="400"
-          fill="#6B7280"
+          fill={isJuniper ? '#898861' : '#6B7280'}
           filter="url(#nordicSilkGlow)"
           className="opacity-25 dark:opacity-14"
         />

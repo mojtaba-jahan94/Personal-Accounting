@@ -20,6 +20,65 @@ export const NORDIC_PALETTE = {
 } as const;
 
 /**
+ * Juniper & Coral Palette (Candle, Coral, Leaf, Juniper)
+ */
+export const JUNIPER_CORAL_PALETTE = {
+  candle: '#EFE9D7',  // Warm candle cream surface
+  coral: '#7D2826',   // Deep brick / terracotta coral red
+  coralLight: '#E26865',
+  coralDark: '#631E1D',
+  leaf: '#898861',    // Natural moss / sage leaf midtone
+  juniper: '#343723', // Deep juniper dark forest anchor
+  juniperDark: '#202316',
+  semantic: {
+    income: { light: '#4A6B3D', dark: '#898861', bg: 'rgba(137, 136, 97, 0.15)' },
+    expense: { light: '#7D2826', dark: '#E26865', bg: 'rgba(125, 40, 38, 0.15)' },
+    transfer: { light: '#898861', dark: '#B5B38F', bg: 'rgba(137, 136, 97, 0.15)' },
+    warning: { light: '#C26A3E', dark: '#E89066', bg: 'rgba(194, 106, 62, 0.15)' },
+  },
+} as const;
+
+export interface ThemePaletteDefinition {
+  id: 'nordic' | 'juniper_coral';
+  name: string;
+  enName: string;
+  desc: string;
+  colors: {
+    key: string;
+    name: string;
+    hex: string;
+    role: string;
+  }[];
+}
+
+export const THEME_PALETTES: ThemePaletteDefinition[] = [
+  {
+    id: 'nordic',
+    name: 'نوردیک چوب گرم',
+    enName: 'Nordic Warm Wood',
+    desc: 'الهام‌گرفته از اسکاندیناوی با چوب سدر، سنگ فیورد، زغال تیره و برف',
+    colors: [
+      { key: 'snow', name: 'برف کرمی', hex: '#F7F7F2', role: 'روشن / پایه' },
+      { key: 'wood', name: 'چوب سدر', hex: '#A68A64', role: 'اکسنت اصلی' },
+      { key: 'fjord', name: 'سنگ فیورد', hex: '#6B7280', role: 'ثانویه / مات' },
+      { key: 'charcoal', name: 'ذغال نوردیک', hex: '#1F2933', role: 'تیره / عمیق' },
+    ],
+  },
+  {
+    id: 'juniper_coral',
+    name: 'طبیعت ارس و مرجان',
+    enName: 'Candle, Coral, Leaf & Juniper',
+    desc: 'پالت طبیعی و چشم‌نواز شامل شمعی، مرجان گرم، برگ زیتونی و ارس جنگلی',
+    colors: [
+      { key: 'candle', name: 'Candle', hex: '#EFE9D7', role: 'شمعی / پایه روشن' },
+      { key: 'coral', name: 'Coral', hex: '#7D2826', role: 'مرجانی / اکسنت' },
+      { key: 'leaf', name: 'Leaf', hex: '#898861', role: 'برگ / زیتونی' },
+      { key: 'juniper', name: 'Juniper', hex: '#343723', role: 'ارس / پایه تیره' },
+    ],
+  },
+];
+
+/**
  * Modern Glassmorphism Presets for UI elements (Nordic Warm Wood Edition)
  */
 export const LIQUID_GLASS_PRESETS: Record<string, Partial<GlassConfig>> = {

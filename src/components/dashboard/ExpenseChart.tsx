@@ -30,8 +30,21 @@ const NORDIC_CHART_COLORS = [
   '#9CA3AF', // Muted Gray
 ];
 
+const JUNIPER_CHART_COLORS = [
+  '#7D2826', // Coral
+  '#898861', // Leaf
+  '#343723', // Juniper
+  '#C84643', // Bright Coral
+  '#A8A684', // Light Leaf
+  '#595C42', // Deep Olive
+  '#D97706', // Warm Amber
+  '#4A6B3D', // Forest Green
+];
+
 export const ExpenseChart: React.FC<ExpenseChartProps> = ({ type }) => {
-  const { transactions, categories, currency, darkMode } = useFinance();
+  const { transactions, categories, currency, darkMode, themeConfig } = useFinance();
+  const isJuniper = themeConfig.palette === 'juniper_coral';
+  const chartColors = isJuniper ? JUNIPER_CHART_COLORS : NORDIC_CHART_COLORS;
 
   // Aggregate expenses by category
   const expenseByCategory = transactions
@@ -51,7 +64,7 @@ export const ExpenseChart: React.FC<ExpenseChartProps> = ({ type }) => {
         name: cat ? cat.name : 'متفرقه',
         value: amount,
         percentage,
-        color: NORDIC_CHART_COLORS[idx % NORDIC_CHART_COLORS.length],
+        color: chartColors[idx % chartColors.length],
       };
     })
     .sort((a, b) => b.value - a.value);
@@ -187,21 +200,21 @@ export const ExpenseChart: React.FC<ExpenseChartProps> = ({ type }) => {
           <Tooltip
             formatter={(value: any) => [formatCurrency(Number(value) || 0, currency), '']}
             contentStyle={{
-              backgroundColor: darkMode ? '#1F2933' : '#F7F7F2',
-              borderColor: darkMode ? 'rgba(209, 213, 219, 0.2)' : 'rgba(107, 114, 128, 0.2)',
+              backgroundColor: darkMode ? (isJuniper ? '#343723' : '#1F2933') : (isJuniper ? '#EFE9D7' : '#F7F7F2'),
+              borderColor: isJuniper ? 'rgba(137, 136, 97, 0.3)' : (darkMode ? 'rgba(209, 213, 219, 0.2)' : 'rgba(107, 114, 128, 0.2)'),
               borderRadius: '1rem',
               fontFamily: 'Vazirmatn',
               direction: 'rtl',
               textAlign: 'right',
-              color: darkMode ? '#F7F7F2' : '#1F2933',
+              color: darkMode ? (isJuniper ? '#EFE9D7' : '#F7F7F2') : (isJuniper ? '#343723' : '#1F2933'),
             }}
           />
           <Legend
             wrapperStyle={{ paddingTop: '10px', fontSize: '12px' }}
             formatter={(value) => <span style={{ color: textColor }}>{value}</span>}
           />
-          <Bar dataKey="درآمد" fill="#2E7D5B" radius={[6, 6, 0, 0]} />
-          <Bar dataKey="هزینه" fill="#C0564B" radius={[6, 6, 0, 0]} />
+          <Bar dataKey="درآمد" fill={isJuniper ? (darkMode ? '#898861' : '#4A6B3D') : '#2E7D5B'} radius={[6, 6, 0, 0]} />
+          <Bar dataKey="هزینه" fill={isJuniper ? (darkMode ? '#E26865' : '#7D2826') : '#C0564B'} radius={[6, 6, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

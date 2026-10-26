@@ -161,10 +161,14 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       {showText && (
         <div className="flex flex-col text-right">
           <span className="text-sm font-black text-[#1F2933] dark:text-[#F7F7F2] tracking-tight leading-tight">
-            حسابداری نوردیک
+            {typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'juniper_coral'
+              ? 'حسابداری ارس'
+              : 'حسابداری نوردیک'}
           </span>
           <span className="text-[10px] font-semibold text-[#A68A64] tracking-wide mt-0.5">
-            {subtitle || 'مدیریت هوشمند دارایی'}
+            {subtitle || (typeof document !== 'undefined' && document.documentElement.getAttribute('data-theme') === 'juniper_coral'
+              ? 'پالت ارس و مرجان'
+              : 'مدیریت هوشمند دارایی')}
           </span>
         </div>
       )}

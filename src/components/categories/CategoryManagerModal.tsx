@@ -34,13 +34,15 @@ const AVAILABLE_ICONS = [
 
 const PRESET_COLORS = [
   '#A68A64', // Warm Wood
+  '#7D2826', // Coral Red
+  '#898861', // Leaf Green
+  '#343723', // Juniper Forest
   '#2E7D5B', // Sage Emerald
   '#4A6FA5', // Fjord Blue
   '#C0564B', // Terracotta Rose
   '#d97706', // Gold Amber
   '#0284c7', // Sky Blue
   '#059669', // Emerald
-  '#dc2626', // Red
   '#1F2933', // Charcoal
   '#6B7280', // Fjord Gray
 ];

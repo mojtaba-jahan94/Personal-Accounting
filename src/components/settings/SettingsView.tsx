@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { useAuth } from '../../context/AuthContext';
 import { AccentColor, BorderRadius, LightStyle, BackgroundStyle } from '../../types';
+import { THEME_PALETTES } from '../../utils/liquidGlassPresets';
 import {
   Moon,
   Sun,
@@ -27,14 +28,14 @@ import { UserProfileModal } from '../auth/UserProfileModal';
 const BACKGROUND_STYLES: { id: BackgroundStyle; name: string; desc: string; previewClass: string }[] = [
   {
     id: 'clean_minimal',
-    name: 'مینیمال نوردیک',
-    desc: 'پس‌زمینه آرام و متمرکز با هاله‌های ملایم چوب گرم و فیورد',
+    name: 'مینیمال آرام',
+    desc: 'پس‌زمینه آرام و متمرکز با هاله‌های نوری محو و ملایم پالت فعال',
     previewClass: 'from-[#F7F7F2] via-[#EAE6DF] to-[#D1D5DB] dark:from-[#1F2933] dark:via-[#141B22] dark:to-[#1F2933]',
   },
   {
     id: 'silk_wave',
-    name: 'موج ابریشمی',
-    desc: 'موج سه‌بعدی متحرک و ابریشمی با پالت چوب گرم و صخره',
+    name: 'موج ابریشمی سه‌بعدی',
+    desc: 'موج زنده و متحرک ابریشم ارگانیک سازگار با پالت انتخابی',
     previewClass: 'from-[#A68A64]/40 via-[#6B7280]/30 to-[#F7F7F2] dark:from-[#A68A64]/30 dark:via-[#141B22] dark:to-[#1F2933]',
   },
 ];
@@ -122,7 +123,7 @@ export const SettingsView: React.FC = () => {
           تنظیمات ظاهر و سامانه
         </h2>
         <p className="text-xs text-[#6B7280] dark:text-[#D1D5DB]/70">
-          شخصی‌سازی پالت نوردیک چوب گرم، افکت‌های بصری، پشتیبان‌گیری و اتصال ابری
+          شخصی‌سازی پالت‌های رنگی، حالت روز و شب، افکت‌های بصری، پشتیبان‌گیری و اتصال ابری
         </p>
       </div>
 
@@ -133,7 +134,99 @@ export const SettingsView: React.FC = () => {
         </div>
       )}
 
-      {/* 1. Appearance & Theme Mode Card */}
+      {/* 1. Theme Palette Selector (Nordic Warm Wood vs Juniper & Coral) */}
+      <div className="p-5 sm:p-6 rounded-2xl bg-white/85 dark:bg-[#1F2933]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 space-y-4 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/10">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-[#A68A64]/15 text-[#A68A64]">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-black text-[#1F2933] dark:text-[#F7F7F2]">
+                پالت هویت بصری و تم برنامه
+              </h3>
+              <p className="text-xs text-[#6B7280] dark:text-[#D1D5DB]/70">
+                انتخاب استایل و ترکیب رنگ‌های اصلی رابط کاربری
+              </p>
+            </div>
+          </div>
+
+          <span className="text-[11px] font-bold px-3 py-1 rounded-full bg-[#A68A64]/15 text-[#A68A64] border border-[#A68A64]/25 self-start sm:self-auto">
+            {(themeConfig.palette || 'nordic') === 'juniper_coral' ? 'ارس و مرجان فعال است' : 'نوردیک چوب گرم فعال است'}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          {THEME_PALETTES.map((palette) => {
+            const isSelected = (themeConfig.palette || 'nordic') === palette.id;
+            return (
+              <button
+                key={palette.id}
+                type="button"
+                onClick={() => {
+                  updateThemeConfig({
+                    palette: palette.id,
+                    customAccentHex: palette.id === 'juniper_coral' ? '#7D2826' : '#A68A64',
+                  });
+                  showNotification(`تم «${palette.name}» با موفقیت فعال شد.`);
+                }}
+                className={`p-4 rounded-2xl border text-right transition-all flex flex-col justify-between gap-3 relative ${
+                  isSelected
+                    ? 'border-[#A68A64] bg-white dark:bg-[#141B22] shadow-md shadow-[#A68A64]/15 ring-2 ring-[#A68A64]/25'
+                    : 'bg-white/60 dark:bg-[#141B22]/60 border-[#6B7280]/15 dark:border-[#D1D5DB]/10 hover:border-[#A68A64]/35'
+                }`}
+              >
+                <div className="w-full">
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-xs sm:text-sm font-black text-[#1F2933] dark:text-[#F7F7F2]">
+                        {palette.name}
+                      </h4>
+                      {palette.id === 'juniper_coral' && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#7D2826]/15 text-[#7D2826] dark:text-[#E26865] border border-[#7D2826]/30">
+                          جدید
+                        </span>
+                      )}
+                    </div>
+                    {isSelected && (
+                      <div className="w-5 h-5 rounded-full bg-[#A68A64] text-[#F7F7F2] flex items-center justify-center shrink-0">
+                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      </div>
+                    )}
+                  </div>
+
+                  <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB]/70 leading-relaxed">
+                    {palette.desc}
+                  </p>
+                </div>
+
+                {/* 4-Color Swatch Strip previewing the exact palette colors */}
+                <div className="pt-2.5 border-t border-[#6B7280]/10 dark:border-[#D1D5DB]/10 flex items-center justify-between gap-2">
+                  <div className="flex items-center -space-x-1.5 space-x-reverse">
+                    {palette.colors.map((c) => (
+                      <div
+                        key={c.key}
+                        className="w-6 h-6 rounded-full border-2 border-white dark:border-[#1F2933] shadow-xs relative"
+                        style={{ backgroundColor: c.hex }}
+                        title={`${c.name}: ${c.hex} (${c.role})`}
+                      />
+                    ))}
+                  </div>
+                  <div className="text-[10px] text-[#6B7280] dark:text-[#D1D5DB]/70 font-mono flex items-center gap-1">
+                    {palette.colors.map((c) => (
+                      <span key={c.key} className="px-1 py-0.5 rounded bg-black/5 dark:bg-white/5 text-[9px]">
+                        {c.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 2. Appearance & Day/Night Mode Card */}
       <div className="p-5 sm:p-6 rounded-2xl bg-white/85 dark:bg-[#1F2933]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 space-y-5 shadow-xs">
         <div className="flex items-center gap-2.5 pb-3 border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/10">
           <div className="p-2 rounded-xl bg-[#A68A64]/15 text-[#A68A64]">
@@ -141,10 +234,12 @@ export const SettingsView: React.FC = () => {
           </div>
           <div>
             <h3 className="text-base font-black text-[#1F2933] dark:text-[#F7F7F2]">
-              حالت نمایش و تم اصلی
+              حالت روشنایی (روز / شب)
             </h3>
             <p className="text-xs text-[#6B7280] dark:text-[#D1D5DB]/70">
-              انتخاب حالت روز (برف کرمی) یا شب (ذغال نوردیک)
+              {(themeConfig.palette || 'nordic') === 'juniper_coral'
+                ? 'انتخاب حالت روز (شمعی گرم - #EFE9D7) یا شب (ارس کوهی - #343723)'
+                : 'انتخاب حالت روز (برف کرمی - #F7F7F2) یا شب (ذغال نوردیک - #1F2933)'}
             </p>
           </div>
         </div>
@@ -163,7 +258,7 @@ export const SettingsView: React.FC = () => {
             }`}
           >
             <Sun className={`w-5 h-5 ${!darkMode ? 'text-[#A68A64]' : 'text-[#6B7280]'}`} />
-            <span>حالت روشن (برف کرمی - #F7F7F2)</span>
+            <span>حالت روشن ({(themeConfig.palette || 'nordic') === 'juniper_coral' ? 'شمعی کرم - #EFE9D7' : 'برف کرمی - #F7F7F2'})</span>
           </button>
 
           <button
@@ -178,7 +273,7 @@ export const SettingsView: React.FC = () => {
             }`}
           >
             <Moon className={`w-5 h-5 ${darkMode ? 'text-[#C2A882]' : 'text-[#6B7280]'}`} />
-            <span>حالت تیره (ذغال نوردیک - #1F2933)</span>
+            <span>حالت تیره ({(themeConfig.palette || 'nordic') === 'juniper_coral' ? 'سرو ارس - #343723' : 'ذغال نوردیک - #1F2933'})</span>
           </button>
         </div>
 
@@ -204,7 +299,7 @@ export const SettingsView: React.FC = () => {
         </div>
       </div>
 
-      {/* 2. Background Style Card (Nordic Minimal & Silk Wave) */}
+      {/* 3. Background Style Card */}
       <div className="p-5 sm:p-6 rounded-2xl bg-white/85 dark:bg-[#1F2933]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 space-y-4 shadow-xs">
         <div className="flex items-center gap-2.5 pb-3 border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/10">
           <div className="p-2 rounded-xl bg-[#4A6FA5]/15 text-[#4A6FA5] dark:text-[#60A5FA]">
@@ -212,10 +307,12 @@ export const SettingsView: React.FC = () => {
           </div>
           <div>
             <h3 className="text-base font-black text-[#1F2933] dark:text-[#F7F7F2]">
-              طرح و پس‌زمینه نوردیک
+              طرح و پس‌زمینه محیط برنامه
             </h3>
             <p className="text-xs text-[#6B7280] dark:text-[#D1D5DB]/70">
-              انتخاب بین مینیمال سبک نوردیک و جلوه زنده موج ابریشمی
+              {(themeConfig.palette || 'nordic') === 'juniper_coral'
+                ? 'انتخاب بین مینیمال شمعی/ارس و جلوه زنده موج ابریشمی ارگانیک'
+                : 'انتخاب بین مینیمال سبک نوردیک و جلوه زنده موج ابریشمی'}
             </p>
           </div>
         </div>
