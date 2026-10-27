@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { UserProfileModal } from '../auth/UserProfileModal';
-import { TursoConfigModal } from '../settings/TursoConfigModal';
 import { BrandLogo } from '../common/BrandLogo';
 import {
   LayoutDashboard,
@@ -48,7 +47,6 @@ interface NavGroup {
 export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => {
   const { user, tursoStatus } = useAuth();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [isTursoModalOpen, setIsTursoModalOpen] = useState(false);
 
   const navGroups: NavGroup[] = [
     {
@@ -95,11 +93,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
       </div>
 
       {/* App & Cloud Sync Status Pill */}
-      <button
-        type="button"
-        onClick={() => setIsTursoModalOpen(true)}
-        className="w-full px-3.5 py-2.5 mb-3 rounded-2xl bg-[#1F2933]/5 dark:bg-white/5 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 flex items-center justify-between hover:bg-[#1F2933]/10 dark:hover:bg-white/10 transition group text-right"
-        title="مدیریت اتصال به پایگاه داده ابری Turso"
+      <div
+        className="w-full px-3.5 py-2.5 mb-3 rounded-2xl bg-[#1F2933]/5 dark:bg-white/5 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 flex items-center justify-between text-right select-none cursor-default"
+        title="وضعیت همگام‌سازی ابری"
       >
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="relative">
@@ -127,8 +123,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
             </span>
           </div>
         </div>
-        <Cloud className="w-4 h-4 text-[#A68A64] shrink-0 opacity-80 group-hover:opacity-100 transition" />
-      </button>
+        <Cloud className="w-4 h-4 text-[#A68A64] shrink-0 opacity-80" />
+      </div>
 
       {/* Logical Navigation Groups */}
       <div className="space-y-4 flex-1 overflow-y-auto pr-0.5 no-scrollbar">
@@ -211,11 +207,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentTab, onSelectTab }) => 
       <UserProfileModal
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
-      />
-
-      <TursoConfigModal
-        isOpen={isTursoModalOpen}
-        onClose={() => setIsTursoModalOpen(false)}
       />
     </aside>
   );

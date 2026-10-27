@@ -18,7 +18,6 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { UserProfileModal } from '../auth/UserProfileModal';
-import { TursoConfigModal } from '../settings/TursoConfigModal';
 import { BrandLogo } from '../common/BrandLogo';
 import { TabType } from './Sidebar';
 
@@ -50,7 +49,6 @@ export const Header: React.FC<HeaderProps> = ({
   const { totalBalance, currency, setCurrency, darkMode, toggleDarkMode } = useFinance();
   const { user, tursoStatus } = useAuth();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
-  const [isTursoModalOpen, setIsTursoModalOpen] = useState(false);
 
   // Privacy Mode / Balance Mask State (persisted in localStorage)
   const [isPrivacyMode, setIsPrivacyMode] = useState<boolean>(() => {
@@ -119,11 +117,9 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Right / Controls: Turso Sync Pill, Quick Actions, Theme Toggle, Profile */}
         <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Turso Cloud Sync Status Pill */}
-          <button
-            type="button"
-            onClick={() => setIsTursoModalOpen(true)}
-            title="وضعیت همگام‌سازی ابری Turso - کلیک برای تنظیمات"
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-black/5 dark:bg-white/5 border border-[#6B7280]/15 dark:border-[#D1D5DB]/15 text-xs font-bold transition hover:bg-black/10 dark:hover:bg-white/10"
+          <div
+            title="وضعیت همگام‌سازی ابری Turso"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-black/5 dark:bg-white/5 border border-[#6B7280]/15 dark:border-[#D1D5DB]/15 text-xs font-bold select-none cursor-default"
           >
             <span
               className={`w-2 h-2 rounded-full ${
@@ -140,7 +136,7 @@ export const Header: React.FC<HeaderProps> = ({
             <span className="hidden lg:inline text-[11px] text-[#1F2933] dark:text-[#F7F7F2]">
               {tursoStatus === 'connected' ? 'ابری متصل' : tursoStatus === 'connecting' ? 'اتصال...' : tursoStatus === 'error' ? 'خطا' : 'محلی'}
             </span>
-          </button>
+          </div>
 
           {/* Privacy Toggle (Mobile) */}
           <button
@@ -225,11 +221,6 @@ export const Header: React.FC<HeaderProps> = ({
       <UserProfileModal
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
-      />
-
-      <TursoConfigModal
-        isOpen={isTursoModalOpen}
-        onClose={() => setIsTursoModalOpen(false)}
       />
     </header>
   );

@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   AlertCircle,
 } from 'lucide-react';
-import { TursoConfigModal } from '../settings/TursoConfigModal';
 
 interface UserProfileModalProps {
   isOpen: boolean;
@@ -21,7 +20,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
   const { user, logout, updateProfile, tursoStatus } = useAuth();
   const { cloudSyncStatus, syncAllToTurso } = useFinance();
 
-  const [isTursoModalOpen, setIsTursoModalOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [displayName, setDisplayName] = useState(user?.displayName || '');
   const [currentPassword, setCurrentPassword] = useState('');
@@ -145,23 +143,15 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
                 </span>
               </div>
 
-              <div className="flex gap-2 pt-1">
+              <div className="pt-1">
                 <button
                   type="button"
                   onClick={handleSyncNow}
                   disabled={isSyncing || tursoStatus !== 'connected'}
-                  className="flex-1 py-2 px-3 rounded-xl bg-[#A68A64]/15 hover:bg-[#A68A64]/25 text-[#A68A64] text-xs font-bold transition flex items-center justify-center gap-1.5 border border-[#A68A64]/30 disabled:opacity-50"
+                  className="w-full py-2 px-3 rounded-xl bg-[#A68A64]/15 hover:bg-[#A68A64]/25 text-[#A68A64] text-xs font-bold transition flex items-center justify-center gap-1.5 border border-[#A68A64]/30 disabled:opacity-50"
                 >
                   <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                  <span>همگام‌سازی دستی</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setIsTursoModalOpen(true)}
-                  className="py-2 px-3 rounded-xl bg-[#6B7280]/10 hover:bg-[#6B7280]/20 text-[#1F2933] dark:text-[#F7F7F2] text-xs font-bold transition border border-[#6B7280]/15"
-                >
-                  تنظیمات دیتابیس
+                  <span>همگام‌سازی دستی با سرور ابری</span>
                 </button>
               </div>
             </div>
@@ -263,11 +253,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onCl
           </div>
         </div>
       </div>
-
-      <TursoConfigModal
-        isOpen={isTursoModalOpen}
-        onClose={() => setIsTursoModalOpen(false)}
-      />
     </>
   );
 };

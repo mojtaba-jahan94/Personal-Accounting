@@ -22,7 +22,6 @@ import {
   User,
 } from 'lucide-react';
 import { PersonManagerModal } from '../contacts/PersonManagerModal';
-import { TursoConfigModal } from './TursoConfigModal';
 import { UserProfileModal } from '../auth/UserProfileModal';
 
 const BACKGROUND_STYLES: { id: BackgroundStyle; name: string; desc: string; previewClass: string }[] = [
@@ -59,7 +58,6 @@ export const SettingsView: React.FC = () => {
 
   const [message, setMessage] = useState<string | null>(null);
   const [isPersonModalOpen, setIsPersonModalOpen] = useState(false);
-  const [isTursoModalOpen, setIsTursoModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isSyncingTurso, setIsSyncingTurso] = useState(false);
 
@@ -430,14 +428,6 @@ export const SettingsView: React.FC = () => {
               <User className="w-3.5 h-3.5" />
               <span>پروفایل و امنیت</span>
             </button>
-
-            <button
-              onClick={() => setIsTursoModalOpen(true)}
-              className="px-3.5 py-2 rounded-xl bg-[#A68A64] hover:bg-[#8A704C] text-[#F7F7F2] text-xs font-bold transition shadow-xs flex items-center gap-1.5 active:scale-95"
-            >
-              <Database className="w-3.5 h-3.5" />
-              <span>تنظیمات پایگاه داده Turso</span>
-            </button>
           </div>
         </div>
 
@@ -556,11 +546,6 @@ export const SettingsView: React.FC = () => {
       <PersonManagerModal
         isOpen={isPersonModalOpen}
         onClose={() => setIsPersonModalOpen(false)}
-      />
-
-      <TursoConfigModal
-        isOpen={isTursoModalOpen}
-        onClose={() => setIsTursoModalOpen(false)}
       />
 
       <UserProfileModal
