@@ -33,7 +33,7 @@ export const Tabs: React.FC<TabsProps> = ({
       className={twMerge(
         clsx(
           'flex items-center gap-1.5 p-1 rounded-2xl select-none',
-          variant === 'pill' && 'bg-white/[0.04] border border-white/[0.08] backdrop-blur-md',
+          variant === 'pill' && 'bg-white/[0.04] dark:bg-[#13101C] border border-white/[0.08]',
           variant === 'underline' && 'border-b border-white/[0.08]',
           className
         )
@@ -67,7 +67,7 @@ export const Tabs: React.FC<TabsProps> = ({
                   variant === 'underline' &&
                     'bottom-0 top-auto h-0.5 bg-violet-500 rounded-full shadow-[0_0_10px_rgba(139,92,246,0.8)]',
                   variant === 'chip' &&
-                    'bg-white/10 border border-white/15 backdrop-blur-md'
+                    'bg-white/10 dark:bg-white/[0.08] border border-white/15'
                 )}
               />
             )}

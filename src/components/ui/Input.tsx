@@ -35,7 +35,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             className={twMerge(
               clsx(
-                'w-full px-4 py-2.5 rounded-2xl bg-white/[0.04] border text-sm text-fintech-text-main placeholder-fintech-text-sub outline-none transition-all duration-200 backdrop-blur-md',
+                'w-full px-4 py-2.5 rounded-2xl bg-white/[0.04] dark:bg-[#13101C]/80 border text-sm text-fintech-text-main placeholder-fintech-text-sub outline-none transition-[border-color,box-shadow,background-color] duration-150',
                 error
                   ? 'border-rose-500/60 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20'
                   : 'border-white/10 hover:border-white/20 focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/25',
@@ -94,7 +94,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           id={selectId}
           className={twMerge(
             clsx(
-              'w-full px-4 py-2.5 rounded-2xl bg-fintech-card-solid dark:bg-[#151220] border text-sm text-fintech-text-main outline-none transition-all duration-200 cursor-pointer',
+              'w-full px-4 py-2.5 rounded-2xl bg-fintech-card-solid dark:bg-[#151220] border text-sm text-fintech-text-main outline-none transition-[border-color,box-shadow,background-color] duration-150 cursor-pointer',
               error
                 ? 'border-rose-500/60 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20'
                 : 'border-white/10 hover:border-white/20 focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/25',
@@ -147,7 +147,7 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
           id={areaId}
           className={twMerge(
             clsx(
-              'w-full px-4 py-2.5 rounded-2xl bg-white/[0.04] border text-sm text-fintech-text-main placeholder-fintech-text-sub outline-none transition-all duration-200 resize-none backdrop-blur-md',
+              'w-full px-4 py-2.5 rounded-2xl bg-white/[0.04] dark:bg-[#13101C]/80 border text-sm text-fintech-text-main placeholder-fintech-text-sub outline-none transition-[border-color,box-shadow,background-color] duration-150 resize-none',
               error
                 ? 'border-rose-500/60 focus:border-rose-500 focus:ring-2 focus:ring-rose-500/20'
                 : 'border-white/10 hover:border-white/20 focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/25',

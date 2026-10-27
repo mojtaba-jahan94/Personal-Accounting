@@ -1,79 +1,24 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { LiquidGlass } from '@ybouane/liquidglass';
-import type { GlassConfig } from '@ybouane/liquidglass';
-import { LIQUID_GLASS_PRESETS } from '../../utils/liquidGlassPresets';
+import React from 'react';
 
 interface LiquidGlassContainerProps {
   children: React.ReactNode;
   className?: string;
-  defaultConfig?: Partial<GlassConfig>;
+  defaultConfig?: any;
   enabled?: boolean;
 }
 
+/**
+ * Clean CSS glass container (zero WebGL, zero timers, zero rAF)
+ */
 export const LiquidGlassContainer: React.FC<LiquidGlassContainerProps> = ({
   children,
   className = '',
-  defaultConfig = LIQUID_GLASS_PRESETS.glassCard,
-  enabled = true,
 }) => {
-  const rootRef = useRef<HTMLDivElement>(null);
-  const [isSupported, setIsSupported] = useState(true);
-
-  useEffect(() => {
-    if (!rootRef.current || !enabled) return;
-
-    let instance: LiquidGlass | null = null;
-    let isMounted = true;
-
-    // Small delay to ensure children DOM nodes and fonts are mounted & sized
-    const timer = setTimeout(() => {
-      if (!rootRef.current || !isMounted) return;
-
-      const glassElements = rootRef.current.querySelectorAll<HTMLElement>('[data-glass]');
-      if (glassElements.length === 0) return;
-
-      LiquidGlass.init({
-        root: rootRef.current,
-        glassElements: Array.from(glassElements),
-        defaults: defaultConfig,
-      })
-        .then((inst) => {
-          if (isMounted) {
-            instance = inst;
-          } else {
-            inst.destroy();
-          }
-        })
-        .catch((err) => {
-          console.warn('[LiquidGlass] WebGL initialization skipped or unsupported, falling back to CSS glassmorphism:', err);
-          setIsSupported(false);
-        });
-    }, 50);
-
-    return () => {
-      isMounted = false;
-      clearTimeout(timer);
-      if (instance) {
-        try {
-          instance.destroy();
-        } catch (e) {
-          // ignore cleanup errors
-        }
-      }
-    };
-  }, [defaultConfig, enabled]);
-
   return (
-    <div
-      ref={rootRef}
-      className={`relative ${className} ${
-        !isSupported
-          ? 'bg-[#F7F7F2]/85 dark:bg-[#1F2933]/75 backdrop-blur-xl border border-[#6B7280]/15 dark:border-[#D1D5DB]/15'
-          : ''
-      }`}
-    >
+    <div className={`relative ${className}`}>
       {children}
     </div>
   );
 };
 
+export default LiquidGlassContainer;

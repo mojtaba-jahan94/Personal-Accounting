@@ -1,4 +1,6 @@
-import type { GlassConfig } from '@ybouane/liquidglass';
+export interface GlassConfig {
+  [key: string]: any;
+}
 
 /**
  * Nordic Warm Wood Design Tokens & Palette (Strict Enforcement)

@@ -93,7 +93,7 @@ export const CommandSearchModal: React.FC<CommandSearchModalProps> = ({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.96, y: -10 }}
           transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="relative w-full max-w-xl rounded-3xl bg-[#120F1A] border border-white/10 text-fintech-text-main shadow-2xl overflow-hidden z-10 backdrop-blur-2xl"
+          className="relative w-full max-w-xl rounded-3xl bg-[#120F1A] border border-white/10 text-fintech-text-main shadow-2xl overflow-hidden z-10"
         >
           {/* Search Input Bar */}
           <div className="p-4 border-b border-white/[0.08] flex items-center gap-3">

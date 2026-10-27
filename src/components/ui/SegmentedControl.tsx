@@ -32,7 +32,7 @@ export function SegmentedControl<T extends string = string>({
       role="group"
       className={twMerge(
         clsx(
-          'inline-flex items-center p-1 rounded-2xl bg-white/[0.04] border border-white/[0.08] backdrop-blur-md select-none',
+          'inline-flex items-center p-1 rounded-2xl bg-white/[0.04] dark:bg-[#13101C] border border-white/[0.08] select-none',
           size === 'sm' && 'p-0.5 rounded-xl',
           className
         )

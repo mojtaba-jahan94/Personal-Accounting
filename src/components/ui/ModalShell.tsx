@@ -79,13 +79,13 @@ export const ModalShell: React.FC<ModalShellProps> = ({
 
           {/* Modal Container */}
           <motion.div
-            initial={{ opacity: 0, y: 30, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.98 }}
-            transition={{ type: 'spring', damping: 28, stiffness: 350 }}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 12 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             className={twMerge(
               clsx(
-                'relative w-full max-h-[92dvh] flex flex-col rounded-t-[32px] sm:rounded-3xl bg-[#120F1A] border border-white/[0.1] text-fintech-text-main shadow-2xl overflow-hidden z-10 backdrop-blur-2xl',
+                'relative w-full max-h-[92dvh] flex flex-col rounded-t-[32px] sm:rounded-3xl bg-[#120F1A] border border-white/[0.1] text-fintech-text-main shadow-2xl overflow-hidden z-10',
                 maxWidthStyles[activeMaxWidth],
                 className
               )

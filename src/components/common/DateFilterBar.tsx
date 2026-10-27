@@ -101,10 +101,10 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
               key={p.id}
               type="button"
               onClick={() => handlePresetSelect(p.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition-all active:scale-95 ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition-[background-color,border-color,color,transform] duration-150 active:scale-95 ${
                 isActive
-                  ? 'bg-[#A68A64] text-[#F7F7F2] shadow-md shadow-[#A68A64]/25 border border-[#A68A64]'
-                  : 'bg-white/40 dark:bg-white/5 text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#1F2933] dark:hover:text-[#F7F7F2] hover:bg-black/5 dark:hover:bg-white/10 border border-[#6B7280]/15 dark:border-[#D1D5DB]/15 backdrop-blur-md'
+                  ? 'bg-violet-600 text-white shadow-md shadow-violet-500/25 border border-violet-500'
+                  : 'bg-white/40 dark:bg-white/5 text-fintech-text-muted hover:text-fintech-text-main hover:bg-black/5 dark:hover:bg-white/10 border border-white/10'
               }`}
             >
               {p.label}
@@ -115,7 +115,7 @@ export const DateFilterBar: React.FC<DateFilterBarProps> = ({
 
       {/* Custom Date Range Picker Inputs (shown when 'custom' is active) */}
       {selectedPreset === 'custom' && (
-        <div className="p-3.5 rounded-2xl border border-[#A68A64]/30 bg-[#A68A64]/5 dark:bg-[#A68A64]/10 backdrop-blur-md flex flex-wrap items-center gap-3 text-xs animate-in fade-in duration-200">
+        <div className="p-3.5 rounded-2xl border border-violet-500/30 bg-violet-500/5 dark:bg-violet-500/10 flex flex-wrap items-center gap-3 text-xs animate-in fade-in duration-200">
           <div className="flex items-center gap-2">
             <span className="font-bold text-[#1F2933] dark:text-[#F7F7F2] shrink-0">از تاریخ:</span>
             <input

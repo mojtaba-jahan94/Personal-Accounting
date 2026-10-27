@@ -183,7 +183,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       if (onCloseMobileDrawer) onCloseMobileDrawer();
                     }}
                     title={isCollapsed ? item.label : undefined}
-                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs transition-all duration-200 relative group cursor-pointer ${
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs transition-[color,background-color] duration-150 relative group cursor-pointer ${
                       isActive
                         ? 'text-white font-semibold'
                         : 'text-fintech-text-muted hover:text-fintech-text-main hover:bg-white/[0.04]'
@@ -299,7 +299,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <>
       {/* Desktop Sticky Sidebar */}
       <aside
-        className={`hidden lg:flex flex-col shrink-0 p-4 m-4 mr-0 rounded-3xl bg-[#120F1A]/85 backdrop-blur-2xl border border-white/10 shadow-2xl self-start sticky top-20 min-h-[calc(100vh-6rem)] transition-all duration-300 select-none z-30 ${
+        className={`hidden lg:flex flex-col shrink-0 p-4 m-4 mr-0 rounded-3xl bg-[#120F1A]/85 backdrop-blur-2xl border border-white/10 shadow-2xl self-start sticky top-20 min-h-[calc(100vh-6rem)] transition-[width] duration-200 select-none z-30 ${
           isCollapsed ? 'w-20' : 'w-72'
         }`}
       >

@@ -87,7 +87,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 350 }}
-              className="fixed bottom-24 inset-x-3 max-w-md mx-auto z-50 rounded-[2.5rem] p-5 bg-[#120F1A]/95 backdrop-blur-2xl border border-white/10 shadow-2xl space-y-3.5 select-none"
+              className="fixed bottom-24 inset-x-3 max-w-md mx-auto z-50 rounded-[2.5rem] p-5 bg-[#120F1A] border border-white/10 shadow-2xl space-y-3.5 select-none"
             >
               <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mb-1" />
 
@@ -117,7 +117,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                         onSelectTab(item.id);
                         setMoreMenuOpen(false);
                       }}
-                      className={`rounded-2xl p-3 flex items-center gap-2.5 transition-all text-right active:scale-95 text-xs font-medium border ${
+                      className={`rounded-2xl p-3 flex items-center gap-2.5 transition-[background-color,border-color,color,transform] duration-150 text-right active:scale-95 text-xs font-medium border ${
                         isActive
                           ? 'bg-violet-600 text-white shadow-glow-violet border-violet-500/50'
                           : 'bg-white/[0.03] border-white/[0.06] text-fintech-text-muted hover:text-white hover:bg-white/[0.06]'
@@ -144,7 +144,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       <nav
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className="lg:hidden fixed bottom-4 inset-x-0 mx-auto w-[calc(100%-1.75rem)] max-w-md z-40 rounded-full px-5 py-2.5 shadow-2xl backdrop-blur-2xl border transition-all duration-300 bg-[#120F1A]/85 border-white/10 text-fintech-text-main select-none"
+        className="lg:hidden fixed bottom-4 inset-x-0 mx-auto w-[calc(100%-1.75rem)] max-w-md z-40 rounded-full px-5 py-2.5 shadow-2xl backdrop-blur-2xl border transition-[transform,opacity] duration-200 bg-[#120F1A]/85 border-white/10 text-fintech-text-main select-none"
       >
         <div className="flex items-center justify-between relative">
           
@@ -152,7 +152,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <button
             type="button"
             onClick={() => onSelectTab('dashboard')}
-            className={`transition-all duration-200 active:scale-95 flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl relative ${
+            className={`transition-[color,transform] duration-150 active:scale-95 flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl relative ${
               currentTab === 'dashboard'
                 ? 'text-white font-semibold'
                 : 'text-fintech-text-muted hover:text-white'
@@ -174,7 +174,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <button
             type="button"
             onClick={() => onSelectTab('transactions')}
-            className={`transition-all duration-200 active:scale-95 flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl relative ${
+            className={`transition-[color,transform] duration-150 active:scale-95 flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl relative ${
               currentTab === 'transactions'
                 ? 'text-white font-semibold'
                 : 'text-fintech-text-muted hover:text-white'
@@ -196,7 +196,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <button
             type="button"
             onClick={onOpenTransactionModal}
-            className="rounded-full bg-gradient-to-r from-violet-600 via-indigo-600 to-violet-700 text-white p-3.5 shadow-glow-violet hover:scale-105 active:scale-95 transition-all flex items-center justify-center border-2 border-[#120F1A]"
+            className="rounded-full bg-gradient-to-r from-violet-600 via-indigo-600 to-violet-700 text-white p-3.5 shadow-glow-violet hover:scale-105 active:scale-95 transition-[transform,box-shadow] duration-150 flex items-center justify-center border-2 border-[#120F1A]"
             title="ثبت سریع تراکنش جدید"
           >
             <Plus className="w-5 h-5 stroke-[2.5]" />
@@ -206,7 +206,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <button
             type="button"
             onClick={() => onSelectTab('assets')}
-            className={`transition-all duration-200 active:scale-95 flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl relative ${
+            className={`transition-[color,transform] duration-150 active:scale-95 flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl relative ${
               currentTab === 'assets'
                 ? 'text-white font-semibold'
                 : 'text-fintech-text-muted hover:text-white'
@@ -228,7 +228,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <button
             type="button"
             onClick={() => setMoreMenuOpen(true)}
-            className={`transition-all duration-200 active:scale-95 flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl relative ${
+            className={`transition-[color,transform] duration-150 active:scale-95 flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl relative ${
               isMoreActive || moreMenuOpen
                 ? 'text-white font-semibold'
                 : 'text-fintech-text-muted hover:text-white'

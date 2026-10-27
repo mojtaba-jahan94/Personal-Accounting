@@ -85,7 +85,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         <div
           style={{ width: `${percentage}%` }}
           className={clsx(
-            'h-full rounded-full transition-all duration-300',
+            'h-full rounded-full transition-[width] duration-300',
             variantGradients[activeVariant] || variantGradients.primary,
             glow && (glowStyles[activeVariant] || glowStyles.primary)
           )}

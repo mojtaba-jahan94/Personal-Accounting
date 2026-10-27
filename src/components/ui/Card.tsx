@@ -1,9 +1,8 @@
 import React from 'react';
-import { motion, HTMLMotionProps } from 'framer-motion';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-export interface CardProps extends HTMLMotionProps<'div'> {
+export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: 'glass' | 'solid' | 'elevated' | 'gradient';
   glow?: boolean;
   hoverLift?: boolean;
@@ -25,48 +24,46 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
     ref
   ) => {
     const baseStyles =
-      'rounded-3xl relative overflow-hidden transition-all duration-300 backdrop-blur-xl';
+      'rounded-3xl relative overflow-hidden transition-[transform,opacity,border-color,background-color] duration-150 shadow-[0_4px_20px_-2px_rgba(0,0,0,0.45),inset_0_1px_0_0_rgba(255,255,255,0.08)]';
 
     const variantStyles = {
       glass:
-        'bg-fintech-card border border-fintech-border shadow-glass hover:border-white/15',
+        'bg-white/95 dark:bg-[#13101C]/95 border border-black/[0.06] dark:border-white/[0.08] hover:border-white/20',
       solid:
-        'bg-fintech-card-solid border border-fintech-border shadow-lg',
+        'bg-white dark:bg-[#13101C] border border-black/[0.06] dark:border-white/[0.08]',
       elevated:
-        'bg-fintech-elevated border border-fintech-border shadow-xl',
+        'bg-[#F0EDF5] dark:bg-[#1A1626] border border-black/[0.08] dark:border-white/10',
       gradient:
-        'bg-gradient-to-br from-violet-900/30 via-fintech-card to-fintech-elevated border border-violet-500/20 shadow-glow-violet',
+        'bg-gradient-to-br from-violet-950/30 via-[#13101C] to-[#171424] border border-violet-500/20',
     };
 
+    const hoverStyles = hoverLift
+      ? 'hover:-translate-y-0.5 active:scale-[0.99] cursor-pointer'
+      : '';
+
     return (
-      <motion.div
+      <div
         ref={ref}
-        whileHover={
-          hoverLift
-            ? {
-                y: -3,
-                boxShadow:
-                  '0 24px 48px -12px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.12) inset',
-                transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] },
-              }
-            : undefined
-        }
         className={twMerge(
           clsx(
             baseStyles,
             variantStyles[variant],
-            glow && 'shadow-glow-violet border-violet-500/30',
+            hoverStyles,
+            glow && 'border-violet-500/40 shadow-[0_0_25px_rgba(139,92,246,0.25)]',
             className
           )
         )}
         {...props}
       >
+        {/* Subtle Inner Top Specular Highlight */}
+        <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/15 to-transparent pointer-events-none" />
+
         {/* Optional Header Ambient Glow Bar */}
         {headerGlow && (
-          <div className="absolute -top-16 inset-x-0 h-24 bg-gradient-to-b from-violet-500/15 to-transparent blur-xl pointer-events-none" />
+          <div className="absolute -top-12 inset-x-0 h-20 bg-gradient-to-b from-violet-500/15 to-transparent pointer-events-none" />
         )}
         {children}
-      </motion.div>
+      </div>
     );
   }
 );

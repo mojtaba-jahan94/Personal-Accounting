@@ -234,7 +234,7 @@ export const JalaliDatePicker: React.FC<JalaliDatePickerProps> = ({
     <div
       ref={popoverRef}
       dir="rtl"
-      className="w-[310px] sm:w-[320px] p-4 bg-[#F7F7F2] dark:bg-[#1F2933] border border-[#6B7280]/20 dark:border-[#D1D5DB]/20 rounded-2xl shadow-2xl backdrop-blur-xl text-[#1F2933] dark:text-[#F7F7F2] select-none animate-in fade-in zoom-in-95 duration-150"
+      className="w-[310px] sm:w-[320px] p-4 bg-[#F7F7F2] dark:bg-[#1F2933] border border-[#6B7280]/20 dark:border-[#D1D5DB]/20 rounded-2xl shadow-2xl text-[#1F2933] dark:text-[#F7F7F2] select-none animate-in fade-in zoom-in-95 duration-150"
     >
       {/* Calendar Header: Month, Year, and Nav Arrows */}
       <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/15">
@@ -439,12 +439,12 @@ export const JalaliDatePicker: React.FC<JalaliDatePickerProps> = ({
           placeholder={placeholder}
           disabled={disabled}
           onClick={() => !disabled && setIsOpen(true)}
-          className={`w-full pr-9 pl-14 py-2.5 rounded-xl bg-[#F7F7F2]/80 dark:bg-[#1F2933]/80 border border-[#6B7280]/20 dark:border-[#D1D5DB]/20 text-xs font-bold font-mono text-[#1F2933] dark:text-[#F7F7F2] outline-none focus:ring-2 focus:ring-[#A68A64]/30 focus:border-[#A68A64] transition cursor-pointer select-none backdrop-blur-md ${inputClassName}`}
+          className={`w-full pr-9 pl-14 py-2.5 rounded-xl bg-[#F7F7F2] dark:bg-[#1F2933] border border-[#6B7280]/20 dark:border-[#D1D5DB]/20 text-xs font-bold font-mono text-[#1F2933] dark:text-[#F7F7F2] outline-none focus:ring-2 focus:ring-[#A68A64]/30 focus:border-[#A68A64] transition-[border-color,box-shadow] duration-150 cursor-pointer select-none ${inputClassName}`}
           readOnly
         />
         <div
           onClick={() => !disabled && setIsOpen(!isOpen)}
-          className="absolute right-3 text-[#6B7280] dark:text-[#D1D5DB] cursor-pointer hover:text-[#A68A64] transition"
+          className="absolute right-3 text-[#6B7280] dark:text-[#D1D5DB] cursor-pointer hover:text-[#A68A64] transition-[color] duration-150"
         >
           <CalendarIcon className="w-4 h-4" />
         </div>
@@ -456,7 +456,7 @@ export const JalaliDatePicker: React.FC<JalaliDatePickerProps> = ({
             e.stopPropagation();
             handleSelectToday();
           }}
-          className="absolute left-2.5 px-2 py-0.5 text-[10px] rounded-lg bg-[#A68A64]/15 hover:bg-[#A68A64] text-[#A68A64] hover:text-[#F7F7F2] font-bold transition"
+          className="absolute left-2.5 px-2 py-0.5 text-[10px] rounded-lg bg-[#A68A64]/15 hover:bg-[#A68A64] text-[#A68A64] hover:text-[#F7F7F2] font-bold transition-[background-color,color] duration-150"
         >
           امروز
         </button>
@@ -468,7 +468,7 @@ export const JalaliDatePicker: React.FC<JalaliDatePickerProps> = ({
         createPortal(
           isMobile ? (
             // Centered Modal on Mobile
-            <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+            <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60">
               <div
                 className="fixed inset-0 -z-10"
                 onClick={() => setIsOpen(false)}

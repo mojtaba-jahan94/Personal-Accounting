@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { formatCurrency, toPersianDigits } from '../../utils/formatters';
 import {
@@ -63,6 +63,11 @@ export const ReportsView: React.FC = () => {
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const hasChartAnimatedRef = useRef(false);
+  useEffect(() => {
+    hasChartAnimatedRef.current = true;
+  }, []);
 
   // Compute Current Jalali Month Label for Micro-Header
   const currentMonthLabel = useMemo(() => {
@@ -281,7 +286,7 @@ export const ReportsView: React.FC = () => {
                 >
                   <span>{tab.label}</span>
                   {isActive && (
-                    <span className="absolute bottom-0 inset-x-0 h-[2px] bg-[#DFC296] rounded-full shadow-[0_0_10px_rgba(223,194,150,0.6)] transition-all duration-300" />
+                    <span className="absolute bottom-0 inset-x-0 h-[2px] bg-[#DFC296] rounded-full shadow-[0_0_10px_rgba(223,194,150,0.6)] transition-[opacity,transform] duration-200" />
                   )}
                 </button>
               );
@@ -337,7 +342,7 @@ export const ReportsView: React.FC = () => {
       {/* 2. Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Income Card */}
-        <div className="p-5 rounded-2xl bg-[#121215] border border-white/[0.08] relative overflow-hidden group hover:border-[#7A9A95]/40 transition-all">
+        <div className="p-5 rounded-2xl bg-[#121215] border border-white/[0.08] relative overflow-hidden group hover:border-[#7A9A95]/40 transition-[border-color] duration-150">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[10px] tracking-[0.2em] uppercase font-mono text-[#8E8B82]">
               کل ورودی / INFLOW
@@ -355,7 +360,7 @@ export const ReportsView: React.FC = () => {
         </div>
 
         {/* Expense Card */}
-        <div className="p-5 rounded-2xl bg-[#121215] border border-white/[0.08] relative overflow-hidden group hover:border-[#C98A82]/40 transition-all">
+        <div className="p-5 rounded-2xl bg-[#121215] border border-white/[0.08] relative overflow-hidden group hover:border-[#C98A82]/40 transition-[border-color] duration-150">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[10px] tracking-[0.2em] uppercase font-mono text-[#8E8B82]">
               کل خروجی / OUTFLOW
@@ -373,7 +378,7 @@ export const ReportsView: React.FC = () => {
         </div>
 
         {/* Savings & Net Balance Card */}
-        <div className="p-5 rounded-2xl bg-[#121215] border border-white/[0.08] relative overflow-hidden group hover:border-[#DFC296]/40 transition-all">
+        <div className="p-5 rounded-2xl bg-[#121215] border border-white/[0.08] relative overflow-hidden group hover:border-[#DFC296]/40 transition-[border-color] duration-150">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[10px] tracking-[0.2em] uppercase font-mono text-[#8E8B82]">
               نرخ پس‌انداز / SAVINGS
@@ -461,7 +466,7 @@ export const ReportsView: React.FC = () => {
                           strokeDasharray={arc.dashArray}
                           strokeDashoffset={arc.dashOffset}
                           strokeLinecap="round"
-                          className="cursor-pointer transition-all duration-500 ease-out"
+                          className="cursor-pointer transition-[opacity,stroke-width] duration-200 ease-out"
                           style={{
                             opacity: isDimmed ? 0.2 : 1,
                             filter: isFocused ? `drop-shadow(0 0 10px ${arc.color}60)` : 'none',
@@ -518,7 +523,7 @@ export const ReportsView: React.FC = () => {
                       onClick={() =>
                         setSelectedCategory((prev) => (prev === item.id ? null : item.id))
                       }
-                      className={`py-3.5 px-3 flex items-center justify-between cursor-pointer rounded-xl transition-all duration-300 ${
+                      className={`py-3.5 px-3 flex items-center justify-between cursor-pointer rounded-xl transition-[background-color,opacity] duration-150 ${
                         isFocused ? 'bg-white/[0.04]' : 'hover:bg-white/[0.02]'
                       } ${isDimmed ? 'opacity-35' : 'opacity-100'}`}
                     >
@@ -552,7 +557,7 @@ export const ReportsView: React.FC = () => {
 
                         <div className="hidden sm:block w-16 sm:w-24 h-[3px] bg-white/[0.08] rounded-full overflow-hidden">
                           <div
-                            className="h-full rounded-full transition-all duration-500"
+                            className="h-full rounded-full transition-[width] duration-300"
                             style={{
                               backgroundColor: item.color,
                               width: `${Math.min(100, item.percent)}%`,
@@ -588,10 +593,13 @@ export const ReportsView: React.FC = () => {
         <div className="w-full">
           <ResponsiveContainer width="100%" height={230} minHeight={200}>
             <BarChart
-              data={[
-                { name: 'درآمدها', amount: currentIncomeTotal, fill: '#7A9A95' },
-                { name: 'مخارج', amount: currentExpenseTotal, fill: '#C98A82' },
-              ]}
+              data={useMemo(
+                () => [
+                  { name: 'درآمدها', amount: currentIncomeTotal, fill: '#7A9A95' },
+                  { name: 'مخارج', amount: currentExpenseTotal, fill: '#C98A82' },
+                ],
+                [currentIncomeTotal, currentExpenseTotal]
+              )}
               margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
             >
               <CartesianGrid strokeDasharray="3 3" opacity={0.06} stroke="#F4F0EA" />
@@ -608,7 +616,13 @@ export const ReportsView: React.FC = () => {
                   fontFamily: 'JetBrains Mono, monospace',
                 }}
               />
-              <Bar dataKey="amount" radius={[8, 8, 0, 0]} />
+              <Bar
+                dataKey="amount"
+                radius={[8, 8, 0, 0]}
+                isAnimationActive={!hasChartAnimatedRef.current}
+                animationDuration={700}
+                animationEasing="ease-out"
+              />
             </BarChart>
           </ResponsiveContainer>
         </div>

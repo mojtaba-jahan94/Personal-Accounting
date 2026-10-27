@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFinance } from '../../context/FinanceContext';
 import { DashboardCustomizeModal } from './DashboardCustomizeModal';
@@ -95,22 +95,40 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const [balanceRange, setBalanceRange] = useState<'1M' | '3M' | '6M' | '1Y'>('3M');
   const [selectedAccountIndex, setSelectedAccountIndex] = useState(0);
 
+  const hasChartAnimatedRef = useRef(false);
+  useEffect(() => {
+    hasChartAnimatedRef.current = true;
+  }, []);
+
   // Cash flow net savings
-  const netSavings = totalIncome - totalExpense;
-  const savingsRate = totalIncome > 0 ? Math.max(0, Math.round((netSavings / totalIncome) * 100)) : 0;
+  const netSavings = useMemo(() => totalIncome - totalExpense, [totalIncome, totalExpense]);
+  const savingsRate = useMemo(
+    () => (totalIncome > 0 ? Math.max(0, Math.round((netSavings / totalIncome) * 100)) : 0),
+    [totalIncome, netSavings]
+  );
 
   // Receivables & Debts
-  const totalReceivables = debts
-    .filter((d) => d.type === 'credit' && !d.isSettled)
-    .reduce((sum, d) => sum + (d.amount - (d.paidAmount || 0)), 0);
+  const totalReceivables = useMemo(
+    () =>
+      debts
+        .filter((d) => d.type === 'credit' && !d.isSettled)
+        .reduce((sum, d) => sum + (d.amount - (d.paidAmount || 0)), 0),
+    [debts]
+  );
 
-  const totalPayableDebts = debts
-    .filter((d) => d.type === 'debt' && !d.isSettled)
-    .reduce((sum, d) => sum + (d.amount - (d.paidAmount || 0)), 0);
+  const totalPayableDebts = useMemo(
+    () =>
+      debts
+        .filter((d) => d.type === 'debt' && !d.isSettled)
+        .reduce((sum, d) => sum + (d.amount - (d.paidAmount || 0)), 0),
+    [debts]
+  );
 
   // Net worth
-  const totalNetWorth =
-    totalBalance + totalPortfolioValueToman + totalReceivables - totalPayableDebts;
+  const totalNetWorth = useMemo(
+    () => totalBalance + totalPortfolioValueToman + totalReceivables - totalPayableDebts,
+    [totalBalance, totalPortfolioValueToman, totalReceivables, totalPayableDebts]
+  );
 
   // Real historical balance chart data
   const balanceHistoryData = useMemo(() => {
@@ -358,10 +376,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
       </div>
 
       {/* Main Dynamic Bento Grid Sections */}
-      {sectionOrder.map((sectionKey) => {
+      {sectionOrder.map((sectionKey, sectionIdx) => {
         if (!dashboardConfig[sectionKey]) return null;
 
-        switch (sectionKey) {
+        const sectionContent = (() => {
+          switch (sectionKey) {
           
           /* =========================================================
              1. TOTAL BALANCE HERO CARD WITH AREA CHART
@@ -457,6 +476,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         stroke="#8B5CF6"
                         strokeWidth={2.5}
                         fill="url(#balanceAreaGrad)"
+                        isAnimationActive={!hasChartAnimatedRef.current}
+                        animationDuration={700}
+                        animationEasing="ease-out"
+                        dot={false}
+                        activeDot={{ r: 4, strokeWidth: 0 }}
                       />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -636,7 +660,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             className={`absolute w-72 sm:w-84 h-48 rounded-3xl p-5 border cursor-pointer transition-shadow shadow-2xl flex flex-col justify-between ${
                               isSelected
                                 ? 'border-violet-500/50 shadow-glow-violet bg-gradient-to-br from-violet-900/60 via-[#181424] to-[#120F1A]'
-                                : 'border-white/10 bg-[#151220]/90 backdrop-blur-md'
+                                : 'border-white/10 bg-[#151220]'
                             }`}
                           >
                             <div className="flex items-center justify-between">
@@ -967,7 +991,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             direction: 'rtl',
                           }}
                         />
-                        <Bar dataKey="income" name="درآمد" radius={[6, 6, 0, 0]}>
+                        <Bar
+                          dataKey="income"
+                          name="درآمد"
+                          radius={[6, 6, 0, 0]}
+                          isAnimationActive={!hasChartAnimatedRef.current}
+                          animationDuration={700}
+                          animationEasing="ease-out"
+                        >
                           {sixMonthBarData.map((entry, index) => (
                             <Cell
                               key={`cell-inc-${index}`}
@@ -975,7 +1006,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             />
                           ))}
                         </Bar>
-                        <Bar dataKey="expense" name="مخارج" radius={[6, 6, 0, 0]}>
+                        <Bar
+                          dataKey="expense"
+                          name="مخارج"
+                          radius={[6, 6, 0, 0]}
+                          isAnimationActive={!hasChartAnimatedRef.current}
+                          animationDuration={700}
+                          animationEasing="ease-out"
+                        >
                           {sixMonthBarData.map((entry, index) => (
                             <Cell
                               key={`cell-exp-${index}`}
@@ -1178,7 +1216,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           default:
             return null;
         }
-      })}
+      })();
+
+      if (!sectionContent) return null;
+
+      if (sectionIdx > 1) {
+        return (
+          <div key={sectionKey} className="cv-widget contain-paint">
+            {sectionContent}
+          </div>
+        );
+      }
+
+      return <React.Fragment key={sectionKey}>{sectionContent}</React.Fragment>;
+    })}
 
       <DashboardCustomizeModal
         isOpen={isCustomizeOpen}

@@ -101,7 +101,7 @@ export const NotificationsPopover: React.FC<NotificationsPopoverProps> = ({ onSe
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute left-0 mt-2 w-80 sm:w-96 rounded-3xl bg-[#141120] border border-white/10 shadow-2xl backdrop-blur-2xl p-4 z-50 text-right"
+            className="absolute left-0 mt-2 w-80 sm:w-96 rounded-3xl bg-[#141120] border border-white/10 shadow-2xl p-4 z-50 text-right"
           >
             <div className="flex items-center justify-between pb-3 border-b border-white/[0.08] mb-3">
               <span className="text-xs font-semibold text-fintech-text-main">

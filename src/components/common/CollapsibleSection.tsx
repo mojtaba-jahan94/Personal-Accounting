@@ -21,7 +21,7 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   children,
   defaultExpanded = true,
   storageKey,
-  className = 'bg-white/85 dark:bg-[#1F2933]/75 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-[#6B7280]/15 dark:border-[#D1D5DB]/15 shadow-sm',
+  className = 'bg-white dark:bg-[#13101C] p-4 sm:p-5 rounded-2xl border border-white/10 shadow-sm',
   headerClassName = '',
 }) => {
   const [isExpanded, setIsExpanded] = useState<boolean>(() => {
@@ -45,7 +45,7 @@ export const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({
   };
 
   return (
-    <div className={`${className} transition-all duration-200`}>
+    <div className={`${className} transition-[box-shadow,border-color] duration-150`}>
       {/* Header */}
       <div
         className={`flex items-center justify-between cursor-pointer select-none ${

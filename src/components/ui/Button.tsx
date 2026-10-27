@@ -32,7 +32,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      'inline-flex items-center justify-center font-medium rounded-2xl select-none transition-all duration-200 outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50 disabled:opacity-50 disabled:pointer-events-none cursor-pointer';
+      'inline-flex items-center justify-center font-medium rounded-2xl select-none transition-[transform,background-color,border-color,color,box-shadow] duration-150 outline-none focus-visible:ring-2 focus-visible:ring-violet-500/50 disabled:opacity-50 disabled:pointer-events-none cursor-pointer';
 
     const sizeStyles = {
       sm: 'text-xs px-3.5 py-1.5 gap-1.5',
@@ -44,7 +44,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       primary:
         'bg-gradient-to-r from-violet-600 via-indigo-600 to-violet-700 text-white shadow-glow-violet hover:shadow-[0_0_25px_rgba(139,92,246,0.5)] border border-white/15',
       secondary:
-        'bg-white/[0.05] hover:bg-white/[0.09] text-fintech-text-main border border-white/10 shadow-sm backdrop-blur-md',
+        'bg-white/[0.05] dark:bg-[#1A1726] hover:bg-white/[0.09] dark:hover:bg-[#231F33] text-fintech-text-main border border-white/10 shadow-sm',
       ghost:
         'bg-transparent text-fintech-text-muted hover:text-fintech-text-main hover:bg-white/[0.05]',
       danger:

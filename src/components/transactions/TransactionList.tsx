@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useFinance } from '../../context/FinanceContext';
 import { Transaction, TransactionType } from '../../types';
@@ -93,10 +93,43 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
     });
   }, [transactions, startDate, endDate, searchTerm, selectedType, selectedCategory, selectedAccount]);
 
-  // Group filtered transactions by date
+  // Windowed Pagination: render first 30 rows, load more on scroll
+  const [visibleCount, setVisibleCount] = useState(30);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+  // Reset pagination count on filter change
+  useEffect(() => {
+    setVisibleCount(30);
+  }, [startDate, endDate, searchTerm, selectedType, selectedCategory, selectedAccount]);
+
+  // Infinite scroll sentinel observer
+  useEffect(() => {
+    if (visibleCount >= filtered.length) return;
+    const node = sentinelRef.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((prev) => Math.min(prev + 30, filtered.length));
+        }
+      },
+      { rootMargin: '250px' }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [visibleCount, filtered.length]);
+
+  const visibleTransactions = useMemo(
+    () => filtered.slice(0, visibleCount),
+    [filtered, visibleCount]
+  );
+
+  // Group visible filtered transactions by date
   const groupedTransactions = useMemo(() => {
     const groups: { [date: string]: Transaction[] } = {};
-    for (const tx of filtered) {
+    for (const tx of visibleTransactions) {
       if (!groups[tx.date]) {
         groups[tx.date] = [];
       }
@@ -118,7 +151,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
           dayNet,
         };
       });
-  }, [filtered]);
+  }, [visibleTransactions]);
 
   // Statistics
   const filteredIncome = useMemo(
@@ -289,7 +322,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
       </div>
 
       {/* 3. Sticky Filter Bar & Search */}
-      <Card variant="elevated" className="sticky top-20 z-20 backdrop-blur-xl border-white/10 shadow-xl">
+      <Card variant="elevated" className="sticky top-20 z-20 border-white/10 shadow-xl bg-[#13101C]/95">
         <div className="p-4 space-y-3">
           {/* Top Filter Controls: Type Tabs & Toggle */}
           <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -440,48 +473,52 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
         </Card>
       ) : (
         <div className="space-y-6">
-          {groupedTransactions.map((group) => (
-            <div key={group.date} className="space-y-2.5">
-              {/* Date Header with Daily Balance */}
-              <div className="flex items-center justify-between px-2 text-xs">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-fintech-accent" />
-                  <span className="font-extrabold text-fintech-text-primary text-sm">
-                    {formatJalaliLong(group.date)}
-                  </span>
-                  <span className="text-[10px] text-fintech-text-muted font-mono">
-                    ({toPersianDigits(group.items.length)} تراکنش)
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 font-mono text-[11px]">
-                  <span className="text-fintech-text-muted hidden sm:inline">تراز روز:</span>
-                  <span
-                    className={`font-bold ${
-                      group.dayNet >= 0 ? 'text-emerald-400' : 'text-rose-400'
-                    }`}
-                  >
-                    {group.dayNet >= 0 ? '+' : ''}
-                    {formatCurrency(group.dayNet, currency)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Transactions in Date Group */}
-              <Card variant="glass" className="divide-y divide-white/5 overflow-hidden">
-                {group.items.map((tx, idx) => {
-                  const cat = categories.find((c) => c.id === tx.categoryId);
-                  const acc = accounts.find((a) => a.id === tx.accountId);
-                  const toAcc = tx.toAccountId ? accounts.find((a) => a.id === tx.toAccountId) : null;
-
-                  return (
-                    <motion.div
-                      key={tx.id}
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.15, delay: idx * 0.02 }}
-                      className="p-3.5 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-white/[0.04] transition group"
+          {(() => {
+            let globalRowIndex = 0;
+            return groupedTransactions.map((group) => (
+              <div key={group.date} className="space-y-2.5 cv-list-item contain-paint">
+                {/* Date Header with Daily Balance */}
+                <div className="flex items-center justify-between px-2 text-xs">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-fintech-accent" />
+                    <span className="font-extrabold text-fintech-text-primary text-sm">
+                      {formatJalaliLong(group.date)}
+                    </span>
+                    <span className="text-[10px] text-fintech-text-muted font-mono">
+                      ({toPersianDigits(group.items.length)} تراکنش)
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 font-mono text-[11px]">
+                    <span className="text-fintech-text-muted hidden sm:inline">تراز روز:</span>
+                    <span
+                      className={`font-bold ${
+                        group.dayNet >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                      }`}
                     >
-                      {/* Left side: Icon + Title + Meta */}
+                      {group.dayNet >= 0 ? '+' : ''}
+                      {formatCurrency(group.dayNet, currency)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Transactions in Date Group */}
+                <Card variant="glass" className="divide-y divide-white/5 overflow-hidden">
+                  {group.items.map((tx) => {
+                    const rowIdx = globalRowIndex++;
+                    const shouldAnimate = rowIdx < 12;
+                    const cat = categories.find((c) => c.id === tx.categoryId);
+                    const acc = accounts.find((a) => a.id === tx.accountId);
+                    const toAcc = tx.toAccountId ? accounts.find((a) => a.id === tx.toAccountId) : null;
+
+                    return (
+                      <motion.div
+                        key={tx.id}
+                        initial={shouldAnimate ? { opacity: 0, y: 6 } : false}
+                        animate={shouldAnimate ? { opacity: 1, y: 0 } : false}
+                        transition={shouldAnimate ? { duration: 0.15, delay: rowIdx * 0.025 } : undefined}
+                        className="p-3.5 sm:px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-white/[0.04] transition group"
+                      >
+                        {/* Left side: Icon + Title + Meta */}
                       <div className="flex items-center gap-3 min-w-0">
                         <div
                           className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border border-white/10 shadow-sm"
@@ -590,7 +627,19 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
                 })}
               </Card>
             </div>
-          ))}
+            ));
+          })()}
+
+          {/* Infinite scroll sentinel */}
+          {visibleCount < filtered.length && (
+            <div
+              ref={sentinelRef}
+              className="py-4 text-center text-xs text-fintech-text-muted flex items-center justify-center gap-2"
+            >
+              <div className="w-2 h-2 rounded-full bg-fintech-accent animate-pulse" />
+              <span>بارگذاری تراکنش‌های بیشتر ({toPersianDigits(filtered.length - visibleCount)} تراکنش دیگر)...</span>
+            </div>
+          )}
         </div>
       )}
 

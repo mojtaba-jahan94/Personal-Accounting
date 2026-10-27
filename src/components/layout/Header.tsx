@@ -82,7 +82,7 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <>
-      <header className="sticky top-2 sm:top-3 z-40 w-full px-3 sm:px-6 max-w-7xl mx-auto transition-all duration-300 select-none">
+      <header className="sticky top-2 sm:top-3 z-40 w-full px-3 sm:px-6 max-w-7xl mx-auto transition-[background-color,border-color] duration-150 select-none">
         <div className="bg-[#120F1A]/85 dark:bg-[#120F1A]/85 backdrop-blur-2xl border border-white/10 rounded-3xl px-4 sm:px-6 py-3 flex items-center justify-between gap-3 sm:gap-6 shadow-2xl">
           
           {/* Right Group (RTL Start): Mobile Hamburger, Brand, Active Title */}
@@ -122,7 +122,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             type="button"
             onClick={() => setIsSearchOpen(true)}
-            className="hidden md:flex items-center justify-between gap-3 px-4 py-2 rounded-2xl bg-white/[0.04] hover:bg-white/[0.07] border border-white/10 text-fintech-text-muted hover:text-white transition w-56 lg:w-72 cursor-pointer backdrop-blur-md"
+            className="hidden md:flex items-center justify-between gap-3 px-4 py-2 rounded-2xl bg-white/[0.04] hover:bg-white/[0.07] border border-white/10 text-fintech-text-muted hover:text-white transition-[background-color,border-color,color] duration-150 w-56 lg:w-72 cursor-pointer"
           >
             <div className="flex items-center gap-2 text-xs">
               <Search className="w-4 h-4 text-violet-400" />

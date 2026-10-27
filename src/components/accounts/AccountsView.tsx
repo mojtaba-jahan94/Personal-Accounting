@@ -341,7 +341,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onSelectTab }) => {
                 <div
                   key={acc.id}
                   onClick={() => setSelectedAccountId(acc.id)}
-                  className={`bg-gradient-to-br ${style.gradient} ${style.border} ${style.glow} border rounded-3xl p-6 min-h-[220px] flex flex-col justify-between cursor-pointer transition-all duration-300 hover:-translate-y-1.5 relative overflow-hidden ${
+                  className={`bg-gradient-to-br ${style.gradient} ${style.border} ${style.glow} border rounded-3xl p-6 min-h-[220px] flex flex-col justify-between cursor-pointer transition-[transform,box-shadow] duration-200 hover:-translate-y-1.5 relative overflow-hidden ${
                     isSelected ? 'ring-2 ring-violet-400 shadow-[0_20px_45px_rgba(139,92,246,0.25)]' : ''
                   }`}
                 >
@@ -415,7 +415,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onSelectTab }) => {
                     style={{ zIndex }}
                     layout
                     transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-                    className={`w-full ${topOverlapClass} bg-gradient-to-br ${style.gradient} ${style.border} rounded-3xl p-6 sm:p-7 min-h-[220px] sm:min-h-[240px] flex flex-col justify-between cursor-pointer border relative overflow-hidden transition-all duration-300 ${
+                    className={`w-full ${topOverlapClass} bg-gradient-to-br ${style.gradient} ${style.border} rounded-3xl p-6 sm:p-7 min-h-[220px] sm:min-h-[240px] flex flex-col justify-between cursor-pointer border relative overflow-hidden transition-[transform,opacity,box-shadow] duration-200 ${
                       isSelected
                         ? 'scale-100 shadow-[0_30px_60px_rgba(0,0,0,0.9)] ring-2 ring-violet-400/80'
                         : 'scale-[0.97] opacity-85 hover:opacity-100 hover:-translate-y-4 hover:scale-[0.985] shadow-[0_16px_36px_rgba(0,0,0,0.7)]'
@@ -547,7 +547,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onSelectTab }) => {
                     <button
                       type="button"
                       onClick={handleQuickExpense}
-                      className="w-14 h-14 rounded-2xl border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 active:scale-95 transition-all flex items-center justify-center text-rose-400 shadow-md group"
+                      className="w-14 h-14 rounded-2xl border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 active:scale-95 transition-[transform,background-color] duration-150 flex items-center justify-center text-rose-400 shadow-md group"
                       title="ثبت هزینه از این کارت"
                     >
                       <ArrowUpRight className="w-5 h-5 group-hover:scale-110 transition-transform" />
@@ -559,7 +559,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onSelectTab }) => {
                     <button
                       type="button"
                       onClick={handleQuickIncome}
-                      className="w-14 h-14 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20 active:scale-95 transition-all flex items-center justify-center text-emerald-400 shadow-md group"
+                      className="w-14 h-14 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20 active:scale-95 transition-[transform,background-color] duration-150 flex items-center justify-center text-emerald-400 shadow-md group"
                       title="افزایش موجودی و واریز"
                     >
                       <ArrowDownLeft className="w-5 h-5 group-hover:scale-110 transition-transform" />
@@ -571,7 +571,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onSelectTab }) => {
                     <button
                       type="button"
                       onClick={handleQuickTransfer}
-                      className="w-14 h-14 rounded-2xl border border-violet-500/20 bg-violet-500/10 hover:bg-violet-500/20 active:scale-95 transition-all flex items-center justify-center text-violet-400 shadow-md group"
+                      className="w-14 h-14 rounded-2xl border border-violet-500/20 bg-violet-500/10 hover:bg-violet-500/20 active:scale-95 transition-[transform,background-color] duration-150 flex items-center justify-center text-violet-400 shadow-md group"
                       title="انتقال به کارت دیگر"
                     >
                       <ArrowLeftRight className="w-5 h-5 group-hover:scale-110 transition-transform" />
@@ -583,7 +583,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onSelectTab }) => {
                     <button
                       type="button"
                       onClick={handleQuickEdit}
-                      className="w-14 h-14 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 active:scale-95 transition-all flex items-center justify-center text-fintech-text-primary shadow-md group"
+                      className="w-14 h-14 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 active:scale-95 transition-[transform,background-color] duration-150 flex items-center justify-center text-fintech-text-primary shadow-md group"
                       title="ویرایش یا حذف حساب"
                     >
                       <SlidersHorizontal className="w-5 h-5 group-hover:scale-110 transition-transform" />

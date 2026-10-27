@@ -35,7 +35,6 @@ import {
   MarketPriceItem,
 } from '../../types';
 import { formatNumber, toPersianDigits } from '../../utils/formatters';
-import { LiquidGlassContainer } from '../common/LiquidGlassContainer';
 import { AssetModal } from './AssetModal';
 import { AssetTradeModal } from './AssetTradeModal';
 import { TelegramPasteModal } from './TelegramPasteModal';
@@ -250,14 +249,14 @@ export const AssetsView: React.FC = () => {
 
   return (
     <div
-      className={`space-y-6 transition-all duration-300 ${
+      className={`space-y-6 transition-[padding,background-color] duration-200 ${
         isTerminalMode
-          ? 'fixed inset-0 z-50 overflow-y-auto bg-[#1F2933] p-4 sm:p-8 text-[#F7F7F2]'
+          ? 'fixed inset-0 z-50 overflow-y-auto bg-[#120F1A] p-4 sm:p-8 text-white'
           : 'relative'
       }`}
     >
       {/* 1. Live Market Ticker Marquee Bar */}
-      <div className="rounded-2xl bg-[#F7F7F2]/90 dark:bg-[#1F2933]/70 border border-[#A68A64]/25 dark:border-[#A68A64]/30 backdrop-blur-md p-2 shadow-xs overflow-hidden">
+      <div className="rounded-2xl bg-[#13101C] border border-white/10 p-2 shadow-xs overflow-hidden">
         <div className="flex items-center gap-2">
           {/* Header Badge */}
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#A68A64] text-[#F7F7F2] font-black text-[11px] shrink-0 shadow-xs">
@@ -355,8 +354,8 @@ export const AssetsView: React.FC = () => {
       </div>
 
       {/* 2. Portfolio Hero Banner */}
-      <LiquidGlassContainer
-        className="rounded-3xl border border-[#A68A64]/30 p-6 sm:p-8 shadow-lg dark:shadow-2xl bg-gradient-to-br from-white via-[#F7F7F2] to-[#EAE4DC] text-[#1F2933] dark:from-[#1F2933] dark:via-[#141B22] dark:to-[#1F2933] dark:text-[#F7F7F2] relative overflow-hidden"
+      <div
+        className="rounded-3xl border border-white/10 p-6 sm:p-8 shadow-xl bg-[#13101C] text-white relative overflow-hidden"
       >
         {/* Soft Ambient Radiance */}
         <div className="absolute top-0 right-0 w-80 h-80 bg-[#A68A64]/10 rounded-full blur-3xl pointer-events-none" />
@@ -518,7 +517,7 @@ export const AssetsView: React.FC = () => {
             <span>{refreshMessage}</span>
           </div>
         )}
-      </LiquidGlassContainer>
+      </div>
 
       {/* 3. Gold & Currency Asset Share Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

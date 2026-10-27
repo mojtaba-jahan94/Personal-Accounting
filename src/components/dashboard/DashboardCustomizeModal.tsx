@@ -113,7 +113,7 @@ export const DashboardCustomizeModal: React.FC<DashboardCustomizeModalProps> = (
             return (
               <div
                 key={key}
-                className={`p-3 rounded-2xl border transition-all flex items-center justify-between gap-3 select-none ${
+                className={`p-3 rounded-2xl border transition-[border-color,background-color,opacity] duration-150 flex items-center justify-between gap-3 select-none ${
                   isVisible
                     ? 'border-violet-500/30 bg-white/[0.04] shadow-xs'
                     : 'border-white/5 opacity-50 bg-white/[0.01]'

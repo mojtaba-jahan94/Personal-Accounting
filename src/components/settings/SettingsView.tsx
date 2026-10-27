@@ -23,9 +23,11 @@ import {
   Users,
   Database,
   User,
+  Zap,
 } from 'lucide-react';
 import { PersonManagerModal } from '../contacts/PersonManagerModal';
 import { UserProfileModal } from '../auth/UserProfileModal';
+import { AnimationLevel, getAnimationLevel, setAnimationLevel } from '../../utils/motionSettings';
 
 const BACKGROUND_STYLES: { id: BackgroundStyle; name: string; desc: string; previewClass: string }[] = [
   {
@@ -63,10 +65,17 @@ export const SettingsView: React.FC = () => {
   const [isPersonModalOpen, setIsPersonModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isSyncingTurso, setIsSyncingTurso] = useState(false);
+  const [animLevel, setAnimLevel] = useState<AnimationLevel>(() => getAnimationLevel());
 
   const showNotification = (msg: string) => {
     setMessage(msg);
     setTimeout(() => setMessage(null), 3000);
+  };
+
+  const handleAnimationLevelChange = (level: AnimationLevel) => {
+    setAnimationLevel(level);
+    setAnimLevel(level);
+    showNotification(`سطح پویانمایی به «${level === 'full' ? 'کامل' : level === 'lite' ? 'سبک و روان' : 'خاموش'}» تغییر یافت.`);
   };
 
   const handleExportBackup = () => {
@@ -177,7 +186,7 @@ export const SettingsView: React.FC = () => {
                   });
                   showNotification(`تم «${palette.name}» با موفقیت فعال شد.`);
                 }}
-                className={`p-4 rounded-2xl border text-right transition-all flex flex-col justify-between gap-3 relative ${
+                className={`p-4 rounded-2xl border text-right transition-[border-color,background-color,box-shadow] duration-150 flex flex-col justify-between gap-3 relative ${
                   isSelected
                     ? 'border-violet-500 bg-violet-500/10 shadow-lg shadow-violet-500/15 ring-2 ring-violet-500/30'
                     : 'bg-black/20 dark:bg-white/[0.02] border-white/10 hover:border-violet-500/40'
@@ -252,7 +261,7 @@ export const SettingsView: React.FC = () => {
             onClick={() => {
               if (darkMode) toggleDarkMode();
             }}
-            className={`p-4 rounded-2xl border transition-all flex items-center justify-center gap-3 font-bold text-sm ${
+            className={`p-4 rounded-2xl border transition-[border-color,background-color,box-shadow,color] duration-150 flex items-center justify-center gap-3 font-bold text-sm ${
               !darkMode
                 ? 'bg-white text-zinc-900 border-violet-500 shadow-lg shadow-violet-500/15 ring-2 ring-violet-500/20'
                 : 'bg-black/20 dark:bg-white/[0.02] text-fintech-text-muted border-white/10 hover:border-violet-500/30'
@@ -267,7 +276,7 @@ export const SettingsView: React.FC = () => {
             onClick={() => {
               if (!darkMode) toggleDarkMode();
             }}
-            className={`p-4 rounded-2xl border transition-all flex items-center justify-center gap-3 font-bold text-sm ${
+            className={`p-4 rounded-2xl border transition-[border-color,background-color,box-shadow,color] duration-150 flex items-center justify-center gap-3 font-bold text-sm ${
               darkMode
                 ? 'bg-violet-950/40 text-white border-violet-500 shadow-lg shadow-violet-500/25 ring-2 ring-violet-500/30'
                 : 'bg-black/20 dark:bg-white/[0.02] text-fintech-text-muted border-white/10 hover:border-violet-500/30'
@@ -295,8 +304,42 @@ export const SettingsView: React.FC = () => {
               onChange={(e) => updateThemeConfig({ performanceMode: e.target.checked })}
               className="sr-only peer"
             />
-            <div className="w-11 h-6 bg-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-violet-600"></div>
+            <div className="w-11 h-6 bg-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-[transform] after:duration-150 peer-checked:bg-violet-600"></div>
           </label>
+        </div>
+
+        {/* Animation Level Setting */}
+        <div className="pt-3 border-t border-white/5 space-y-2.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <span className="text-xs font-bold text-white block">
+                سطح پویانمایی و جلوه‌های حرکتی (Animation Level)
+              </span>
+              <span className="text-[11px] text-fintech-text-muted">
+                سبک: بدون امواج متحرک و شمارش مداوم • خاموش: لغو کامل انیمیشن‌ها
+              </span>
+            </div>
+            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-black/20 border border-white/5 self-start sm:self-auto">
+              {(['full', 'lite', 'off'] as const).map((lvl) => {
+                const labels = { full: 'کامل (Full)', lite: 'سبک (Lite)', off: 'خاموش (Off)' };
+                const isSelected = animLevel === lvl;
+                return (
+                  <button
+                    key={lvl}
+                    type="button"
+                    onClick={() => handleAnimationLevelChange(lvl)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-[background-color,border-color,color] duration-150 ${
+                      isSelected
+                        ? 'bg-violet-600 text-white shadow-sm'
+                        : 'text-fintech-text-muted hover:text-white'
+                    }`}
+                  >
+                    {labels[lvl]}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </Card>
 
@@ -324,7 +367,7 @@ export const SettingsView: React.FC = () => {
                 key={bg.id}
                 type="button"
                 onClick={() => updateThemeConfig({ backgroundStyle: bg.id })}
-                className={`p-4 rounded-2xl border text-right transition-all flex items-center justify-between gap-3 ${
+                className={`p-4 rounded-2xl border text-right transition-[border-color,background-color,box-shadow] duration-150 flex items-center justify-between gap-3 ${
                   isSelected
                     ? 'border-violet-500 bg-violet-500/10 shadow-lg shadow-violet-500/10 ring-2 ring-violet-500/20'
                     : 'bg-black/20 dark:bg-white/[0.02] border-white/10 hover:border-violet-500/30'

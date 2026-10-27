@@ -52,11 +52,20 @@
 
   /* Glass Presets */
   --glass-blur: 16px;
+  --glass-blur: 16px;
   --glass-saturate: 160%;
   --glass-bg-light: rgba(248, 247, 250, 0.88);
   --glass-bg-dark: rgba(19, 16, 27, 0.75);
   --glass-border-light: rgba(209, 213, 219, 0.7);
   --glass-border-dark: rgba(255, 255, 255, 0.08);
+
+  /* Unified Motion Tokens */
+  --dur-fast: 150ms;
+  --dur-base: 220ms;
+  --dur-slow: 360ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
   --anim-duration: 200ms;
   --anim-ease: cubic-bezier(0.16, 1, 0.3, 1);
@@ -109,6 +118,35 @@
   --border-cloud: rgba(255, 255, 255, 0.12);
 }
 
+/* ==========================================================================
+   Motion System: Animation Levels & Reduced Motion
+   ========================================================================== */
+html[data-anim-level="lite"] .silk-wave-blob,
+html[data-anim-level="lite"] .animate-float-optimized,
+html[data-anim-level="lite"] .animate-float-alt {
+  animation: none !important;
+  transform: none !important;
+}
+
+html[data-anim-level="lite"] .stagger-item {
+  animation-delay: 0ms !important;
+  opacity: 1 !important;
+}
+
+html[data-anim-level="off"] *,
+html[data-anim-level="off"] *::before,
+html[data-anim-level="off"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+html[data-anim-level="off"] .stagger-item {
+  animation-delay: 0ms !important;
+  opacity: 1 !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -117,6 +155,16 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+  .silk-wave-blob,
+  .animate-float-optimized,
+  .animate-float-alt {
+    animation: none !important;
+    transform: none !important;
+  }
+  .stagger-item {
+    animation-delay: 0ms !important;
+    opacity: 1 !important;
   }
 }
 
@@ -900,109 +948,66 @@ html:not(.dark).no-glass .liquid-glass-card {
 }
 
 /* ==========================================================================
-   Mobile-Optimized Clean Minimal Surfaces
+   Phase 2: Unified Motion System & Performance Utilities
    ========================================================================== */
-@media (max-width: 640px) {
-  .liquid-glass,
-  .liquid-glass-card,
-  .liquid-glass-crystal {
-    border-radius: 1.15rem;
-    backdrop-filter: blur(14px) saturate(160%);
-    -webkit-backdrop-filter: blur(14px) saturate(160%);
-    box-shadow:
-      0 1px 2px 0 rgba(0, 0, 0, 0.03),
-      0 4px 12px -2px rgba(0, 0, 0, 0.05);
-  }
 
-  .dark .liquid-glass,
-  .dark .liquid-glass-card,
-  .dark .liquid-glass-crystal {
-    border-radius: 1.15rem;
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    box-shadow:
-      0 1px 2px 0 rgba(0, 0, 0, 0.4),
-      0 6px 18px -4px rgba(0, 0, 0, 0.6);
-  }
-
-  /* Bottom Dock on Mobile */
-  .glass-dock {
-    backdrop-filter: blur(18px) saturate(180%);
-    -webkit-backdrop-filter: blur(18px) saturate(180%);
-    box-shadow:
-      0 4px 20px -2px rgba(0, 0, 0, 0.1);
-  }
-
-  /* Capsule Header on Mobile */
-  .glass-capsule-bar {
-    backdrop-filter: blur(18px) saturate(180%);
-    -webkit-backdrop-filter: blur(18px) saturate(180%);
-    border-radius: 9999px;
-  }
-
-  /* Touch micro-interaction */
-  .liquid-glass:active,
-  .liquid-glass-card:active,
-  .liquid-glass-crystal:active {
-    transform: scale(0.99);
-    transition-duration: 80ms;
-  }
-}
-
-/* Tab and View Directional Slide Transition Animations */
-@keyframes viewSlideInForward {
+/* Page Transition: opacity 0->1, translateY(8px->0), 220ms ease-out, no scale, no will-change */
+@keyframes pageEnter {
   0% {
     opacity: 0;
-    transform: translate3d(-30px, 0, 0) scale(0.99);
-  }
-  60% {
-    opacity: 0.85;
+    transform: translate3d(0, 8px, 0);
   }
   100% {
     opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
+    transform: translate3d(0, 0, 0);
   }
 }
 
-@keyframes viewSlideInBackward {
-  0% {
-    opacity: 0;
-    transform: translate3d(30px, 0, 0) scale(0.99);
-  }
-  60% {
-    opacity: 0.85;
-  }
-  100% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0) scale(1);
-  }
+.animate-page-enter {
+  animation: pageEnter var(--dur-base) var(--ease-out) both;
 }
 
-@keyframes viewFadeSlide {
-  0% {
-    opacity: 0;
-    transform: translateY(10px) scale(0.99);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.animate-view-slide-forward {
-  animation: viewSlideInForward 270ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  will-change: opacity, transform;
-}
-
-.animate-view-slide-backward {
-  animation: viewSlideInBackward 270ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  will-change: opacity, transform;
-}
-
+/* Backward-compatible aliases mapped to the clean pageEnter */
+.animate-view-slide-forward,
+.animate-view-slide-backward,
 .animate-view-transition {
-  animation: viewFadeSlide 240ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  will-change: opacity, transform;
+  animation: pageEnter var(--dur-base) var(--ease-out) both;
 }
+
+/* Stagger entrance: calc(min(var(--i), 10) * 40ms), capped at 10 items */
+.stagger-item {
+  opacity: 0;
+  animation: pageEnter var(--dur-base) var(--ease-out) both;
+  animation-delay: calc(min(var(--i, 0), 10) * 40ms);
+}
+
+/* Micro-interactions: hover = translateY(-2px) (pointer:fine only), press = scale(0.97) 80ms */
+@media (hover: hover) and (pointer: fine) {
+  .interactive-hover-lift:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.interactive-press:active {
+  transform: scale(0.97);
+  transition-duration: 80ms !important;
+}
+
+/* CSS Containment & Content Visibility for lists and widgets */
+.cv-list-item {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 76px;
+}
+
+.cv-widget {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 320px;
+}
+
+.contain-paint {
+  contain: layout paint;
+}
+
 
 
 

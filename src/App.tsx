@@ -37,11 +37,14 @@ const ALL_TABS: TabType[] = [
 ];
 
 const ViewLoadingFallback: React.FC = () => (
-  <div className="flex items-center justify-center min-h-[300px] w-full">
-    <div className="flex flex-col items-center gap-3">
-      <div className="w-8 h-8 rounded-full border-2 border-[#A68A64] border-t-transparent animate-spin" />
-      <span className="text-xs font-bold text-[#6B7280] dark:text-[#D1D5DB]">در حال بارگذاری...</span>
+  <div className="w-full space-y-4 animate-pulse select-none">
+    <div className="h-28 rounded-3xl bg-white/[0.03] border border-white/5" />
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="h-32 rounded-3xl bg-white/[0.03] border border-white/5" />
+      <div className="h-32 rounded-3xl bg-white/[0.03] border border-white/5" />
+      <div className="h-32 rounded-3xl bg-white/[0.03] border border-white/5" />
     </div>
+    <div className="h-64 rounded-3xl bg-white/[0.03] border border-white/5" />
   </div>
 );
 
@@ -54,9 +57,16 @@ const MainApp: React.FC = () => {
   const [isSmsModalOpen, setIsSmsModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
 
-  // Directional tab switching with smooth transition
+  // Preserve scroll position per tab
+  const scrollPosByTabRef = useRef<Record<string, number>>({});
+
+  // Directional tab switching with smooth transition and scroll restoration
   const handleSelectTab = useCallback((newTab: TabType) => {
     if (newTab === currentTab) return;
+
+    // Save current scroll position
+    scrollPosByTabRef.current[currentTab] = window.scrollY;
+
     const oldIndex = ALL_TABS.indexOf(currentTab);
     const newIndex = ALL_TABS.indexOf(newTab);
     if (oldIndex !== -1 && newIndex !== -1) {
@@ -65,6 +75,12 @@ const MainApp: React.FC = () => {
       setSlideDirection('default');
     }
     setCurrentTab(newTab);
+
+    // Restore scroll position on next microtask
+    requestAnimationFrame(() => {
+      const savedY = scrollPosByTabRef.current[newTab] || 0;
+      window.scrollTo({ top: savedY, behavior: 'instant' as ScrollBehavior });
+    });
   }, [currentTab]);
 
   const handleSwipeNext = useCallback(() => {
@@ -274,7 +290,7 @@ const MainApp: React.FC = () => {
           onTouchEnd={handleTouchEnd}
           className="flex-1 p-3 sm:p-6 lg:p-8 min-w-0 pb-28 lg:pb-10 overflow-x-hidden touch-pan-y"
         >
-          <div key={currentTab} className="w-full">
+          <div key={currentTab} className="w-full animate-page-enter">
             {renderCurrentView()}
           </div>
         </main>

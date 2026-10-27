@@ -327,12 +327,12 @@ export const TransferModal: React.FC<TransferModalProps> = ({
                         key={acc.id}
                         type="button"
                         onClick={() => setToAccountId(acc.id)}
-                        className={`flex flex-col items-center shrink-0 transition-all duration-300 ${
+                        className={`flex flex-col items-center shrink-0 transition-[transform,opacity] duration-150 ${
                           isSelected ? 'scale-105' : 'opacity-60 hover:opacity-100'
                         }`}
                       >
                         <div
-                          className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                          className={`w-12 h-12 rounded-full flex items-center justify-center transition-[border-color,background-color,box-shadow] duration-150 ${
                             isSelected
                               ? 'border-2 border-[#DFC296] shadow-[0_0_15px_rgba(223,194,150,0.35)] bg-[#DFC296]/15 text-[#DFC296]'
                               : 'border border-white/10 bg-[#1A191E] text-[#8E8B82]'
@@ -499,7 +499,7 @@ export const TransferModal: React.FC<TransferModalProps> = ({
                   key={key}
                   type="button"
                   onClick={() => handleKeypadPress(key)}
-                  className="h-12 sm:h-13 rounded-2xl text-xl font-mono text-[#F4F0EA] hover:bg-white/[0.04] active:scale-95 transition-all flex items-center justify-center select-none"
+                  className="h-12 sm:h-13 rounded-2xl text-xl font-mono text-[#F4F0EA] hover:bg-white/[0.04] active:scale-95 transition-[transform,background-color] duration-100 flex items-center justify-center select-none"
                 >
                   {key}
                 </button>
@@ -509,7 +509,7 @@ export const TransferModal: React.FC<TransferModalProps> = ({
               <button
                 type="button"
                 onClick={handleBackspace}
-                className="h-12 sm:h-13 rounded-2xl text-[#8E8B82] hover:text-[#C98A82] hover:bg-white/[0.04] active:scale-95 transition-all flex items-center justify-center select-none"
+                className="h-12 sm:h-13 rounded-2xl text-[#8E8B82] hover:text-[#C98A82] hover:bg-white/[0.04] active:scale-95 transition-[transform,color,background-color] duration-100 flex items-center justify-center select-none"
                 title="حذف رقم"
               >
                 <Delete className="w-5 h-5" />
