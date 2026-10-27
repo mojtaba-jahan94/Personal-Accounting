@@ -3,28 +3,38 @@
 @tailwind utilities;
 
 :root {
-  /* Default Brand Accent: Nordic Warm Wood */
-  --primary-color: #A68A64;
-  --primary-rgb: 166, 138, 100;
-  --primary-hover: #8A704C;
-  --primary-glow: rgba(166, 138, 100, 0.35);
-
-  /* Nordic Light Mode Surface & Content Tokens */
-  --bg-base: #F7F7F2;
+  /* AURUM Private & Nordic Tokens (Light Mode Defaults) */
+  --bg-primary: #F7F7F2;
   --bg-surface: #FFFFFF;
-  --bg-surface-secondary: #D1D5DB;
+  --bg-elevated: #EDE9E3;
   --text-primary: #1F2933;
-  --text-muted: #6B7280;
+  --text-secondary: #8E8B82;
+  --text-muted: #52504C;
+  --accent-primary: #DFC296;
+  --accent-lilac: #A390B8;
+  --accent-rose: #C98A82;
+  --accent-sage: #7A9A95;
+  --border-hairline: rgba(0, 0, 0, 0.08);
+
+  /* Brand Accent: Champagne Gold */
+  --primary-color: #DFC296;
+  --primary-rgb: 223, 194, 150;
+  --primary-hover: #CBB084;
+  --primary-glow: rgba(223, 194, 150, 0.35);
+
+  /* Surface & Content Tokens */
+  --bg-base: #F7F7F2;
+  --bg-surface-secondary: #D1D5DB;
   --border-subtle: rgba(107, 114, 128, 0.2);
   --border-cloud: #D1D5DB;
 
-  /* Nordic Glass Presets (Light Mode) */
+  /* Glass Presets (Light Mode) */
   --glass-blur: 16px;
   --glass-saturate: 160%;
   --glass-bg-light: rgba(247, 247, 242, 0.88);
-  --glass-bg-dark: rgba(31, 41, 51, 0.85);
+  --glass-bg-dark: rgba(18, 18, 21, 0.85);
   --glass-border-light: rgba(209, 213, 219, 0.7);
-  --glass-border-dark: rgba(247, 247, 242, 0.12);
+  --glass-border-dark: rgba(255, 255, 255, 0.07);
 
   /* Animation Speed: Fast & Snappy by default (150ms) */
   --anim-duration: 150ms;
@@ -32,14 +42,68 @@
 }
 
 .dark {
-  /* Nordic Dark Mode Surface & Content Tokens */
-  --bg-base: #1F2933;
-  --bg-surface: #263340;
-  --bg-surface-secondary: rgba(31, 41, 51, 0.75);
-  --text-primary: #F7F7F2;
-  --text-muted: #D1D5DB;
-  --border-subtle: rgba(209, 213, 219, 0.15);
-  --border-cloud: rgba(209, 213, 219, 0.22);
+  /* AURUM Obsidian Dark Theme Tokens */
+  --bg-primary: #0A0A0C;
+  --bg-surface: #121215;
+  --bg-elevated: #1A191E;
+  --text-primary: #F4F0EA;
+  --text-secondary: #8E8B82;
+  --text-muted: #52504C;
+  --accent-primary: #DFC296;
+  --accent-lilac: #A390B8;
+  --accent-rose: #C98A82;
+  --accent-sage: #7A9A95;
+  --border-hairline: rgba(255, 255, 255, 0.07);
+
+  /* Dark Mode Base Tokens Aligned to Obsidian */
+  --bg-base: #0A0A0C;
+  --bg-surface-secondary: #1A191E;
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-cloud: rgba(255, 255, 255, 0.12);
+}
+
+/* ==========================================================================
+   AURUM Private Luxury Fintech Utilities & Surfaces
+   ========================================================================== */
+.aurum-canvas-glow {
+  background-color: #0A0A0C;
+  background-image: radial-gradient(ellipse 80% 35% at 50% 0%, rgba(223, 194, 150, 0.07), rgba(163, 144, 184, 0.04), transparent 70%);
+}
+
+.aurum-card-obsidian {
+  background: 
+    radial-gradient(120% 100% at 80% 0%, rgba(163, 144, 184, 0.22) 0%, transparent 55%),
+    radial-gradient(100% 100% at 20% 100%, rgba(223, 194, 150, 0.16) 0%, transparent 55%),
+    linear-gradient(135deg, #1E1D22 0%, #121115 60%, #19181D 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.85), inset 0 1px 0 0 rgba(255, 255, 255, 0.16);
+}
+
+.aurum-card-gold {
+  background: 
+    radial-gradient(120% 100% at 85% 10%, rgba(223, 194, 150, 0.38) 0%, transparent 55%),
+    radial-gradient(100% 100% at 15% 90%, rgba(163, 144, 184, 0.25) 0%, transparent 55%),
+    linear-gradient(135deg, #2A2421 0%, #171518 65%, #211D1A 100%);
+  border: 1px solid rgba(223, 194, 150, 0.3);
+  box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.85), inset 0 1px 0 0 rgba(255, 255, 255, 0.22);
+}
+
+@keyframes aurum-shimmer {
+  0% { transform: translateX(-150%) skewX(-20deg); }
+  100% { transform: translateX(250%) skewX(-20deg); }
+}
+
+.aurum-shimmer-effect {
+  position: relative;
+  overflow: hidden;
+}
+.aurum-shimmer-effect::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(223, 194, 150, 0.08), rgba(255, 255, 255, 0.16), rgba(223, 194, 150, 0.08), transparent);
+  animation: aurum-shimmer 4s infinite ease-in-out;
+  pointer-events: none;
 }
 
 /* Enforce tabular-nums globally across all numeric elements and inputs */

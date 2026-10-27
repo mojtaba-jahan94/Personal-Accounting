@@ -176,7 +176,7 @@ const MainApp: React.FC = () => {
       case 'accounts':
         return (
           <Suspense fallback={<ViewLoadingFallback />}>
-            <AccountsView />
+            <AccountsView onSelectTab={handleSelectTab} />
           </Suspense>
         );
       case 'budgets':
@@ -312,10 +312,10 @@ const AuthenticatedApp: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen w-full flex items-center justify-center bg-[#1F2933] text-[#F7F7F2]" dir="rtl">
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#0A0A0C] text-[#F4F0EA]" dir="rtl">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 rounded-full border-3 border-[#A68A64] border-t-transparent animate-spin" />
-          <span className="text-xs font-bold text-[#D1D5DB]">در حال بررسی اطلاعات کاربری...</span>
+          <div className="w-10 h-10 rounded-full border-3 border-[#DFC296] border-t-transparent animate-spin" />
+          <span className="text-xs font-bold text-[#8E8B82]">در حال بررسی اطلاعات کاربری...</span>
         </div>
       </div>
     );

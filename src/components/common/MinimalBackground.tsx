@@ -22,7 +22,7 @@ export const MinimalBackground: React.FC = () => {
         className={`absolute inset-0 transition-colors duration-500 ${
           isJuniper
             ? 'bg-[#EFE9D7] dark:bg-[#202316]'
-            : 'bg-[#F7F7F2] dark:bg-[#1F2933]'
+            : 'bg-[#F7F7F2] dark:bg-[#0A0A0C]'
         }`}
       />
 
@@ -44,7 +44,7 @@ export const MinimalBackground: React.FC = () => {
         className={`absolute inset-0 pointer-events-none ${
           isJuniper
             ? 'bg-gradient-to-b from-[#EFE9D7]/60 via-transparent to-[#898861]/15 dark:from-[#343723]/50 dark:via-transparent dark:to-[#171910]/75'
-            : 'bg-gradient-to-b from-[#F7F7F2]/60 via-transparent to-[#D1D5DB]/25 dark:from-[#1F2933]/50 dark:via-transparent dark:to-[#141B22]/70'
+            : 'bg-gradient-to-b from-[#F7F7F2]/60 via-transparent to-[#D1D5DB]/25 dark:from-[#121215]/50 dark:via-transparent dark:to-[#0A0A0C]/80'
         }`}
       />
     </div>

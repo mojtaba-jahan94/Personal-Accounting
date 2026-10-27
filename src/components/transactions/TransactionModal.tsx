@@ -180,9 +180,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     const canonicalAmount = inputUnit === 'rial' ? Math.round(numAmount / 10) : numAmount;
     const rawFee = parseAmount(fee);
     const canonicalFee = type === 'transfer' && inputUnit === 'rial' ? Math.round(rawFee / 10) : rawFee;
-    const resolvedFee = type === 'transfer'
-      ? canonicalFee
-      : (initialTransaction?.fee !== undefined ? initialTransaction.fee : undefined);
+    const resolvedFee =
+      type === 'transfer'
+        ? canonicalFee
+        : initialTransaction?.fee !== undefined
+        ? initialTransaction.fee
+        : undefined;
 
     const txData = {
       type,
@@ -273,48 +276,50 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 bg-[#1F2933]/75 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
-        <div className="w-full sm:max-w-xl max-h-[92dvh] flex flex-col rounded-t-3xl sm:rounded-3xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 bg-[#F7F7F2]/95 dark:bg-[#1F2933]/95 backdrop-blur-2xl text-[#1F2933] dark:text-[#F7F7F2] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
+      <div className="fixed inset-0 z-50 bg-[#0A0A0C]/85 backdrop-blur-xl flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+        <div className="w-full sm:max-w-xl max-h-[92dvh] flex flex-col rounded-t-[32px] sm:rounded-[32px] border border-white/[0.08] bg-[#121215] text-[#F4F0EA] shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
+          
           {/* Mobile drag handle */}
           <div className="pt-2 sm:hidden flex justify-center">
-            <div className="w-12 h-1.5 bg-[#6B7280]/30 rounded-full" />
+            <div className="w-10 h-1 bg-white/20 rounded-full" />
           </div>
 
-          {/* Sticky Header */}
-          <div className="px-6 py-4 border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/10 flex items-center justify-between shrink-0">
+          {/* Header */}
+          <div className="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-[#A68A64]/15 text-[#A68A64]">
+              <div className="w-10 h-10 rounded-2xl bg-[#DFC296]/15 text-[#DFC296] border border-[#DFC296]/30 flex items-center justify-center">
                 <Receipt className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base sm:text-lg font-black text-[#1F2933] dark:text-[#F7F7F2]">
+                <span className="text-[10px] tracking-[0.22em] text-[#8E8B82] uppercase font-mono block">
+                  ✦ AURUM TRANSACTION
+                </span>
+                <h3 className="text-base sm:text-lg font-serif font-light text-[#F4F0EA]">
                   {initialTransaction ? 'ویرایش تراکنش' : 'ثبت تراکنش جدید'}
                 </h3>
-                <p className="text-xs text-[#6B7280] dark:text-[#D1D5DB]/70">
-                  ثبت دقیق دخل و خرج با اتصال به حساب و تسویه تعهدات
-                </p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 rounded-xl hover:bg-[#6B7280]/15 text-[#6B7280] dark:text-[#D1D5DB] transition"
+              className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-[#8E8B82] hover:text-[#F4F0EA] hover:bg-white/5 transition"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
 
           {/* Form Scrollable Body */}
           <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
             <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-4 overscroll-contain">
+              
               {/* Type Selector Pills */}
-              <div className="grid grid-cols-3 gap-2 p-1.5 bg-[#6B7280]/15 dark:bg-[#D1D5DB]/10 rounded-2xl">
+              <div className="grid grid-cols-3 gap-2 p-1 bg-[#1A191E] rounded-2xl border border-white/[0.06]">
                 <button
                   type="button"
                   onClick={() => handleTypeChange('expense')}
-                  className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition ${
+                  className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition ${
                     type === 'expense'
-                      ? 'bg-[#C0564B] text-white shadow-sm'
-                      : 'text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
+                      ? 'bg-[#C98A82] text-[#0A0A0C] shadow-md shadow-[#C98A82]/20'
+                      : 'text-[#8E8B82] hover:text-[#F4F0EA]'
                   }`}
                 >
                   <ArrowDownLeft className="w-4 h-4" />
@@ -323,10 +328,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 <button
                   type="button"
                   onClick={() => handleTypeChange('income')}
-                  className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition ${
+                  className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition ${
                     type === 'income'
-                      ? 'bg-[#2E7D5B] text-white shadow-sm'
-                      : 'text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
+                      ? 'bg-[#7A9A95] text-[#0A0A0C] shadow-md shadow-[#7A9A95]/20'
+                      : 'text-[#8E8B82] hover:text-[#F4F0EA]'
                   }`}
                 >
                   <ArrowUpRight className="w-4 h-4" />
@@ -335,10 +340,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 <button
                   type="button"
                   onClick={() => handleTypeChange('transfer')}
-                  className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition ${
+                  className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold transition ${
                     type === 'transfer'
-                      ? 'bg-[#4A6FA5] text-white shadow-sm'
-                      : 'text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
+                      ? 'bg-[#DFC296] text-[#0A0A0C] shadow-md shadow-[#DFC296]/20'
+                      : 'text-[#8E8B82] hover:text-[#F4F0EA]'
                   }`}
                 >
                   <ArrowLeftRight className="w-4 h-4" />
@@ -349,17 +354,17 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               {/* Amount input + Persian Word Conversion + Unit Toggle */}
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-bold text-[#1F2933] dark:text-[#D1D5DB]">
+                  <label className="text-xs font-mono text-[#8E8B82] uppercase tracking-wider">
                     مبلغ تراکنش
                   </label>
-                  <div className="flex items-center gap-1 bg-[#6B7280]/15 dark:bg-[#D1D5DB]/10 p-0.5 rounded-xl text-[11px] font-bold">
+                  <div className="flex items-center gap-1 bg-[#1A191E] p-0.5 rounded-xl border border-white/10 text-[11px] font-mono">
                     <button
                       type="button"
                       onClick={() => handleUnitToggle('toman')}
                       className={`px-2.5 py-0.5 rounded-lg transition ${
                         inputUnit === 'toman'
-                          ? 'bg-[#A68A64] text-[#F7F7F2] shadow-xs'
-                          : 'text-[#6B7280] dark:text-[#D1D5DB]'
+                          ? 'bg-[#DFC296] text-[#0A0A0C] font-semibold shadow-xs'
+                          : 'text-[#8E8B82]'
                       }`}
                     >
                       تومان
@@ -369,8 +374,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                       onClick={() => handleUnitToggle('rial')}
                       className={`px-2.5 py-0.5 rounded-lg transition ${
                         inputUnit === 'rial'
-                          ? 'bg-[#A68A64] text-[#F7F7F2] shadow-xs'
-                          : 'text-[#6B7280] dark:text-[#D1D5DB]'
+                          ? 'bg-[#DFC296] text-[#0A0A0C] font-semibold shadow-xs'
+                          : 'text-[#8E8B82]'
                       }`}
                     >
                       ریال
@@ -387,23 +392,23 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     onChange={(e) =>
                       setAmount(formatAmountInput(sanitizeAmountInput(e.target.value)))
                     }
-                    placeholder={inputUnit === 'toman' ? 'مثلاً: 250,000' : 'مثلاً: 2,500,000'}
-                    className="w-full px-4 py-3 rounded-2xl bg-white dark:bg-[#141B22] border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-lg font-black text-[#1F2933] dark:text-[#F7F7F2] outline-none font-mono tabular-nums dir-ltr text-right focus:border-[#A68A64] transition"
+                    placeholder={inputUnit === 'toman' ? '250,000' : '2,500,000'}
+                    className="w-full px-4 py-3 rounded-2xl bg-[#1A191E] border border-white/10 text-2xl font-serif font-light text-[#F4F0EA] outline-none font-mono tabular-nums dir-ltr text-right focus:border-[#DFC296] transition"
                   />
-                  <span className="absolute left-3.5 top-3.5 text-xs text-[#6B7280] font-bold">
+                  <span className="absolute left-4 top-4 text-xs text-[#8E8B82] font-mono">
                     {inputUnit === 'toman' ? 'تومان' : 'ریال'}
                   </span>
                 </div>
 
                 {numAmount > 0 && (
-                  <div className="mt-2 p-2.5 rounded-xl bg-[#A68A64]/10 border border-[#A68A64]/20 space-y-1">
-                    <p className="text-xs text-[#A68A64] font-bold leading-relaxed">
+                  <div className="mt-2 p-3 rounded-2xl bg-[#1A191E] border border-white/[0.08] space-y-1">
+                    <p className="text-xs text-[#DFC296] font-sans leading-relaxed">
                       به حروف:{' '}
-                      <span className="font-extrabold">
+                      <span className="font-semibold">
                         {numberToPersianWords(numAmount, inputUnit)}
                       </span>
                     </p>
-                    <p className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB]/70 font-mono tabular-nums">
+                    <p className="text-[11px] text-[#8E8B82] font-mono tabular-nums">
                       {inputUnit === 'rial'
                         ? `معادل تومانی در حساب‌ها: ${(numAmount / 10).toLocaleString('fa-IR', {
                             maximumFractionDigits: 1,
@@ -417,7 +422,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               {/* Transfer Fee input if transfer */}
               {type === 'transfer' && (
                 <div>
-                  <label className="block text-xs font-bold text-[#1F2933] dark:text-[#D1D5DB] mb-1">
+                  <label className="block text-xs font-mono text-[#8E8B82] mb-1">
                     کارمزد انتقال (اختیاری)
                   </label>
                   <div className="relative">
@@ -429,9 +434,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                         setFee(formatAmountInput(sanitizeAmountInput(e.target.value)))
                       }
                       placeholder="0"
-                      className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-[#141B22] border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-sm font-mono tabular-nums dir-ltr text-right outline-none focus:border-[#A68A64] transition"
+                      className="w-full px-4 py-2.5 rounded-xl bg-[#1A191E] border border-white/10 text-sm font-mono tabular-nums dir-ltr text-right outline-none focus:border-[#DFC296] transition text-[#F4F0EA]"
                     />
-                    <span className="absolute left-3.5 top-2.5 text-xs text-[#6B7280] font-bold">
+                    <span className="absolute left-3.5 top-2.5 text-xs text-[#8E8B82] font-mono">
                       {inputUnit === 'toman' ? 'تومان' : 'ریال'}
                     </span>
                   </div>
@@ -442,19 +447,19 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               {type !== 'transfer' && (
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="text-xs font-bold text-[#1F2933] dark:text-[#D1D5DB]">
+                    <label className="text-xs font-mono text-[#8E8B82]">
                       دسته‌بندی
                     </label>
                     <button
                       type="button"
                       onClick={() => setIsCategoryModalOpen(true)}
-                      className="text-[11px] text-[#A68A64] font-bold hover:underline flex items-center gap-1"
+                      className="text-[11px] text-[#DFC296] font-medium hover:underline flex items-center gap-1"
                     >
                       <Settings2 className="w-3 h-3" />
                       <span>مدیریت دسته‌ها</span>
                     </button>
                   </div>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-40 overflow-y-auto p-1.5 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 rounded-2xl">
+                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-40 overflow-y-auto p-1.5 border border-white/[0.08] rounded-2xl bg-[#1A191E]/50">
                     {filteredCategories.map((cat) => (
                       <button
                         key={cat.id}
@@ -462,13 +467,13 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                         onClick={() => setCategoryId(cat.id)}
                         className={`flex flex-col items-center justify-center p-2 rounded-xl border text-center transition ${
                           categoryId === cat.id
-                            ? 'border-[#A68A64] bg-[#A68A64]/15 text-[#A68A64] font-bold shadow-xs'
-                            : 'border-transparent hover:bg-[#6B7280]/10 text-[#6B7280] dark:text-[#D1D5DB]'
+                            ? 'border-[#DFC296] bg-[#DFC296]/15 text-[#DFC296] font-semibold shadow-xs'
+                            : 'border-transparent hover:bg-white/[0.04] text-[#8E8B82] hover:text-[#F4F0EA]'
                         }`}
                       >
                         <div
                           className="w-7 h-7 rounded-lg flex items-center justify-center text-white mb-1 shadow-xs"
-                          style={{ backgroundColor: cat.color }}
+                          style={{ backgroundColor: `${cat.color}35`, color: cat.color }}
                         >
                           {getCategoryIcon(cat.icon, 'w-4 h-4')}
                         </div>
@@ -482,16 +487,16 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               {/* Account Selection */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-[#1F2933] dark:text-[#D1D5DB] mb-1">
+                  <label className="block text-xs font-mono text-[#8E8B82] mb-1">
                     {type === 'transfer' ? 'از حساب (مبدأ)' : 'حساب / کارت بانکی'}
                   </label>
                   <select
                     value={accountId}
                     onChange={(e) => setAccountId(e.target.value)}
-                    className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-[#141B22] border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-bold outline-none text-[#1F2933] dark:text-[#F7F7F2]"
+                    className="w-full px-3 py-2.5 rounded-xl bg-[#1A191E] border border-white/10 text-xs font-medium outline-none text-[#F4F0EA] focus:border-[#DFC296]"
                   >
                     {accounts.map((acc) => (
-                      <option key={acc.id} value={acc.id}>
+                      <option key={acc.id} value={acc.id} className="bg-[#121215] text-[#F4F0EA]">
                         {acc.name} ({acc.bankName || 'کیف پول'}) • موجودی:{' '}
                         {formatCurrency(acc.balance, currency)}
                       </option>
@@ -501,18 +506,18 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
                 {type === 'transfer' ? (
                   <div>
-                    <label className="block text-xs font-bold text-[#1F2933] dark:text-[#D1D5DB] mb-1">
+                    <label className="block text-xs font-mono text-[#8E8B82] mb-1">
                       به حساب (مقصد)
                     </label>
                     <select
                       value={toAccountId}
                       onChange={(e) => setToAccountId(e.target.value)}
-                      className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-[#141B22] border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-bold outline-none text-[#1F2933] dark:text-[#F7F7F2]"
+                      className="w-full px-3 py-2.5 rounded-xl bg-[#1A191E] border border-white/10 text-xs font-medium outline-none text-[#F4F0EA] focus:border-[#DFC296]"
                     >
                       {accounts
                         .filter((a) => a.id !== accountId)
                         .map((acc) => (
-                          <option key={acc.id} value={acc.id}>
+                          <option key={acc.id} value={acc.id} className="bg-[#121215] text-[#F4F0EA]">
                             {acc.name} ({acc.bankName || 'کیف پول'}) • موجودی:{' '}
                             {formatCurrency(acc.balance, currency)}
                           </option>
@@ -540,22 +545,22 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
               {/* Live Balance Change Preview */}
               {selectedAcc && numCanonical > 0 && (
-                <div className="p-3 rounded-2xl bg-[#A68A64]/10 border border-[#A68A64]/20 space-y-2 text-xs">
+                <div className="p-3.5 rounded-2xl bg-[#1A191E] border border-white/[0.08] space-y-2 text-xs">
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold text-[#1F2933] dark:text-[#D1D5DB] flex items-center gap-1.5">
-                      <Wallet className="w-3.5 h-3.5 text-[#A68A64]" />
+                    <span className="font-medium text-[#F4F0EA] flex items-center gap-1.5">
+                      <Wallet className="w-3.5 h-3.5 text-[#DFC296]" />
                       <span>تغییر موجودی {type === 'transfer' ? 'حساب مبدأ' : 'حساب'}:</span>
                     </span>
                     <div className="flex items-center gap-1.5 font-mono tabular-nums">
-                      <span className="text-[#6B7280] line-through text-[11px]">
+                      <span className="text-[#8E8B82] line-through text-[11px]">
                         {formatCurrency(baseFromBal, currency)}
                       </span>
-                      <span className="text-[#6B7280] font-sans">⭢</span>
+                      <span className="text-[#8E8B82] font-sans">⭢</span>
                       <span
-                        className={`font-bold ${
+                        className={`font-semibold ${
                           postFromBal < 0
-                            ? 'text-[#C0564B] dark:text-[#F87171]'
-                            : 'text-[#2E7D5B] dark:text-[#4ADE80]'
+                            ? 'text-[#C98A82]'
+                            : 'text-[#7A9A95]'
                         }`}
                       >
                         {formatCurrency(postFromBal, currency)}
@@ -564,16 +569,16 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   </div>
 
                   {type === 'transfer' && selectedToAcc && (
-                    <div className="flex items-center justify-between pt-1 border-t border-[#A68A64]/15">
-                      <span className="font-semibold text-[#1F2933] dark:text-[#D1D5DB]">
+                    <div className="flex items-center justify-between pt-1 border-t border-white/[0.06]">
+                      <span className="font-medium text-[#F4F0EA]">
                         تغییر موجودی حساب مقصد:
                       </span>
                       <div className="flex items-center gap-1.5 font-mono tabular-nums">
-                        <span className="text-[#6B7280] line-through text-[11px]">
+                        <span className="text-[#8E8B82] line-through text-[11px]">
                           {formatCurrency(baseToBal, currency)}
                         </span>
-                        <span className="text-[#6B7280] font-sans">⭢</span>
-                        <span className="font-bold text-[#2E7D5B] dark:text-[#4ADE80]">
+                        <span className="text-[#8E8B82] font-sans">⭢</span>
+                        <span className="font-semibold text-[#7A9A95]">
                           {formatCurrency(postToBal, currency)}
                         </span>
                       </div>
@@ -581,7 +586,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   )}
 
                   {postFromBal < 0 && (
-                    <div className="flex items-center gap-1.5 text-[11px] text-[#C0564B] dark:text-[#F87171] pt-0.5">
+                    <div className="flex items-center gap-1.5 text-[11px] text-[#C98A82] pt-0.5">
                       <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
                       <span>توجه: پس از ثبت این تراکنش، موجودی حساب منفی خواهد شد.</span>
                     </div>
@@ -591,7 +596,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
               {/* Description */}
               <div>
-                <label className="block text-xs font-bold text-[#1F2933] dark:text-[#D1D5DB] mb-1">
+                <label className="block text-xs font-mono text-[#8E8B82] mb-1">
                   شرح یا یادداشت تراکنش
                 </label>
                 <input
@@ -599,21 +604,21 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="مثلاً: خرید اقلام مصرفی ماهانه"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-[#141B22] border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs text-[#1F2933] dark:text-[#F7F7F2] outline-none focus:border-[#A68A64] transition"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#1A191E] border border-white/10 text-xs text-[#F4F0EA] outline-none focus:border-[#DFC296] transition"
                 />
               </div>
 
               {/* Person / Contact selector */}
               <div className="space-y-1">
-                <div className="flex items-center justify-between text-xs font-bold text-[#1F2933] dark:text-[#D1D5DB]">
-                  <span className="flex items-center gap-1">
-                    <Users className="w-3.5 h-3.5 text-[#A68A64]" />
+                <div className="flex items-center justify-between text-xs text-[#8E8B82]">
+                  <span className="flex items-center gap-1 font-mono">
+                    <Users className="w-3.5 h-3.5 text-[#DFC296]" />
                     طرف‌حساب یا شخص مرتبط (اختیاری)
                   </span>
                   <button
                     type="button"
                     onClick={() => setIsPersonModalOpen(true)}
-                    className="flex items-center gap-1 text-[11px] text-[#A68A64] font-bold hover:underline"
+                    className="flex items-center gap-1 text-[11px] text-[#DFC296] font-medium hover:underline"
                   >
                     <Plus className="w-3 h-3" />
                     افزودن مخاطب جدید
@@ -622,11 +627,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 <select
                   value={personId}
                   onChange={(e) => setPersonId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#141B22] border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs outline-none text-[#1F2933] dark:text-[#F7F7F2]"
+                  className="w-full px-3 py-2 rounded-xl bg-[#1A191E] border border-white/10 text-xs outline-none text-[#F4F0EA] focus:border-[#DFC296]"
                 >
-                  <option value="">-- بدون انتخاب شخص (عمومی) --</option>
+                  <option value="" className="bg-[#121215] text-[#8E8B82]">-- بدون انتخاب شخص (عمومی) --</option>
                   {persons.map((p) => (
-                    <option key={p.id} value={p.id}>
+                    <option key={p.id} value={p.id} className="bg-[#121215] text-[#F4F0EA]">
                       {p.name} {p.phoneNumber ? `(${p.phoneNumber})` : ''}{' '}
                       {p.relation ? `• ${p.relation}` : ''}
                     </option>
@@ -636,7 +641,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
               {/* Link to Debt/Loan (for expense or income) */}
               {type !== 'transfer' && (
-                <div className="p-3 rounded-2xl bg-[#A68A64]/10 border border-[#A68A64]/20 space-y-2.5">
+                <div className="p-3.5 rounded-2xl bg-[#1A191E] border border-white/[0.08] space-y-2.5">
                   <label className="flex items-center gap-2 cursor-pointer select-none">
                     <input
                       type="checkbox"
@@ -645,10 +650,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                         setLinkToDebt(e.target.checked);
                         if (!e.target.checked) setSelectedDebtId('');
                       }}
-                      className="w-4 h-4 rounded text-[#A68A64] focus:ring-[#A68A64] accent-[#A68A64]"
+                      className="w-4 h-4 rounded text-[#DFC296] accent-[#DFC296]"
                     />
-                    <span className="text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] flex items-center gap-1.5">
-                      <Link2 className="w-3.5 h-3.5 text-[#A68A64]" />
+                    <span className="text-xs font-medium text-[#F4F0EA] flex items-center gap-1.5">
+                      <Link2 className="w-3.5 h-3.5 text-[#DFC296]" />
                       {type === 'expense'
                         ? 'اتصال این پرداخت به بدهی یا قسط وام (تسویه خودکار)'
                         : 'اتصال این دریافتی به طلب من از دیگری (وصول خودکار)'}
@@ -656,8 +661,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   </label>
 
                   {linkToDebt && (
-                    <div className="pt-2 border-t border-[#A68A64]/15 space-y-1.5">
-                      <label className="block text-[11px] font-bold text-[#6B7280] dark:text-[#D1D5DB]">
+                    <div className="pt-2 border-t border-white/[0.06] space-y-1.5">
+                      <label className="block text-[11px] font-mono text-[#8E8B82]">
                         انتخاب پرونده {type === 'expense' ? 'بدهی یا وام' : 'طلب'}:
                       </label>
                       <select
@@ -683,9 +688,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                             }
                           }
                         }}
-                        className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#141B22] border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-bold outline-none text-[#1F2933] dark:text-[#F7F7F2]"
+                        className="w-full px-3 py-2 rounded-xl bg-[#121215] border border-white/10 text-xs font-medium outline-none text-[#F4F0EA] focus:border-[#DFC296]"
                       >
-                        <option value="">-- لطفاً پرونده مربوطه را انتخاب کنید --</option>
+                        <option value="" className="bg-[#121215] text-[#8E8B82]">-- لطفاً پرونده مربوطه را انتخاب کنید --</option>
                         {debts
                           .filter(
                             (d) =>
@@ -703,14 +708,14 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                                 ? 'بدهی من'
                                 : 'طلب من';
                             return (
-                              <option key={d.id} value={d.id}>
+                              <option key={d.id} value={d.id} className="bg-[#121215] text-[#F4F0EA]">
                                 {d.personName} ({typeLabel}) - مانده:{' '}
                                 {rem.toLocaleString('fa-IR')}
                               </option>
                             );
                           })}
                       </select>
-                      <p className="text-[10px] text-[#6B7280] dark:text-[#D1D5DB]/70">
+                      <p className="text-[10px] text-[#8E8B82]">
                         با ثبت تراکنش، مانده پرونده کاهش یافته و در صورت تسویه کامل علامت‌گذاری می‌شود.
                       </p>
                     </div>
@@ -719,12 +724,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               )}
 
               {/* Tags and Receipt */}
-              <div className="space-y-2 pt-1 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10">
-                <div className="flex items-center justify-between text-xs text-[#6B7280]">
-                  <span className="flex items-center gap-1 font-bold">
-                    <Tag className="w-3.5 h-3.5 text-[#A68A64]" /> برچسب‌ها
+              <div className="space-y-2 pt-1 border-t border-white/[0.06]">
+                <div className="flex items-center justify-between text-xs text-[#8E8B82]">
+                  <span className="flex items-center gap-1 font-mono">
+                    <Tag className="w-3.5 h-3.5 text-[#DFC296]" /> برچسب‌ها
                   </span>
-                  <label className="flex items-center gap-1 text-[#A68A64] font-bold cursor-pointer hover:underline">
+                  <label className="flex items-center gap-1 text-[#DFC296] font-medium cursor-pointer hover:underline">
                     <Image className="w-3.5 h-3.5" />
                     <span>{receiptUrl ? 'تغییر تصویر فاکتور' : 'پیوست رسید / فاکتور'}</span>
                     <input
@@ -748,12 +753,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                       }
                     }}
                     placeholder="افزودن برچسب..."
-                    className="flex-1 px-3 py-1.5 rounded-xl bg-white dark:bg-[#141B22] border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs text-[#1F2933] dark:text-[#F7F7F2]"
+                    className="flex-1 px-3 py-1.5 rounded-xl bg-[#1A191E] border border-white/10 text-xs text-[#F4F0EA] outline-none focus:border-[#DFC296]"
                   />
                   <button
                     type="button"
                     onClick={handleAddTag}
-                    className="px-3 py-1.5 bg-[#6B7280]/15 hover:bg-[#6B7280]/25 rounded-xl text-xs font-bold text-[#1F2933] dark:text-[#D1D5DB] transition"
+                    className="px-3 py-1.5 bg-white/10 hover:bg-white/15 rounded-xl text-xs font-semibold text-[#F4F0EA] transition"
                   >
                     افزودن
                   </button>
@@ -764,13 +769,13 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     {tags.map((tag) => (
                       <span
                         key={tag}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#A68A64]/15 text-[#A68A64] text-[11px] font-bold"
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-[#DFC296]/15 text-[#DFC296] text-[11px] font-mono"
                       >
                         #{tag}
                         <button
                           type="button"
                           onClick={() => handleRemoveTag(tag)}
-                          className="hover:text-[#C0564B]"
+                          className="hover:text-[#C98A82]"
                         >
                           ×
                         </button>
@@ -782,17 +787,17 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             </div>
 
             {/* Sticky Footer */}
-            <div className="px-6 py-4 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10 bg-[#F7F7F2]/90 dark:bg-[#182028]/90 flex items-center justify-end gap-3 shrink-0">
+            <div className="px-6 py-4 border-t border-white/[0.06] bg-[#121215] flex items-center justify-end gap-3 shrink-0">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2.5 rounded-xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-[#6B7280] dark:text-[#D1D5DB] hover:bg-[#6B7280]/10 transition font-bold text-xs"
+                className="px-4 py-2.5 rounded-full border border-white/10 text-[#8E8B82] hover:text-[#F4F0EA] hover:bg-white/5 transition text-xs font-mono"
               >
                 انصراف
               </button>
               <button
                 type="submit"
-                className="px-5 py-2.5 rounded-xl bg-[#A68A64] hover:bg-[#8A704C] text-[#F7F7F2] font-black text-xs shadow-lg shadow-[#A68A64]/25 transition flex items-center gap-1.5 active:scale-95"
+                className="px-6 py-2.5 rounded-full bg-[#DFC296] hover:bg-[#c9ab81] text-[#0A0A0C] font-semibold text-xs shadow-[0_0_20px_rgba(223,194,150,0.3)] transition flex items-center gap-1.5 active:scale-95"
               >
                 <Check className="w-4 h-4 stroke-[2.5]" />
                 <span>{initialTransaction ? 'ذخیره تغییرات' : 'ثبت قطعی تراکنش'}</span>
@@ -814,3 +819,5 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     </>
   );
 };
+
+export default TransactionModal;

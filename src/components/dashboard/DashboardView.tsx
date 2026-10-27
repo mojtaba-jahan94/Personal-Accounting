@@ -241,56 +241,68 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             key="accounts"
             storageKey="accounts"
             title="کارت‌های بانکی و کیف‌پول‌ها"
-            subtitle="موجودی لحظه‌ای حساب‌های شما"
-            icon={<CreditCard className="w-5 h-5 text-[#A68A64]" />}
+            subtitle="موجودی لحظه‌ای حساب‌های شما در پشته کیف پول"
+            icon={<CreditCard className="w-5 h-5 text-[#DFC296]" />}
             headerAction={
               <button
                 onClick={() => onSelectTab('accounts')}
-                className="flex items-center gap-1 text-xs font-bold text-[#A68A64] hover:underline px-2 py-1"
+                className="flex items-center gap-1 text-xs font-bold font-mono text-[#DFC296] hover:underline px-2 py-1"
               >
-                <span>مدیریت همه</span>
+                <span>مشاهده کیف پول</span>
                 <ChevronLeft className="w-4 h-4" />
               </button>
             }
           >
             {accounts.length === 0 ? (
-              <div className="text-center py-8 text-xs text-[#6B7280] dark:text-[#D1D5DB]/60">
+              <div className="text-center py-8 text-xs text-[#8E8B82]">
                 هنوز حسابی تعریف نکرده‌اید
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {accounts.map((acc) => (
-                  <div
-                    key={acc.id}
-                    className="rounded-3xl p-5 bg-gradient-to-br from-[#F7F7F2] via-[#EAE6DF] to-[#D1D5DB]/70 text-[#1F2933] border border-[#A68A64]/30 shadow-md dark:from-[#1F2933] dark:via-[#141B22] dark:to-[#1F2933] dark:text-[#F7F7F2] dark:border-[#6B7280]/20 dark:shadow-xl relative overflow-hidden flex flex-col justify-between h-40 transition-all duration-200 hover:-translate-y-1 hover:shadow-xl group"
-                  >
-                    {/* Nordic warm ambient corner shine */}
-                    <div className="absolute top-0 right-0 w-28 h-28 bg-[#A68A64]/10 dark:bg-[#A68A64]/15 rounded-full blur-2xl pointer-events-none group-hover:bg-[#A68A64]/25 transition" />
+                {accounts.map((acc, index) => {
+                  const isGold = acc.isDefault || index === 0;
+                  const cardClass = isGold ? 'aurum-card-gold' : 'aurum-card-obsidian';
+                  const tierLabel = isGold ? '✦ GOLD' : index === 1 ? '✦ METAL' : '✦ OBSIDIAN';
 
-                    <div className="flex items-start justify-between relative z-10">
-                      <div>
-                        <span className="text-[11px] font-medium text-[#6B7280] dark:text-[#D1D5DB]/70">{acc.bankName || 'حساب بانکی'}</span>
-                        <h4 className="text-sm font-black truncate mt-0.5 text-[#1F2933] dark:text-[#F7F7F2]">{acc.name}</h4>
+                  return (
+                    <div
+                      key={acc.id}
+                      onClick={() => onSelectTab('accounts')}
+                      className={`rounded-3xl p-5 ${cardClass} aurum-shimmer-effect text-[#F4F0EA] border shadow-lg relative overflow-hidden flex flex-col justify-between h-44 cursor-pointer transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl group`}
+                    >
+                      <div className="flex items-start justify-between relative z-10">
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[11px] font-bold text-[#DFC296] truncate">
+                              {acc.bankName || 'حساب من'}
+                            </span>
+                            <span className="text-[9px] font-mono tracking-wider px-1.5 py-0.2 rounded-full bg-black/40 text-[#DFC296] border border-[#DFC296]/30">
+                              {tierLabel}
+                            </span>
+                          </div>
+                          <h4 className="text-sm font-black truncate mt-1 text-[#F4F0EA] font-sans">
+                            {acc.name}
+                          </h4>
+                        </div>
+                        {/* EMV Chip Mini */}
+                        <div className="w-7 h-5 rounded bg-gradient-to-tr from-[#DFC296] via-[#F4F0EA] to-[#CBB084] shadow-xs border border-black/30 shrink-0" />
                       </div>
-                      <span className="p-2 rounded-2xl bg-black/5 dark:bg-white/10 backdrop-blur-md text-[#A68A64]">
-                        <Landmark className="w-4 h-4" />
-                      </span>
-                    </div>
 
-                    {acc.cardNumber && (
-                      <div className="font-mono text-xs tracking-widest text-[#6B7280] dark:text-[#D1D5DB] dir-ltr text-center font-bold relative z-10">
-                        {formatCardNumber(acc.cardNumber)}
+                      {acc.cardNumber && (
+                        <div className="font-mono text-xs tracking-widest text-[#F4F0EA] dir-ltr text-center font-bold p-1 rounded-xl bg-black/30 border border-white/[0.08] relative z-10">
+                          {formatCardNumber(acc.cardNumber)}
+                        </div>
+                      )}
+
+                      <div className="pt-2 border-t border-white/[0.08] flex items-center justify-between relative z-10">
+                        <span className="text-[10px] text-[#8E8B82] font-mono">موجودی:</span>
+                        <span className="font-bold font-mono text-sm text-[#DFC296] tabular-nums">
+                          {formatCurrency(acc.balance, currency)}
+                        </span>
                       </div>
-                    )}
-
-                    <div className="pt-2.5 border-t border-[#6B7280]/15 dark:border-white/10 flex items-center justify-between relative z-10">
-                      <span className="text-[11px] text-[#6B7280] dark:text-[#D1D5DB]/70">موجودی:</span>
-                      <span className="font-black font-mono text-sm text-[#1F2933] dark:text-[#F7F7F2]">
-                        {formatCurrency(acc.balance, currency)}
-                      </span>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </CollapsibleSection>

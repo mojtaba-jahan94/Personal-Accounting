@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useFinance } from '../../context/FinanceContext';
 import { getTodayJalali } from '../../utils/jalali';
 import {
@@ -7,22 +7,50 @@ import {
   parseAmount,
   sanitizeAmountInput,
   formatAmountInput,
+  toPersianDigits,
 } from '../../utils/formatters';
 import { JalaliDatePicker } from '../common/JalaliDatePicker';
 import {
   X,
-  ArrowLeftRight,
   CreditCard,
-  ArrowDown,
-  CheckCircle2,
+  Check,
+  ChevronDown,
+  Delete,
+  Sparkles,
+  ArrowLeft,
 } from 'lucide-react';
 
 interface TransferModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialFromAccountId?: string;
 }
 
-export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose }) => {
+interface ReceiptData {
+  fromName: string;
+  fromBank?: string;
+  toName: string;
+  toBank?: string;
+  amount: number;
+  fee: number;
+  date: string;
+  refNumber: string;
+}
+
+const DESTINATION_ACCENT_COLORS = [
+  '#DFC296', // Champagne Gold
+  '#A390B8', // Muted Lilac
+  '#C98A82', // Dusty Rose
+  '#7A9A95', // Sage Teal
+  '#6E7582', // Warm Slate
+  '#D4AF37', // Classic Gold
+];
+
+export const TransferModal: React.FC<TransferModalProps> = ({
+  isOpen,
+  onClose,
+  initialFromAccountId,
+}) => {
   const { accounts, currency, addTransaction } = useFinance();
 
   const [fromAccountId, setFromAccountId] = useState<string>('');
@@ -31,30 +59,71 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
   const [fee, setFee] = useState('0');
   const [date, setDate] = useState(getTodayJalali());
   const [description, setDescription] = useState('');
+  const [showFeeAndDate, setShowFeeAndDate] = useState(false);
+  const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
+
+  // Slide to confirm drag state
+  const [dragProgress, setDragProgress] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const dragStartX = useRef<number>(0);
 
   useEffect(() => {
     if (isOpen) {
       if (accounts.length > 0) {
-        setFromAccountId(accounts[0].id);
-        setToAccountId(accounts.length > 1 ? accounts[1].id : accounts[0].id);
+        const startFrom =
+          initialFromAccountId && accounts.some((a) => a.id === initialFromAccountId)
+            ? initialFromAccountId
+            : accounts[0].id;
+        setFromAccountId(startFrom);
+        const startTo = accounts.find((a) => a.id !== startFrom)?.id || accounts[0].id;
+        setToAccountId(startTo);
       }
       setAmount('');
       setFee('0');
       setDate(getTodayJalali());
       setDescription('');
+      setShowFeeAndDate(false);
+      setReceiptData(null);
+      setDragProgress(0);
+      setIsDragging(false);
     }
-  }, [isOpen, accounts]);
+  }, [isOpen, accounts, initialFromAccountId]);
 
   if (!isOpen) return null;
 
-  const fromAcc = accounts.find(a => a.id === fromAccountId);
-  const toAcc = accounts.find(a => a.id === toAccountId);
+  const fromAcc = accounts.find((a) => a.id === fromAccountId);
+  const toAcc = accounts.find((a) => a.id === toAccountId);
 
   const numAmount = parseAmount(amount);
   const numFee = parseAmount(fee);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  // Keypad Actions
+  const handleKeypadPress = (val: string) => {
+    if (val === '000') {
+      if (!amount || amount === '0') return;
+      const next = `${amount.replace(/,/g, '')}000`;
+      setAmount(formatAmountInput(next));
+    } else {
+      const clean = amount.replace(/,/g, '');
+      if (clean === '0') {
+        setAmount(val);
+      } else if (clean.length < 12) {
+        setAmount(formatAmountInput(`${clean}${val}`));
+      }
+    }
+  };
+
+  const handleBackspace = () => {
+    const clean = amount.replace(/,/g, '');
+    if (clean.length <= 1) {
+      setAmount('');
+    } else {
+      setAmount(formatAmountInput(clean.slice(0, -1)));
+    }
+  };
+
+  const executeTransfer = () => {
     if (numAmount <= 0) {
       alert('لطفاً مبلغ معتبری برای انتقال وارد کنید.');
       return;
@@ -72,10 +141,16 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
     const savedFee = currency === 'rial' ? Math.round(numFee / 10) : numFee;
 
     if (fromAcc.balance < savedAmount + savedFee) {
-      if (!window.confirm('موجودی حساب مبدأ کمتر از این مبلغ و کارمزد است. آیا مایل به ادامه هستید؟')) {
+      if (
+        !window.confirm(
+          'موجودی حساب مبدأ کمتر از این مبلغ و کارمزد است. آیا مایل به ادامه هستید؟'
+        )
+      ) {
         return;
       }
     }
+
+    const refNum = `TRF-${Math.floor(10000000 + Math.random() * 90000000)}`;
 
     addTransaction({
       type: 'transfer',
@@ -88,218 +163,400 @@ export const TransferModal: React.FC<TransferModalProps> = ({ isOpen, onClose })
       fee: savedFee,
     });
 
-    onClose();
+    // Show Luxury Receipt View
+    setReceiptData({
+      fromName: fromAcc.name,
+      fromBank: fromAcc.bankName,
+      toName: toAcc.name,
+      toBank: toAcc.bankName,
+      amount: savedAmount,
+      fee: savedFee,
+      date,
+      refNumber: refNum,
+    });
+  };
+
+  // Slide Drag Handlers (RTL aware: dragging leftward)
+  const handleTouchStart = (e: React.TouchEvent | React.MouseEvent) => {
+    setIsDragging(true);
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    dragStartX.current = clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent | React.MouseEvent) => {
+    if (!isDragging || !trackRef.current) return;
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const trackWidth = trackRef.current.clientWidth - 56; // 44px thumb + 12px padding
+    // In RTL, moving left means clientX < startX -> delta = startX - clientX
+    const delta = dragStartX.current - clientX;
+    const progress = Math.max(0, Math.min(1, delta / Math.max(1, trackWidth)));
+    setDragProgress(progress);
+
+    if (progress >= 0.88) {
+      setIsDragging(false);
+      setDragProgress(1);
+      executeTransfer();
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (!isDragging) return;
+    setIsDragging(false);
+    if (dragProgress < 0.88) {
+      setDragProgress(0);
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#1F2933]/75 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
-      <div className="w-full sm:max-w-lg max-h-[92dvh] flex flex-col rounded-t-3xl sm:rounded-3xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 bg-[#F7F7F2]/95 dark:bg-[#1F2933]/95 backdrop-blur-2xl text-[#1F2933] dark:text-[#F7F7F2] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
-        {/* Mobile drag handle */}
+    <div className="fixed inset-0 z-50 bg-[#0A0A0C]/85 backdrop-blur-xl flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
+      <div className="w-full sm:max-w-md max-h-[95dvh] flex flex-col rounded-t-[32px] sm:rounded-[32px] border border-white/[0.08] bg-[#121215] text-[#F4F0EA] shadow-[0_20px_60px_rgba(0,0,0,0.8)] overflow-hidden animate-in slide-in-from-bottom-6 duration-300">
+        
+        {/* Mobile Drag Indicator */}
         <div className="pt-2 sm:hidden flex justify-center">
-          <div className="w-12 h-1.5 bg-[#6B7280]/30 rounded-full" />
+          <div className="w-10 h-1 bg-white/20 rounded-full" />
         </div>
 
-        {/* Sticky Header */}
-        <div className="px-6 py-4 border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/10 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-[#A68A64]/15 border border-[#A68A64]/30 text-[#A68A64] flex items-center justify-center shadow-sm">
-              <ArrowLeftRight className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-base sm:text-lg font-black text-[#1F2933] dark:text-[#F7F7F2]">
-                انتقال وجه بین حساب‌ها
-              </h3>
-              <p className="text-xs text-[#6B7280] dark:text-[#D1D5DB]">
-                انتقال موجودی بین کارت‌ها، حساب‌های بانکی و کیف پول
-              </p>
-            </div>
+        {/* Modal Header */}
+        <div className="px-6 py-4 flex items-center justify-between border-b border-white/[0.06] shrink-0">
+          <div>
+            <span className="text-[10px] tracking-[0.22em] text-[#8E8B82] uppercase font-mono block">
+              ✦ AURUM TRANSFER
+            </span>
+            <h3 className="text-lg font-serif font-light text-[#F4F0EA]">
+              {receiptData ? 'رسید تراکنش بانکی' : 'انتقال وجه بین‌حسابی'}
+            </h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl text-[#6B7280] hover:text-[#1F2933] dark:hover:text-[#F7F7F2] hover:bg-[#6B7280]/10 transition"
+            className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center text-[#8E8B82] hover:text-[#F4F0EA] hover:bg-white/5 transition"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Scrollable Body */}
-        <form id="transfer-form" onSubmit={handleSubmit} className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-4 overscroll-contain">
-          {/* 1. Source Selector */}
-          <div>
-            <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1.5">
-              حساب مبدأ (کسر موجودی)
-            </label>
-            <select
-              value={fromAccountId}
-              onChange={e => setFromAccountId(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-bold outline-none focus:border-[#A68A64] transition text-[#1F2933] dark:text-[#F7F7F2]"
-            >
-              {accounts.map(acc => (
-                <option key={acc.id} value={acc.id} className="dark:bg-[#1F2933]">
-                  {acc.name} {acc.bankName ? `(${acc.bankName})` : ''} • موجودی:{' '}
-                  {formatCurrency(acc.balance, currency)}
-                </option>
-              ))}
-            </select>
+        {/* Content Area */}
+        {receiptData ? (
+          /* ==============================================
+             LUXURY RECEIPT VIEW (POST-SUBMIT STATE)
+             ============================================== */
+          <div className="p-6 sm:p-8 flex flex-col items-center text-center animate-in zoom-in-95 duration-300">
+            {/* Circular Checkmark Badge */}
+            <div className="w-14 h-14 rounded-full border border-[#DFC296]/40 bg-[#DFC296]/10 text-[#DFC296] flex items-center justify-center mb-3 shadow-[0_0_30px_rgba(223,194,150,0.25)]">
+              <Check className="w-7 h-7 stroke-[2.5]" />
+            </div>
 
-            {fromAcc && (
-              <div className="mt-2 p-3 rounded-2xl bg-[#6B7280]/5 dark:bg-[#182028]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-xl bg-[#4A6FA5]/15 text-[#4A6FA5]">
-                    <CreditCard className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <span className="text-xs font-black text-[#1F2933] dark:text-[#F7F7F2] block">
-                      {fromAcc.name}
-                    </span>
-                    <span className="text-[10px] text-[#6B7280] dark:text-[#D1D5DB]">
-                      {fromAcc.bankName ? `بانک ${fromAcc.bankName}` : 'حساب نقدی'}
-                    </span>
-                  </div>
-                </div>
-                <div className="text-left">
-                  <span className="text-[10px] text-[#6B7280] dark:text-[#D1D5DB] block">موجودی فعلی:</span>
-                  <span className="text-xs font-black font-mono text-[#1F2933] dark:text-[#F7F7F2]">
-                    {formatCurrency(fromAcc.balance, currency)}
+            <span className="text-[10px] tracking-[0.2em] text-[#8E8B82] uppercase font-mono mb-1">
+              انتقال موفق به {receiptData.toName}
+            </span>
+
+            {/* Hero Amount */}
+            <div className="text-3xl sm:text-4xl font-serif text-[#F4F0EA] tabular-nums font-light mt-1 mb-6">
+              {formatCurrency(receiptData.amount, currency)}
+            </div>
+
+            {/* Metadata Table */}
+            <div className="w-full rounded-2xl bg-[#1A191E] border border-white/[0.08] divide-y divide-white/[0.06] text-xs">
+              <div className="p-3.5 flex items-center justify-between">
+                <span className="text-[#8E8B82] font-mono text-[11px]">از حساب / FROM</span>
+                <span className="text-[#F4F0EA] font-medium">
+                  {receiptData.fromName} {receiptData.fromBank ? `(${receiptData.fromBank})` : ''}
+                </span>
+              </div>
+
+              <div className="p-3.5 flex items-center justify-between">
+                <span className="text-[#8E8B82] font-mono text-[11px]">به حساب / TO</span>
+                <span className="text-[#F4F0EA] font-medium">
+                  {receiptData.toName} {receiptData.toBank ? `(${receiptData.toBank})` : ''}
+                </span>
+              </div>
+
+              {receiptData.fee > 0 && (
+                <div className="p-3.5 flex items-center justify-between">
+                  <span className="text-[#8E8B82] font-mono text-[11px]">کارمزد / FEE</span>
+                  <span className="text-[#F4F0EA] font-mono tabular-nums">
+                    {formatCurrency(receiptData.fee, currency)}
                   </span>
                 </div>
+              )}
+
+              <div className="p-3.5 flex items-center justify-between">
+                <span className="text-[#8E8B82] font-mono text-[11px]">زمان / TIME</span>
+                <span className="text-[#F4F0EA] font-mono tabular-nums">{receiptData.date}</span>
               </div>
-            )}
-          </div>
 
-          {/* Direction Arrow */}
-          <div className="flex items-center justify-center my-0.5">
-            <div className="p-1.5 rounded-full bg-[#A68A64]/10 dark:bg-[#A68A64]/20 text-[#A68A64] border border-[#A68A64]/30 shadow-xs">
-              <ArrowDown className="w-4 h-4" />
+              <div className="p-3.5 flex items-center justify-between">
+                <span className="text-[#8E8B82] font-mono text-[11px]">کد پیگیری / REF</span>
+                <span className="text-[#DFC296] font-mono tracking-wider tabular-nums font-medium">
+                  {receiptData.refNumber}
+                </span>
+              </div>
             </div>
-          </div>
 
-          {/* 2. Destination Selector */}
-          <div>
-            <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1.5">
-              حساب مقصد (افزایش موجودی)
-            </label>
-            <select
-              value={toAccountId}
-              onChange={e => setToAccountId(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-bold outline-none focus:border-[#A68A64] transition text-[#1F2933] dark:text-[#F7F7F2]"
+            {/* Done Action Button */}
+            <button
+              onClick={onClose}
+              className="mt-6 w-full py-3.5 rounded-full bg-[#DFC296] text-[#0A0A0C] font-semibold text-sm hover:bg-[#c9ab81] transition shadow-[0_0_20px_rgba(223,194,150,0.3)] active:scale-95"
             >
-              {accounts
-                .filter(a => a.id !== fromAccountId)
-                .map(acc => (
-                  <option key={acc.id} value={acc.id} className="dark:bg-[#1F2933]">
-                    {acc.name} {acc.bankName ? `(${acc.bankName})` : ''} • موجودی:{' '}
+              تایید و بستن (DONE)
+            </button>
+          </div>
+        ) : (
+          /* ==============================================
+             TRANSFER FORM (KEYPAD + SLIDE-TO-CONFIRM)
+             ============================================== */
+          <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-4">
+            {/* 1. Horizontal Destination Account Avatar Strip */}
+            <div>
+              <div className="text-[10px] tracking-[0.2em] text-[#8E8B82] uppercase font-mono mb-2 flex items-center justify-between">
+                <span>انتخاب حساب مقصد (TO ACCOUNT)</span>
+                <span className="text-[#DFC296] text-[10px] font-mono">
+                  {toAcc?.name || 'انتخاب کنید'}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3 overflow-x-auto no-scrollbar scrollbar-none pb-2 pt-1">
+                {accounts
+                  .filter((acc) => acc.id !== fromAccountId)
+                  .map((acc, idx) => {
+                    const isSelected = acc.id === toAccountId;
+                    const accentColor =
+                      DESTINATION_ACCENT_COLORS[idx % DESTINATION_ACCENT_COLORS.length];
+
+                    return (
+                      <button
+                        key={acc.id}
+                        type="button"
+                        onClick={() => setToAccountId(acc.id)}
+                        className={`flex flex-col items-center shrink-0 transition-all duration-300 ${
+                          isSelected ? 'scale-105' : 'opacity-60 hover:opacity-100'
+                        }`}
+                      >
+                        <div
+                          className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
+                            isSelected
+                              ? 'border-2 border-[#DFC296] shadow-[0_0_15px_rgba(223,194,150,0.35)] bg-[#DFC296]/15 text-[#DFC296]'
+                              : 'border border-white/10 bg-[#1A191E] text-[#8E8B82]'
+                          }`}
+                          style={{
+                            borderColor: isSelected ? '#DFC296' : `${accentColor}30`,
+                          }}
+                        >
+                          <CreditCard className="w-5 h-5" style={{ color: isSelected ? '#DFC296' : accentColor }} />
+                        </div>
+                        <span className="text-[11px] font-medium text-[#F4F0EA] mt-1 truncate max-w-[75px] text-center">
+                          {acc.name}
+                        </span>
+                        <span className="text-[9px] text-[#8E8B82] font-mono">
+                          {acc.bankName || 'کیف‌پول'}
+                        </span>
+                      </button>
+                    );
+                  })}
+              </div>
+            </div>
+
+            {/* 2. Sleek Source Account ("FROM / از حساب") Selector Pill */}
+            <div className="bg-[#1A191E] border border-white/[0.08] rounded-2xl px-4 py-3 relative group hover:border-white/20 transition">
+              <div className="flex items-center justify-between">
+                <div>
+                  <span className="text-[9px] tracking-widest text-[#8E8B82] uppercase font-mono block">
+                    از مبدأ / FROM
+                  </span>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-sm font-medium text-[#F4F0EA]">
+                      {fromAcc ? fromAcc.name : 'انتخاب حساب'}
+                    </span>
+                    {fromAcc?.bankName && (
+                      <span className="text-[10px] text-[#8E8B82] font-mono">
+                        ({fromAcc.bankName})
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="text-left flex items-center gap-2">
+                  <div>
+                    <span className="text-[9px] text-[#8E8B82] block font-mono">موجودی:</span>
+                    <span className="text-xs font-mono tabular-nums text-[#DFC296]">
+                      {fromAcc ? formatCurrency(fromAcc.balance, currency) : '۰'}
+                    </span>
+                  </div>
+                  <ChevronDown className="w-4 h-4 text-[#8E8B82]" />
+                </div>
+              </div>
+
+              {/* Seamless Native Select overlay */}
+              <select
+                value={fromAccountId}
+                onChange={(e) => {
+                  setFromAccountId(e.target.value);
+                  if (toAccountId === e.target.value) {
+                    const fallbackTo = accounts.find((a) => a.id !== e.target.value)?.id || '';
+                    setToAccountId(fallbackTo);
+                  }
+                }}
+                className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+              >
+                {accounts.map((acc) => (
+                  <option key={acc.id} value={acc.id} className="bg-[#121215] text-[#F4F0EA]">
+                    {acc.name} ({acc.bankName || 'نقدی'}) • موجودی:{' '}
                     {formatCurrency(acc.balance, currency)}
                   </option>
                 ))}
-            </select>
+              </select>
+            </div>
 
-            {toAcc && (
-              <div className="mt-2 p-3 rounded-2xl bg-[#6B7280]/5 dark:bg-[#182028]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <div className="p-2 rounded-xl bg-[#2E7D5B]/15 text-[#2E7D5B] dark:text-[#4ADE80]">
-                    <CreditCard className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <span className="text-xs font-black text-[#1F2933] dark:text-[#F7F7F2] block">
-                      {toAcc.name}
-                    </span>
-                    <span className="text-[10px] text-[#6B7280] dark:text-[#D1D5DB]">
-                      {toAcc.bankName ? `بانک ${toAcc.bankName}` : 'حساب نقدی'}
-                    </span>
-                  </div>
-                </div>
-                <div className="text-left">
-                  <span className="text-[10px] text-[#6B7280] dark:text-[#D1D5DB] block">موجودی فعلی:</span>
-                  <span className="text-xs font-black font-mono text-[#1F2933] dark:text-[#F7F7F2]">
-                    {formatCurrency(toAcc.balance, currency)}
-                  </span>
-                </div>
+            {/* 3. Editorial Hero Amount Display + Live Persian Words */}
+            <div className="py-2 flex flex-col items-center justify-center text-center">
+              <div className="flex items-baseline justify-center gap-2">
+                <input
+                  type="text"
+                  inputMode="none"
+                  value={amount}
+                  onChange={(e) =>
+                    setAmount(formatAmountInput(sanitizeAmountInput(e.target.value)))
+                  }
+                  placeholder="0"
+                  className="bg-transparent text-center text-4xl sm:text-5xl font-serif font-light text-[#F4F0EA] tabular-nums tracking-tight outline-none w-full max-w-[280px]"
+                />
+                <span className="text-xs font-mono text-[#8E8B82]">
+                  {currency === 'toman' ? 'تومان' : 'ریال'}
+                </span>
               </div>
-            )}
-          </div>
 
-          {/* Amount and Fee Inputs */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1">
-                مبلغ انتقال ({currency === 'toman' ? 'تومان' : 'ریال'}) <span className="text-[#C0564B]">*</span>
-              </label>
-              <input
-                type="text"
-                inputMode="decimal"
-                required
-                value={amount}
-                onChange={e => setAmount(formatAmountInput(sanitizeAmountInput(e.target.value)))}
-                placeholder="0"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-sm font-black font-mono outline-none focus:border-[#A68A64] transition text-[#1F2933] dark:text-[#F7F7F2] text-center"
-              />
-              {numAmount > 0 && (
-                <div className="mt-1.5 p-2 rounded-xl bg-[#A68A64]/10 dark:bg-[#A68A64]/15 border border-[#A68A64]/20 text-[11px] font-bold text-[#A68A64] dark:text-[#C2A882] text-center">
-                  {numberToPersianWords(numAmount, currency)}
-                </div>
+              {/* Live Persian Words Preview */}
+              <div className="min-h-[22px] mt-1 flex items-center justify-center">
+                {numAmount > 0 ? (
+                  <span className="text-xs text-[#DFC296]/90 font-sans tracking-wide animate-in fade-in">
+                    {numberToPersianWords(numAmount, currency)}
+                  </span>
+                ) : (
+                  <span className="text-[11px] text-[#8E8B82]/60 font-mono">
+                    مبلغ انتقال را وارد کنید
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Fee & Date Toggle */}
+            <div className="flex items-center justify-between text-xs pt-1">
+              <button
+                type="button"
+                onClick={() => setShowFeeAndDate((p) => !p)}
+                className="text-[11px] text-[#8E8B82] hover:text-[#DFC296] font-mono flex items-center gap-1 transition"
+              >
+                <span>{showFeeAndDate ? '– بستن جزئیات کارمزد و تاریخ' : '+ کارمزد و تاریخ انتقال'}</span>
+              </button>
+              {numFee > 0 && (
+                <span className="text-[11px] font-mono text-[#8E8B82] tabular-nums">
+                  کارمزد: {formatCurrency(numFee, currency)}
+                </span>
               )}
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1">
-                کارمزد انتقال ({currency === 'toman' ? 'تومان' : 'ریال'})
-              </label>
-              <input
-                type="text"
-                inputMode="decimal"
-                value={fee}
-                onChange={e => setFee(formatAmountInput(sanitizeAmountInput(e.target.value)))}
-                placeholder="0"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-sm font-bold font-mono outline-none focus:border-[#A68A64] transition text-[#1F2933] dark:text-[#F7F7F2] text-center"
-              />
+            {showFeeAndDate && (
+              <div className="p-3.5 rounded-2xl bg-[#1A191E] border border-white/[0.08] space-y-3 animate-in fade-in duration-200">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] text-[#8E8B82] font-mono block mb-1">
+                      کارمزد ({currency === 'toman' ? 'تومان' : 'ریال'})
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={fee}
+                      onChange={(e) =>
+                        setFee(formatAmountInput(sanitizeAmountInput(e.target.value)))
+                      }
+                      className="w-full px-3 py-1.5 rounded-xl bg-[#121215] border border-white/10 text-xs font-mono text-center text-[#F4F0EA] outline-none focus:border-[#DFC296]"
+                    />
+                  </div>
+                  <div>
+                    <JalaliDatePicker
+                      value={date}
+                      onChange={setDate}
+                      label="تاریخ انتقال"
+                      required
+                    />
+                  </div>
+                </div>
+                <div>
+                  <input
+                    type="text"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="شرح انتقال (اختیاری)..."
+                    className="w-full px-3 py-1.5 rounded-xl bg-[#121215] border border-white/10 text-xs text-[#F4F0EA] outline-none focus:border-[#DFC296]"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* 4. Borderless Luxury Numeric Keypad */}
+            <div className="grid grid-cols-3 gap-1.5 pt-1">
+              {['1', '2', '3', '4', '5', '6', '7', '8', '9', '000', '0'].map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => handleKeypadPress(key)}
+                  className="h-12 sm:h-13 rounded-2xl text-xl font-mono text-[#F4F0EA] hover:bg-white/[0.04] active:scale-95 transition-all flex items-center justify-center select-none"
+                >
+                  {key}
+                </button>
+              ))}
+
+              {/* Backspace Key */}
+              <button
+                type="button"
+                onClick={handleBackspace}
+                className="h-12 sm:h-13 rounded-2xl text-[#8E8B82] hover:text-[#C98A82] hover:bg-white/[0.04] active:scale-95 transition-all flex items-center justify-center select-none"
+                title="حذف رقم"
+              >
+                <Delete className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* 5. Interactive "Slide to Send / Confirm" Track */}
+            <div className="pt-2">
+              <div
+                ref={trackRef}
+                onMouseDown={handleTouchStart}
+                onMouseMove={handleTouchMove}
+                onMouseUp={handleTouchEnd}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+                className="h-14 rounded-full bg-[#1A191E] border border-white/[0.1] p-1.5 relative flex items-center select-none overflow-hidden cursor-pointer group"
+                onClick={() => {
+                  if (!isDragging && dragProgress < 0.1) {
+                    executeTransfer();
+                  }
+                }}
+              >
+                {/* Shimmering Center Label */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-12">
+                  <span className="text-[11px] font-mono tracking-wider text-[#8E8B82] group-hover:text-[#F4F0EA] transition-colors truncate">
+                    بکشید یا کلیک کنید • انتقال به {toAcc?.name || 'مقصد'}
+                  </span>
+                </div>
+
+                {/* Draggable Champagne Gold Thumb */}
+                <div
+                  style={{
+                    transform: `translateX(-${dragProgress * (trackRef.current ? trackRef.current.clientWidth - 56 : 240)}px)`,
+                    transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+                  }}
+                  className="w-11 h-11 rounded-full bg-[#DFC296] text-[#0A0A0C] shadow-[0_0_20px_rgba(223,194,150,0.4)] flex items-center justify-center cursor-grab active:cursor-grabbing shrink-0 z-10"
+                >
+                  <ArrowLeft className="w-5 h-5 stroke-[2.5]" />
+                </div>
+              </div>
             </div>
           </div>
-
-          {/* Date & Description */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <JalaliDatePicker
-                value={date}
-                onChange={setDate}
-                label="تاریخ انتقال"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1">
-                توضیحات (اختیاری)
-              </label>
-              <input
-                type="text"
-                value={description}
-                onChange={e => setDescription(e.target.value)}
-                placeholder="مثلاً: انتقال به کارت خرید، واریز پس‌انداز..."
-                className="w-full px-3.5 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs outline-none focus:border-[#A68A64] transition text-[#1F2933] dark:text-[#F7F7F2]"
-              />
-            </div>
-          </div>
-        </form>
-
-        {/* Sticky Footer */}
-        <div className="px-6 py-4 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10 bg-[#F7F7F2]/90 dark:bg-[#182028]/90 flex items-center justify-end gap-3 shrink-0">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2.5 rounded-xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-[#6B7280] dark:text-[#D1D5DB] hover:bg-[#6B7280]/10 font-bold text-xs transition"
-          >
-            انصراف
-          </button>
-          <button
-            type="submit"
-            form="transfer-form"
-            className="px-5 py-2.5 rounded-xl bg-[#A68A64] hover:bg-[#8A704C] text-[#F7F7F2] font-black text-xs shadow-lg shadow-[#A68A64]/25 transition active:scale-95 flex items-center gap-1.5"
-          >
-            <CheckCircle2 className="w-4 h-4" />
-            <span>ثبت انتقال وجه</span>
-          </button>
-        </div>
+        )}
       </div>
     </div>
   );
 };
+
+export default TransferModal;

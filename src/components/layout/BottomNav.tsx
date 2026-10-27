@@ -75,23 +75,26 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       {moreMenuOpen && (
         <div className="fixed inset-0 z-50 lg:hidden flex flex-col justify-end">
           <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-300"
+            className="fixed inset-0 bg-black/75 backdrop-blur-sm transition-opacity duration-300"
             onClick={() => setMoreMenuOpen(false)}
           />
           <div
-            className="fixed bottom-20 inset-x-3 max-w-md mx-auto z-50 rounded-[2rem] p-4 bg-[#F7F7F2]/95 dark:bg-[#1F2933]/95 backdrop-blur-2xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 shadow-2xl space-y-3 animate-in slide-in-from-bottom duration-250 select-none"
+            className="fixed bottom-24 inset-x-3 max-w-md mx-auto z-50 rounded-[2.5rem] p-5 bg-[#121215]/95 backdrop-blur-2xl border border-white/[0.08] shadow-[0_24px_50px_rgba(0,0,0,0.95)] space-y-3.5 animate-in slide-in-from-bottom duration-250 select-none"
           >
             {/* Grab handle indicator */}
-            <div className="w-12 h-1 rounded-full bg-[#6B7280]/30 mx-auto mb-1" />
+            <div className="w-12 h-1 rounded-full bg-white/20 mx-auto mb-1" />
 
-            <div className="flex items-center justify-between pb-2.5 border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/15">
-              <span className="text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2]">سایر بخش‌های برنامه</span>
+            <div className="flex items-center justify-between pb-3 border-b border-white/[0.07]">
+              <div className="flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#DFC296]" />
+                <span className="text-xs font-bold font-mono tracking-wider text-[#F4F0EA]">سایر بخش‌های سیستم</span>
+              </div>
               <button
                 type="button"
                 onClick={() => setMoreMenuOpen(false)}
-                className="p-1 rounded-full text-[#6B7280] hover:text-[#1F2933] dark:text-[#D1D5DB] dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition"
+                className="p-1.5 rounded-full text-[#8E8B82] hover:text-[#F4F0EA] hover:bg-white/[0.08] transition"
               >
-                <X className="w-4 h-4" />
+                <X className="w-4 h-4 stroke-[1.5]" />
               </button>
             </div>
 
@@ -107,20 +110,20 @@ export const BottomNav: React.FC<BottomNavProps> = ({
                       onSelectTab(item.id);
                       setMoreMenuOpen(false);
                     }}
-                    className={`rounded-full px-4 py-3 flex items-center gap-3 transition-all text-right active:scale-95 text-xs font-bold ${
+                    className={`rounded-2xl px-4 py-3 flex items-center gap-3 transition-all text-right active:scale-95 text-xs font-bold border ${
                       isActive
-                        ? 'bg-[#A68A64] text-[#F7F7F2] shadow-md shadow-[#A68A64]/25'
-                        : 'bg-white/70 dark:bg-white/5 text-[#1F2933] dark:text-[#D1D5DB] hover:bg-white dark:hover:bg-white/10'
+                        ? 'bg-[#DFC296]/15 border-[#DFC296]/40 text-[#DFC296] shadow-md shadow-[#DFC296]/10'
+                        : 'bg-white/[0.03] border-white/[0.06] text-[#8E8B82] hover:text-[#F4F0EA] hover:bg-white/[0.06] hover:border-white/[0.12]'
                     }`}
                   >
                     <div
-                      className={`p-1.5 rounded-full ${
-                        isActive ? 'bg-white/20 text-[#F7F7F2]' : 'bg-[#A68A64]/15 text-[#A68A64]'
+                      className={`p-2 rounded-xl transition-all ${
+                        isActive ? 'bg-[#DFC296]/20 text-[#DFC296]' : 'bg-white/[0.05] text-[#8E8B82]'
                       }`}
                     >
-                      <Icon className="w-4 h-4 shrink-0" />
+                      <Icon className="w-4 h-4 shrink-0 stroke-[1.5]" />
                     </div>
-                    <span className="truncate">{item.label}</span>
+                    <span className="truncate tracking-tight">{item.label}</span>
                   </button>
                 );
               })}
@@ -133,81 +136,88 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       <nav
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className="lg:hidden fixed bottom-4 inset-x-0 mx-auto w-[calc(100%-1.5rem)] max-w-md z-40 rounded-full px-2.5 py-2 shadow-2xl backdrop-blur-2xl border transition-all duration-300 bg-[#F7F7F2]/90 border-[#6B7280]/20 text-[#1F2933] shadow-[#1F2933]/10 dark:bg-[#1F2933]/90 dark:border-[#D1D5DB]/15 dark:text-[#F7F7F2] dark:shadow-black/50 select-none"
+        className="lg:hidden fixed bottom-4 inset-x-0 mx-auto w-[calc(100%-1.75rem)] max-w-md z-40 rounded-full px-5 py-2.5 shadow-[0_24px_50px_rgba(0,0,0,0.95)] backdrop-blur-2xl border transition-all duration-300 bg-[#121215]/90 border-white/[0.08] text-[#F4F0EA] select-none"
       >
-        <div className="flex items-center justify-between relative px-1">
+        <div className="flex items-center justify-between relative">
           {/* Primary Tab 1: داشبورد */}
           <button
             type="button"
             onClick={() => onSelectTab('dashboard')}
-            className={`transition-all duration-200 active:scale-95 flex items-center gap-1.5 ${
+            className={`transition-all duration-200 active:scale-95 flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl relative ${
               currentTab === 'dashboard'
-                ? 'bg-[#A68A64] text-[#F7F7F2] rounded-full px-3.5 py-2 shadow-md shadow-[#A68A64]/30 font-semibold text-xs'
-                : 'text-[#6B7280] dark:text-[#D1D5DB]/80 hover:text-[#1F2933] dark:hover:text-[#F7F7F2] rounded-full p-2.5'
+                ? 'text-[#DFC296] bg-[#DFC296]/10 border border-[#DFC296]/20 shadow-xs'
+                : 'text-[#8E8B82] hover:text-[#F4F0EA]'
             }`}
             title="داشبورد"
           >
-            <LayoutDashboard className="w-5 h-5 shrink-0" />
-            {currentTab === 'dashboard' && <span className="text-xs whitespace-nowrap">داشبورد</span>}
+            <LayoutDashboard className="w-5 h-5 shrink-0 stroke-[1.5]" />
+            <span className="text-[10px] tracking-wider mt-1 font-mono font-medium">داشبورد</span>
+            {currentTab === 'dashboard' && (
+              <span className="absolute -bottom-1 w-1 h-1 rounded-full bg-[#DFC296] shadow-[0_0_6px_#DFC296]" />
+            )}
           </button>
 
           {/* Primary Tab 2: تراکنش‌ها */}
           <button
             type="button"
             onClick={() => onSelectTab('transactions')}
-            className={`transition-all duration-200 active:scale-95 flex items-center gap-1.5 ${
+            className={`transition-all duration-200 active:scale-95 flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl relative ${
               currentTab === 'transactions'
-                ? 'bg-[#A68A64] text-[#F7F7F2] rounded-full px-3.5 py-2 shadow-md shadow-[#A68A64]/30 font-semibold text-xs'
-                : 'text-[#6B7280] dark:text-[#D1D5DB]/80 hover:text-[#1F2933] dark:hover:text-[#F7F7F2] rounded-full p-2.5'
+                ? 'text-[#DFC296] bg-[#DFC296]/10 border border-[#DFC296]/20 shadow-xs'
+                : 'text-[#8E8B82] hover:text-[#F4F0EA]'
             }`}
             title="تراکنش‌ها"
           >
-            <ReceiptText className="w-5 h-5 shrink-0" />
-            {currentTab === 'transactions' && <span className="text-xs whitespace-nowrap">تراکنش‌ها</span>}
+            <ReceiptText className="w-5 h-5 shrink-0 stroke-[1.5]" />
+            <span className="text-[10px] tracking-wider mt-1 font-mono font-medium">تراکنش</span>
+            {currentTab === 'transactions' && (
+              <span className="absolute -bottom-1 w-1 h-1 rounded-full bg-[#DFC296] shadow-[0_0_6px_#DFC296]" />
+            )}
           </button>
 
           {/* Center Prominent Action Button (+) */}
           <button
             type="button"
             onClick={onOpenTransactionModal}
-            className="rounded-full bg-[#A68A64] hover:bg-[#8A704C] text-[#F7F7F2] p-3 shadow-lg shadow-[#A68A64]/40 hover:scale-105 active:scale-95 transition-all flex items-center justify-center border-2 border-[#F7F7F2] dark:border-[#1F2933]"
+            className="rounded-full bg-[#DFC296] hover:bg-[#CBB084] text-[#0A0A0C] p-3.5 shadow-[0_0_24px_rgba(223,194,150,0.45)] hover:scale-105 active:scale-95 transition-all flex items-center justify-center border-2 border-[#121215]"
             title="ثبت سریع تراکنش جدید"
           >
-            <Plus className="w-5 h-5 stroke-[2.5]" />
+            <Plus className="w-5 h-5 stroke-[2.2]" />
           </button>
 
           {/* Primary Tab 3: دارایی‌ها */}
           <button
             type="button"
             onClick={() => onSelectTab('assets')}
-            className={`transition-all duration-200 active:scale-95 flex items-center gap-1.5 ${
+            className={`transition-all duration-200 active:scale-95 flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl relative ${
               currentTab === 'assets'
-                ? 'bg-[#A68A64] text-[#F7F7F2] rounded-full px-3.5 py-2 shadow-md shadow-[#A68A64]/30 font-semibold text-xs'
-                : 'text-[#6B7280] dark:text-[#D1D5DB]/80 hover:text-[#1F2933] dark:hover:text-[#F7F7F2] rounded-full p-2.5'
+                ? 'text-[#DFC296] bg-[#DFC296]/10 border border-[#DFC296]/20 shadow-xs'
+                : 'text-[#8E8B82] hover:text-[#F4F0EA]'
             }`}
             title="دارایی‌ها"
           >
-            <Coins className="w-5 h-5 shrink-0" />
-            {currentTab === 'assets' && <span className="text-xs whitespace-nowrap">دارایی‌ها</span>}
+            <Coins className="w-5 h-5 shrink-0 stroke-[1.5]" />
+            <span className="text-[10px] tracking-wider mt-1 font-mono font-medium">دارایی</span>
+            {currentTab === 'assets' && (
+              <span className="absolute -bottom-1 w-1 h-1 rounded-full bg-[#DFC296] shadow-[0_0_6px_#DFC296]" />
+            )}
           </button>
 
           {/* 5. بیشتر (More) Tab */}
           <button
             type="button"
             onClick={() => setMoreMenuOpen(true)}
-            className={`transition-all duration-200 active:scale-95 flex items-center gap-1.5 relative ${
+            className={`transition-all duration-200 active:scale-95 flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl relative ${
               isMoreActive || moreMenuOpen
-                ? 'bg-[#A68A64] text-[#F7F7F2] rounded-full px-3.5 py-2 shadow-md shadow-[#A68A64]/30 font-semibold text-xs'
-                : 'text-[#6B7280] dark:text-[#D1D5DB]/80 hover:text-[#1F2933] dark:hover:text-[#F7F7F2] rounded-full p-2.5'
+                ? 'text-[#DFC296] bg-[#DFC296]/10 border border-[#DFC296]/20 shadow-xs'
+                : 'text-[#8E8B82] hover:text-[#F4F0EA]'
             }`}
             title="سایر بخش‌ها"
           >
-            <Menu className="w-5 h-5 shrink-0" />
-            {isMoreActive && !moreMenuOpen ? (
-              <span className="text-xs whitespace-nowrap">{moreLabel}</span>
-            ) : null}
+            <Menu className="w-5 h-5 shrink-0 stroke-[1.5]" />
+            <span className="text-[10px] tracking-wider mt-1 font-mono font-medium">{moreLabel}</span>
             {isMoreActive && (
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#F7F7F2]" />
+              <span className="absolute -bottom-1 w-1 h-1 rounded-full bg-[#DFC296] shadow-[0_0_6px_#DFC296]" />
             )}
           </button>
         </div>

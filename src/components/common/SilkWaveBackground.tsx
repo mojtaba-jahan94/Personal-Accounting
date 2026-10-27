@@ -89,7 +89,7 @@ export const SilkWaveBackground: React.FC = () => {
         className={`absolute inset-0 transition-colors duration-500 ${
           isJuniper
             ? 'bg-[#EFE9D7] dark:bg-[#202316]'
-            : 'bg-[#F7F7F2] dark:bg-[#1F2933]'
+            : 'bg-[#F7F7F2] dark:bg-[#0A0A0C]'
         }`}
       />
 
