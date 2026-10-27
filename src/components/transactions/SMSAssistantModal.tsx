@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   X,
   MessageSquareText,
@@ -44,7 +44,7 @@ export const SMSAssistantModal: React.FC<SMSAssistantModalProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const { accounts, categories, currency, addTransaction, reconcileAccountBalance } = useFinance();
+  const { accounts, categories, currency, addTransaction, addTransactionAndReconcile } = useFinance();
 
   const [rawText, setRawText] = useState('');
   const [parsed, setParsed] = useState<ParsedBankSMS | null>(null);
@@ -55,25 +55,42 @@ export const SMSAssistantModal: React.FC<SMSAssistantModalProps> = ({
   const [syncBalanceWithBank, setSyncBalanceWithBank] = useState<boolean>(false);
   const [clipboardError, setClipboardError] = useState<string | null>(null);
 
+  const lastParsedRawTextRef = useRef<string>('');
+
   useEffect(() => {
     if (!rawText.trim()) {
       setParsed(null);
+      lastParsedRawTextRef.current = '';
       return;
     }
     const result = parseBankSMS(rawText, forceCurrencyUnit);
     setParsed(result);
 
-    if (result) {
+    const isNewRawText = rawText !== lastParsedRawTextRef.current;
+
+    if (result && isNewRawText) {
+      lastParsedRawTextRef.current = rawText;
       setDescription(result.description);
 
-      // Auto match account by bank name or card last 4 digits
-      let matchedAcc = accounts.find(
-        a =>
-          (result.cardLast4 && a.cardNumber?.endsWith(result.cardLast4)) ||
-          a.bankName?.includes(result.bankName.replace(/بانک\s*/, '')) ||
-          a.name.includes(result.bankName.replace(/بانک\s*/, ''))
-      );
+      // Match in stages:
+      // 1) exact match on the card's last 4 digits
+      let matchedAcc = result.cardLast4
+        ? accounts.find(a => a.cardNumber?.endsWith(result.cardLast4!))
+        : undefined;
 
+      // 2) bank name match (use ^بانک\s* anchored)
+      if (!matchedAcc) {
+        const cleanBankName = result.bankName.replace(/^بانک\s*/, '').trim();
+        if (cleanBankName) {
+          matchedAcc = accounts.find(
+            a =>
+              (a.bankName && a.bankName.replace(/^بانک\s*/, '').includes(cleanBankName)) ||
+              a.name.replace(/^بانک\s*/, '').includes(cleanBankName)
+          );
+        }
+      }
+
+      // 3) default account
       if (!matchedAcc && accounts.length > 0) {
         matchedAcc = accounts.find(a => a.isDefault) || accounts[0];
       }
@@ -91,6 +108,28 @@ export const SMSAssistantModal: React.FC<SMSAssistantModalProps> = ({
       }
     }
   }, [rawText, forceCurrencyUnit, accounts, categories]);
+
+  const handleTypeChange = (newType: 'income' | 'expense') => {
+    if (!parsed) return;
+    setParsed({ ...parsed, type: newType, isUncertainType: false });
+
+    // Auto match category by new type
+    const suitableCategories = categories.filter(c => c.type === newType);
+    if (suitableCategories.length > 0) {
+      setSelectedCategoryId(suitableCategories[0].id);
+    }
+  };
+
+  const handleModalClose = () => {
+    setRawText('');
+    setParsed(null);
+    setSelectedAccountId('');
+    setSelectedCategoryId('');
+    setDescription('');
+    lastParsedRawTextRef.current = '';
+    setSyncBalanceWithBank(false);
+    onClose();
+  };
 
   if (!isOpen) return null;
 
@@ -122,7 +161,7 @@ export const SMSAssistantModal: React.FC<SMSAssistantModalProps> = ({
     const todayJalali = getTodayJalali();
     const nowTime = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 
-    addTransaction({
+    const txData = {
       type: parsed.type,
       amount: parsed.amountToman,
       date: parsed.date || todayJalali,
@@ -130,21 +169,20 @@ export const SMSAssistantModal: React.FC<SMSAssistantModalProps> = ({
       description: description.trim() || parsed.description,
       categoryId: catId,
       accountId: accId,
-    });
+      fee: parsed.feeToman,
+    };
 
     if (syncBalanceWithBank && parsed.balanceToman !== undefined) {
-      reconcileAccountBalance(accId, parsed.balanceToman);
+      addTransactionAndReconcile(txData, parsed.balanceToman);
+    } else {
+      addTransaction(txData);
     }
 
     if (onSuccess) {
       onSuccess(`تراکنش ${formatCurrency(parsed.amountToman, currency)} با موفقیت ثبت شد.`);
     }
 
-    // Reset and close
-    setRawText('');
-    setParsed(null);
-    setSyncBalanceWithBank(false);
-    onClose();
+    handleModalClose();
   };
 
   return (
@@ -174,7 +212,7 @@ export const SMSAssistantModal: React.FC<SMSAssistantModalProps> = ({
             </div>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleModalClose}
             className="p-1.5 rounded-xl text-[#6B7280] hover:text-[#1F2933] dark:hover:text-[#F7F7F2] hover:bg-[#6B7280]/10 transition"
           >
             <X className="w-5 h-5" />
@@ -282,29 +320,40 @@ export const SMSAssistantModal: React.FC<SMSAssistantModalProps> = ({
                     <Sparkles className="w-4 h-4 text-[#A68A64]" />
                     <span>اطلاعات استخراج‌شده از پیامک:</span>
                   </span>
-                  <span
-                    className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 ${
-                      parsed.type === 'income'
-                        ? 'bg-[#2E7D5B]/15 text-[#2E7D5B] dark:text-[#4ADE80]'
-                        : parsed.type === 'transfer'
-                        ? 'bg-[#4A6FA5]/15 text-[#4A6FA5] dark:text-[#60A5FA]'
-                        : 'bg-[#C0564B]/15 text-[#C0564B] dark:text-[#F87171]'
-                    }`}
-                  >
-                    {parsed.type === 'income' ? (
-                      <ArrowDownLeft className="w-3.5 h-3.5" />
-                    ) : (
-                      <ArrowUpRight className="w-3.5 h-3.5" />
-                    )}
-                    <span>
-                      {parsed.type === 'income'
-                        ? 'واریز'
-                        : parsed.type === 'transfer'
-                        ? 'انتقال وجه'
-                        : 'برداشت / خرید'}
-                    </span>
-                  </span>
+                  <div className="flex items-center gap-1 bg-[#6B7280]/10 dark:bg-[#1F2933] p-0.5 rounded-lg text-[10px] font-bold">
+                    <button
+                      type="button"
+                      onClick={() => handleTypeChange('income')}
+                      className={`px-2 py-0.5 rounded-md flex items-center gap-1 transition ${
+                        parsed.type === 'income'
+                          ? 'bg-[#2E7D5B] text-white shadow-xs font-bold'
+                          : 'text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
+                      }`}
+                    >
+                      <ArrowDownLeft className="w-3 h-3" />
+                      <span>واریز</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleTypeChange('expense')}
+                      className={`px-2 py-0.5 rounded-md flex items-center gap-1 transition ${
+                        parsed.type === 'expense'
+                          ? 'bg-[#C0564B] text-white shadow-xs font-bold'
+                          : 'text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
+                      }`}
+                    >
+                      <ArrowUpRight className="w-3 h-3" />
+                      <span>برداشت / خرید</span>
+                    </button>
+                  </div>
                 </div>
+
+                {parsed.isUncertainType && (
+                  <div className="text-[11px] text-[#A68A64] bg-[#A68A64]/10 p-2.5 rounded-xl border border-[#A68A64]/20 flex items-center gap-1.5">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span>جهت انتقال در پیامک نامشخص بود و برداشت در نظر گرفته شد. در صورت نیاز نوع تراکنش را تغییر دهید.</span>
+                  </div>
+                )}
 
                 {/* Amount Highlight & Live Words Preview */}
                 <div className="p-3.5 rounded-xl bg-[#F7F7F2] dark:bg-[#1F2933] border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 flex flex-col gap-1.5">
@@ -340,6 +389,15 @@ export const SMSAssistantModal: React.FC<SMSAssistantModalProps> = ({
                       {parsed.cardLast4 ? `**** ${parsed.cardLast4}` : 'نامشخص'}
                     </span>
                   </div>
+
+                  {parsed.feeToman !== undefined && parsed.feeToman > 0 && (
+                    <div className="p-2.5 rounded-xl bg-[#6B7280]/5 dark:bg-[#182028]/60 space-y-0.5 border border-[#6B7280]/10 dark:border-[#D1D5DB]/5">
+                      <span className="text-[10px] text-[#6B7280] block">کارمزد پیامک:</span>
+                      <span className="font-mono font-bold text-[#1F2933] dark:text-[#F7F7F2]">
+                        {formatCurrency(parsed.feeToman, currency)}
+                      </span>
+                    </div>
+                  )}
 
                   {parsed.balanceToman !== undefined && (
                     <div className="p-3 rounded-xl bg-[#6B7280]/5 dark:bg-[#182028]/60 space-y-2 col-span-2 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10">
@@ -441,7 +499,7 @@ export const SMSAssistantModal: React.FC<SMSAssistantModalProps> = ({
         <div className="px-6 py-4 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10 bg-[#F7F7F2]/90 dark:bg-[#182028]/90 flex items-center justify-end gap-3 shrink-0">
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleModalClose}
             className="px-4 py-2.5 rounded-xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-[#6B7280] dark:text-[#D1D5DB] hover:bg-[#6B7280]/10 font-bold text-xs transition"
           >
             انصراف

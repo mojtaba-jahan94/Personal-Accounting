@@ -73,7 +73,13 @@ export const ChequeModal: React.FC<ChequeModalProps> = ({
       return;
     }
 
-    const savedAmount = currency === 'rial' ? (numAmount / 10) : numAmount;
+    const isClearedStatus = status === 'passed' || status === 'cleared';
+    if (isClearedStatus && !accountId) {
+      alert('برای چک پاس‌شده / وصول‌شده، انتخاب حساب بانکی الزامی است.');
+      return;
+    }
+
+    const savedAmount = currency === 'rial' ? Math.round(numAmount / 10) : numAmount;
 
     const chequeData = {
       type,
@@ -235,13 +241,18 @@ export const ChequeModal: React.FC<ChequeModalProps> = ({
 
           <div>
             <label className="block text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] mb-1">
-              حساب بانکی مرتبط (جهت تسویه خودکار پس از وصول)
+              حساب بانکی مرتبط (جهت تسویه خودکار پس از وصول){' '}
+              {(status === 'passed' || status === 'cleared') && <span className="text-[#C0564B]">*</span>}
             </label>
             <select
               value={accountId}
               onChange={(e) => setAccountId(e.target.value)}
+              required={status === 'passed' || status === 'cleared'}
               className="w-full px-3 py-2.5 rounded-xl bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs outline-none focus:border-[#A68A64] text-[#1F2933] dark:text-[#F7F7F2]"
             >
+              <option value="" className="dark:bg-[#1F2933]">
+                {(status === 'passed' || status === 'cleared') ? 'انتخاب حساب بانکی الزامی است...' : 'انتخاب حساب (اختیاری)...'}
+              </option>
               {accounts.map(acc => (
                 <option key={acc.id} value={acc.id} className="dark:bg-[#1F2933]">
                   {acc.name} ({acc.bankName || 'حساب'})

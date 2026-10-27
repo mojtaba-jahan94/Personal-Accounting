@@ -25,8 +25,6 @@ const KNOWN_BANKS = [
   { name: 'بانک ایران زمین', patterns: [/ایران\s*زمین/i] },
 ];
 
-
-
 export function parseBankSMS(
   rawSMS: string,
   forceUnit?: 'rial' | 'toman' | 'auto'
@@ -45,17 +43,7 @@ export function parseBankSMS(
     }
   }
 
-  // 2. Detect Transaction Type
-  let type: TransactionType = 'expense';
-  if (/واریز|بستانکار|سود\s*سپرده|واریزشده/i.test(normalized)) {
-    type = 'income';
-  } else if (/انتقال|کارت\s*به\s*کارت|حواله|پایا|ساتنا/i.test(normalized)) {
-    type = 'transfer';
-  } else if (/برداشت|خرید|کسر|بدهکار|پرداخت|قبض|شارژ/i.test(normalized)) {
-    type = 'expense';
-  }
-
-  // 3. Determine Currency Unit (Rial vs. Toman)
+  // 2. Determine Currency Unit (Rial vs. Toman)
   let isRial = true; // Iranian bank SMS is almost always in Rials
   if (forceUnit === 'toman') {
     isRial = false;
@@ -65,37 +53,94 @@ export function parseBankSMS(
     isRial = false;
   }
 
-  // 4. Extract Amount
+  // 3. Extract Amount & attached sign (+/-)
   let amountToman = 0;
-  const amountPatterns = [
-    /(?:مبلغ|مبلغ\s*تراکنش|برداشت|واریز|خرید)[\s:]*([0-9]{4,14})\s*(?:ریال|تومان)?/i,
-    /([0-9]{4,14})\s*(?:ریال|تومان)/i,
-    /(?:مبلغ|مبلغ\s*تراکنش)[\s:]*([0-9]{4,14})/i,
-    /([0-9]{5,14})[\s]*[-+]/,
+  let attachedSign: '+' | '-' | undefined = undefined;
+
+  const amountPatterns: RegExp[] = [
+    /(?:مبلغ|مبلغ\s*تراکنش|برداشت|واریز|خرید)[\s:]*([+-]?)\s*([0-9]{4,14})\s*([+-]?)\s*(?:ریال|تومان)?/i,
+    /([+-]?)\s*([0-9]{4,14})\s*([+-]?)\s*(?:ریال|تومان)/i,
+    /(?:مبلغ|مبلغ\s*تراکنش)[\s:]*([+-]?)\s*([0-9]{4,14})\s*([+-]?)/i,
+    /([0-9]{4,14})\s*([+-])/,
+    /([+-])\s*([0-9]{4,14})/,
   ];
 
   for (const pattern of amountPatterns) {
     const match = normalized.match(pattern);
-    if (match && match[1]) {
-      const rawNum = parseInt(match[1], 10);
-      if (!isNaN(rawNum) && rawNum > 0) {
-        amountToman = isRial ? Math.floor(rawNum / 10) : rawNum;
-        break;
+    if (match) {
+      // Check which group has digits vs signs
+      let digits = '';
+      let sign: string | undefined = undefined;
+
+      if (pattern.source.includes('([0-9]{4,14})\\s*([+-])')) {
+        digits = match[1];
+        sign = match[2];
+      } else if (pattern.source.includes('([+-])\\s*([0-9]{4,14})')) {
+        sign = match[1];
+        digits = match[2];
+      } else {
+        const p1 = match[1];
+        const p2 = match[2];
+        const p3 = match[3];
+        digits = p2;
+        if (p1 === '+' || p3 === '+') sign = '+';
+        else if (p1 === '-' || p3 === '-') sign = '-';
+      }
+
+      if (digits) {
+        const rawNum = parseInt(digits, 10);
+        if (!isNaN(rawNum) && rawNum > 0) {
+          amountToman = isRial ? Math.round(rawNum / 10) : rawNum;
+          if (sign === '+' || sign === '-') {
+            attachedSign = sign;
+          }
+          break;
+        }
       }
     }
   }
 
   if (amountToman === 0) {
-    // Fallback: search for any standalone number between 1,000 and 1,000,000,000,000
+    // Fallback: search for any standalone number between 10,000 and 1,000,000,000,000
     const fallbackNumbers = normalized.match(/\b([0-9]{4,14})\b/g);
     if (fallbackNumbers && fallbackNumbers.length > 0) {
       const candidates = fallbackNumbers
         .map(n => parseInt(n, 10))
         .filter(n => !isNaN(n) && n >= 10000 && !n.toString().startsWith('140') && !n.toString().startsWith('139'));
       if (candidates.length > 0) {
-        amountToman = isRial ? Math.floor(candidates[0] / 10) : candidates[0];
+        amountToman = isRial ? Math.round(candidates[0] / 10) : candidates[0];
       }
     }
+  }
+
+  // 4. Detect Transaction Type (never return 'transfer')
+  // Priority: explicit keyword -> sign attached to amount -> default to expense
+  let type: TransactionType = 'expense';
+  let isUncertainType = false;
+
+  const hasIncomeKeyword = /واریز|واریزشده|واریز\s*شد|بستانکار|سود\s*سپرده|به\s*حساب\s*شما|دریافت/i.test(normalized);
+  const hasExpenseKeyword = /برداشت|خرید|کسر|بدهکار|پرداخت|قبض|شارژ|از\s*حساب\s*شما|از\s*حساب/i.test(normalized);
+  const hasUnambiguousExpense = /برداشت|خرید|کسر|قبض|شارژ/i.test(normalized);
+
+  if (hasIncomeKeyword && !hasUnambiguousExpense) {
+    type = 'income';
+  } else if (hasExpenseKeyword && !hasIncomeKeyword) {
+    type = 'expense';
+  } else if (hasIncomeKeyword && hasExpenseKeyword) {
+    // Both matched (e.g. "برداشت از حساب ... جهت واریز به ...")
+    if (/به\s*حساب\s*شما/i.test(normalized) && !/از\s*حساب\s*شما/i.test(normalized) && !hasUnambiguousExpense) {
+      type = 'income';
+    } else {
+      type = 'expense';
+    }
+  } else if (attachedSign === '+') {
+    type = 'income';
+  } else if (attachedSign === '-') {
+    type = 'expense';
+  } else {
+    // Direction unclear: default to expense and flag warning
+    type = 'expense';
+    isUncertainType = true;
   }
 
   // 5. Extract Card / Account last 4 digits
@@ -114,17 +159,29 @@ export function parseBankSMS(
     }
   }
 
-  // 6. Extract Balance (مانده حساب)
+  // 6. Extract Balance (مانده حساب) - Supports negative balances (e.g. مانده: -2,500,000)
   let balanceToman: number | undefined;
-  const balanceMatch = normalized.match(/(?:مانده|موجودی)[\s:]*([0-9]{4,15})\s*(?:ریال|تومان)?/i);
-  if (balanceMatch && balanceMatch[1]) {
-    const rawBal = parseInt(balanceMatch[1], 10);
+  const balanceMatch = normalized.match(/(?:مانده|موجودی)[\s:]*([+-]?)\s*([0-9]{4,15})\s*([+-]?)\s*(?:ریال|تومان)?/i);
+  if (balanceMatch && balanceMatch[2]) {
+    const rawBal = parseInt(balanceMatch[2], 10);
     if (!isNaN(rawBal)) {
-      balanceToman = isRial ? Math.floor(rawBal / 10) : rawBal;
+      const isNegative = balanceMatch[1] === '-' || balanceMatch[3] === '-';
+      const signedBal = isNegative ? -rawBal : rawBal;
+      balanceToman = isRial ? Math.round(signedBal / 10) : signedBal;
     }
   }
 
-  // 7. Extract Date & Time (Normalized strictly to zero-padded YYYY/MM/DD)
+  // 7. Extract Fee (کارمزد تراکنش)
+  let feeToman: number | undefined;
+  const feeMatch = normalized.match(/(?:کارمزد|کارمزد\s*تراکنش|کارمزد\s*خدمات)[\s:]*([0-9]{2,10})\s*(?:ریال|تومان)?/i);
+  if (feeMatch && feeMatch[1]) {
+    const rawFee = parseInt(feeMatch[1], 10);
+    if (!isNaN(rawFee) && rawFee > 0) {
+      feeToman = isRial ? Math.round(rawFee / 10) : rawFee;
+    }
+  }
+
+  // 8. Extract Date & Time (Normalized strictly to zero-padded YYYY/MM/DD)
   let date: string | undefined;
   let time: string | undefined;
 
@@ -158,7 +215,7 @@ export function parseBankSMS(
   }
 
   // Description summary
-  const descPrefix = type === 'expense' ? 'خرید / برداشت' : type === 'income' ? 'واریز وجه' : 'انتقال وجه';
+  const descPrefix = type === 'income' ? 'واریز وجه' : 'خرید / برداشت';
   const description = `${descPrefix} (${bankName}${cardLast4 ? ' - کارت ' + cardLast4 : ''})`;
 
   return {
@@ -167,6 +224,8 @@ export function parseBankSMS(
     amountToman,
     cardLast4,
     balanceToman,
+    feeToman,
+    isUncertainType: isUncertainType || undefined,
     date,
     time,
     description,

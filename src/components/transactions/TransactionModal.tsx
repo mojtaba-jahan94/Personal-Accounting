@@ -177,9 +177,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       return;
     }
 
-    const canonicalAmount = inputUnit === 'rial' ? numAmount / 10 : numAmount;
+    const canonicalAmount = inputUnit === 'rial' ? Math.round(numAmount / 10) : numAmount;
     const rawFee = parseAmount(fee);
-    const canonicalFee = type === 'transfer' && inputUnit === 'rial' ? rawFee / 10 : rawFee;
+    const canonicalFee = type === 'transfer' && inputUnit === 'rial' ? Math.round(rawFee / 10) : rawFee;
 
     const txData = {
       type,

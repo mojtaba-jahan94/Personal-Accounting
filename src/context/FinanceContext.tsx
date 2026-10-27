@@ -129,6 +129,16 @@ export interface AccountTransactionsBreakdown {
 }
 
 /**
+ * Helper to generate unique IDs
+ */
+export function genId(prefix: string): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return `${prefix}-${crypto.randomUUID()}`;
+  }
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+}
+
+/**
  * Pure ledger calculation: Account Balance = Initial Balance + Net Transactions Delta
  */
 export function calculateAccountBalance(
@@ -227,6 +237,7 @@ interface FinanceContextType {
 
   // Actions
   addTransaction: (tx: Omit<Transaction, 'id' | 'createdAt'>) => void;
+  addTransactionAndReconcile: (tx: Omit<Transaction, 'id' | 'createdAt'>, targetBalance: number) => void;
   updateTransaction: (tx: Transaction) => void;
   deleteTransaction: (id: string) => void;
   divideTransactionBy10: (txId: string) => void;
@@ -1015,7 +1026,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Transaction Actions
   const addTransaction = (tx: Omit<Transaction, 'id'>) => {
-    const id = 'tx-' + Date.now();
+    const id = genId('tx');
     const newTx: Transaction = { ...tx, id };
 
     setTransactions(prev => [newTx, ...prev]);
@@ -1029,7 +1040,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
             const isSettled = addedPaid >= d.amount;
             const accName = accounts.find(a => a.id === newTx.accountId)?.name;
             const newPayment: DebtPayment = {
-              id: 'dp-' + id,
+              id: genId('dp'),
               transactionId: id,
               amount: newTx.amount,
               date: newTx.date,
@@ -1048,6 +1059,72 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         })
       );
     }
+
+    // If transaction is linked to a goal
+    if (newTx.goalId) {
+      setGoals(prev =>
+        prev.map(g =>
+          g.id === newTx.goalId ? { ...g, currentAmount: g.currentAmount + newTx.amount } : g
+        )
+      );
+    }
+  };
+
+  const addTransactionAndReconcile = (
+    tx: Omit<Transaction, 'id' | 'createdAt'>,
+    targetBalance: number
+  ) => {
+    const id = genId('tx');
+    const newTx: Transaction = { ...tx, id };
+    const nextTransactions = [newTx, ...transactions];
+
+    setTransactions(nextTransactions);
+
+    // If transaction is linked to a debt, automatically update the debt balance & history
+    if (newTx.debtId) {
+      setDebts(prev =>
+        prev.map(d => {
+          if (d.id === newTx.debtId) {
+            const addedPaid = d.paidAmount + newTx.amount;
+            const isSettled = addedPaid >= d.amount;
+            const accName = accounts.find(a => a.id === newTx.accountId)?.name;
+            const newPayment: DebtPayment = {
+              id: genId('dp'),
+              transactionId: id,
+              amount: newTx.amount,
+              date: newTx.date,
+              accountId: newTx.accountId,
+              accountName: accName,
+              description: newTx.description,
+            };
+            return {
+              ...d,
+              paidAmount: addedPaid,
+              isSettled,
+              payments: [...(d.payments || []), newPayment],
+            };
+          }
+          return d;
+        })
+      );
+    }
+
+    // If transaction is linked to a goal
+    if (newTx.goalId) {
+      setGoals(prev =>
+        prev.map(g =>
+          g.id === newTx.goalId ? { ...g, currentAmount: g.currentAmount + newTx.amount } : g
+        )
+      );
+    }
+
+    const targetAccountId = newTx.accountId;
+    const breakdown = getAccountBreakdown(targetAccountId, nextTransactions);
+    const newInitial = targetBalance - breakdown.netDelta;
+
+    setAccountsBase(prev =>
+      prev.map(a => (a.id === targetAccountId ? { ...a, initialBalance: newInitial } : a))
+    );
   };
 
   const updateTransaction = (updatedTx: Transaction) => {
@@ -1118,6 +1195,25 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       );
     }
 
+    // Sync goal updates
+    if (oldTx.goalId || updatedTx.goalId) {
+      setGoals(prev =>
+        prev.map(g => {
+          if (g.id === oldTx.goalId && oldTx.goalId !== updatedTx.goalId) {
+            return { ...g, currentAmount: Math.max(0, g.currentAmount - oldTx.amount) };
+          }
+          if (g.id === updatedTx.goalId && oldTx.goalId !== updatedTx.goalId) {
+            return { ...g, currentAmount: g.currentAmount + updatedTx.amount };
+          }
+          if (g.id === updatedTx.goalId && oldTx.goalId === updatedTx.goalId) {
+            const diff = updatedTx.amount - oldTx.amount;
+            return { ...g, currentAmount: Math.max(0, g.currentAmount + diff) };
+          }
+          return g;
+        })
+      );
+    }
+
     setTransactions(prev => prev.map(t => (t.id === updatedTx.id ? updatedTx : t)));
   };
 
@@ -1140,6 +1236,26 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
           })
         );
       }
+      if (tx.goalId) {
+        setGoals(prev =>
+          prev.map(g =>
+            g.id === tx.goalId ? { ...g, currentAmount: Math.max(0, g.currentAmount - tx.amount) } : g
+          )
+        );
+      }
+      // If transaction has chequeId or matches a cheque's transactionId, revert cheque to pending
+      setCheques(prev =>
+        prev.map(c =>
+          (tx.chequeId && c.id === tx.chequeId) || c.transactionId === id
+            ? {
+                ...c,
+                status: 'pending',
+                transactionId: undefined,
+                clearedDate: undefined,
+              }
+            : c
+        )
+      );
     }
     setTransactions(prev => prev.filter(t => t.id !== id));
   };
@@ -1148,20 +1264,26 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const tx = transactions.find(t => t.id === txId);
     if (!tx) return;
     const oldAmount = tx.amount;
-    const newAmount = oldAmount / 10;
+    const newAmount = Math.round(oldAmount / 10);
     const diff = oldAmount - newAmount;
 
-    const newFee = tx.fee ? (tx.fee / 10) : undefined;
+    const newFee = tx.fee ? Math.round(tx.fee / 10) : undefined;
 
     if (tx.debtId) {
       setDebts(prev =>
         prev.map(d => {
           if (d.id === tx.debtId) {
             const updatedPaid = Math.max(0, d.paidAmount - diff);
+            const updatedPayments = (d.payments || []).map(p =>
+              p.transactionId === txId || p.id === 'dp-' + txId
+                ? { ...p, amount: Math.round(p.amount / 10) }
+                : p
+            );
             return {
               ...d,
               paidAmount: updatedPaid,
               isSettled: updatedPaid >= d.amount,
+              payments: updatedPayments,
             };
           }
           return d;
@@ -1188,10 +1310,16 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         prev.map(d => {
           if (d.id === tx.debtId) {
             const updatedPaid = d.paidAmount + diff;
+            const updatedPayments = (d.payments || []).map(p =>
+              p.transactionId === txId || p.id === 'dp-' + txId
+                ? { ...p, amount: Math.round(p.amount * 10) }
+                : p
+            );
             return {
               ...d,
               paidAmount: updatedPaid,
               isSettled: updatedPaid >= d.amount,
+              payments: updatedPayments,
             };
           }
           return d;
@@ -1289,7 +1417,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const initBal = typeof acc.initialBalance === 'number' ? acc.initialBalance : (acc.balance ?? 0);
     const newAcc: Account = {
       ...acc,
-      id: 'acc-' + Date.now(),
+      id: genId('acc'),
       initialBalance: initBal,
       balance: initBal,
     };
@@ -1330,7 +1458,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Category Actions
   const addCategory = (cat: Omit<Category, 'id'>) => {
-    const newCat: Category = { ...cat, id: 'cat-' + Date.now() };
+    const newCat: Category = { ...cat, id: genId('cat') };
     setCategories(prev => [...prev, newCat]);
   };
 
@@ -1344,7 +1472,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Budget Actions
   const addBudget = (b: Omit<Budget, 'id'>) => {
-    const newB: Budget = { ...b, id: 'b-' + Date.now() };
+    const newB: Budget = { ...b, id: genId('b') };
     setBudgets(prev => [...prev, newB]);
   };
 
@@ -1358,7 +1486,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Goals
   const addGoal = (g: Omit<Goal, 'id'>) => {
-    const newG: Goal = { ...g, id: 'g-' + Date.now() };
+    const newG: Goal = { ...g, id: genId('g') };
     setGoals(prev => [...prev, newG]);
   };
 
@@ -1376,7 +1504,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       prev.map(g => (g.id === id ? { ...g, currentAmount: g.currentAmount + amount } : g))
     );
     if (accountId) {
-      const txId = 'tx-' + Date.now();
+      const txId = genId('tx');
       const newTx: Transaction = {
         id: txId,
         type: 'expense',
@@ -1385,6 +1513,8 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         description: `واریز به هدف پس‌انداز: ${goal?.title || 'هدف'}`,
         categoryId: 'cat-invest',
         accountId,
+        goalId: id,
+        relatedEntityId: id,
         tags: ['هدف پس‌انداز', goal?.title || ''],
       };
       setTransactions(prev => [newTx, ...prev]);
@@ -1393,7 +1523,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Debts
   const addDebt = (d: Omit<Debt, 'id'>) => {
-    const newD: Debt = { ...d, id: 'd-' + Date.now() };
+    const newD: Debt = { ...d, id: genId('d') };
     setDebts(prev => [...prev, newD]);
   };
 
@@ -1446,7 +1576,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
         : `دریافت طلب از ${debt.personName}`);
 
     // 1. Create transaction
-    const txId = 'tx-' + Date.now();
+    const txId = genId('tx');
     const newTx: Transaction = {
       id: txId,
       type: txType,
@@ -1471,7 +1601,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
           const paidAmount = d.paidAmount + actualPayAmount;
           const isSettled = paidAmount >= d.amount;
           const newPayment: DebtPayment = {
-            id: 'dp-' + Date.now(),
+            id: genId('dp'),
             transactionId: txId,
             amount: actualPayAmount,
             date: txDate,
@@ -1495,7 +1625,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const addPerson = (p: Omit<Person, 'id' | 'createdAt'>): Person => {
     const newP: Person = {
       ...p,
-      id: 'per-' + Date.now(),
+      id: genId('per'),
       createdAt: getTodayJalali(),
     };
     setPersons(prev => [newP, ...prev]);
@@ -1512,12 +1642,13 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Cheques & Balance Integrity (only impact account balance when transitioning to/from cleared/passed)
   const addCheque = (ch: Omit<Cheque, 'id'>) => {
-    const newChId = 'ch-' + Date.now();
+    const newChId = genId('ch');
     let linkedTxId: string | undefined;
 
     const isCleared = ch.status === 'passed' || ch.status === 'cleared';
-    if (isCleared && ch.accountId) {
-      linkedTxId = 'tx-ch-' + Date.now();
+    const targetAccountId = ch.accountId || (accounts[0]?.id || '');
+    if (isCleared && targetAccountId) {
+      linkedTxId = genId('tx-ch');
       const isPayable = ch.type === 'payable';
       const chTx: Transaction = {
         id: linkedTxId,
@@ -1528,7 +1659,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
           ? `پاس شدن چک پرداختی شماره ${ch.chequeNumber} (در وجه ${ch.partyName})`
           : `وصول چک دریافتی شماره ${ch.chequeNumber} (از ${ch.partyName})`,
         categoryId: isPayable ? 'cat-cheque-pay' : 'cat-cheque-collect',
-        accountId: ch.accountId,
+        accountId: targetAccountId,
         chequeId: newChId,
         relatedEntityId: newChId,
         tags: ['چک', ch.bankName, ch.partyName],
@@ -1539,6 +1670,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const newCh: Cheque = {
       ...ch,
       id: newChId,
+      accountId: targetAccountId || ch.accountId,
       transactionId: linkedTxId,
       clearedDate: isCleared ? (ch.clearedDate || getTodayJalali()) : undefined,
     };
@@ -1556,7 +1688,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     if (!oldWasCleared && newIsCleared) {
       const targetAccountId = ch.accountId || oldCh.accountId || (accounts[0]?.id || '');
       if (targetAccountId) {
-        updatedTxId = 'tx-ch-' + Date.now();
+        updatedTxId = genId('tx-ch');
         const isPayable = ch.type === 'payable';
         const chTx: Transaction = {
           id: updatedTxId,
@@ -1634,7 +1766,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       // Transitioning to cleared -> impact linked bank account
       const targetAccountId = accountId || cheque.accountId || (accounts[0]?.id || '');
       if (targetAccountId) {
-        linkedTxId = 'tx-ch-' + Date.now();
+        linkedTxId = genId('tx-ch');
         const isPayable = cheque.type === 'payable';
         const chTx: Transaction = {
           id: linkedTxId,
@@ -1679,7 +1811,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const addAsset = useCallback((asset: Omit<Asset, 'id' | 'createdAt'>) => {
     const newAsset: Asset = {
       ...asset,
-      id: 'asset-' + Date.now(),
+      id: genId('asset'),
       createdAt: getTodayJalali(),
     };
     setAssets(prev => [newAsset, ...prev]);
@@ -1694,12 +1826,12 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, []);
 
   const addAssetTransaction = useCallback((tx: Omit<AssetTransaction, 'id'>) => {
-    const newTxId = 'atx-' + Date.now();
+    const newTxId = genId('atx');
     let linkedLedgerTxId: string | undefined;
 
     // If trade is linked to a bank account, automatically create a ledger transaction
     if (tx.accountId) {
-      linkedLedgerTxId = 'tx-asset-' + Date.now();
+      linkedLedgerTxId = genId('tx-asset');
       const isBuy = tx.type === 'buy';
       const tradeLedgerTx: Transaction = {
         id: linkedLedgerTxId,
@@ -1773,14 +1905,52 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   }, []);
 
   const deleteAssetTransaction = useCallback((id: string) => {
-    setAssetTransactions(prev => {
-      const target = prev.find(t => t.id === id);
-      if (target?.transactionId) {
-        setTransactions(txs => txs.filter(t => t.id !== target.transactionId && t.assetTransactionId !== id));
-      }
-      return prev.filter(t => t.id !== id);
-    });
-  }, []);
+    const target = assetTransactions.find(t => t.id === id);
+    if (!target) return;
+
+    if (target.transactionId) {
+      setTransactions(txs => txs.filter(t => t.id !== target.transactionId && t.assetTransactionId !== id));
+    }
+
+    setAssetTransactions(prev => prev.filter(t => t.id !== id));
+
+    setAssets(prev =>
+      prev.map(asset => {
+        if (asset.id !== target.assetId) return asset;
+
+        if (target.type === 'buy') {
+          const newQty = Math.max(0, (asset.quantity || 0) - target.quantity);
+          const currentTotalCost = (asset.quantity || 0) * (asset.buyPriceAverage || 0);
+          const tradeCost = target.totalAmount || (target.quantity * target.unitPrice);
+          const newTotalCost = Math.max(0, currentTotalCost - tradeCost);
+          const newBuyPrice = newQty > 0 ? Math.round(newTotalCost / newQty) : 0;
+
+          return {
+            ...asset,
+            quantity: newQty,
+            buyPriceAverage: newBuyPrice,
+            buyPrice: newBuyPrice,
+            totalCost: Math.round(newQty * newBuyPrice),
+            updatedAt: getTodayJalali(),
+          };
+        } else {
+          // Reverting sell: add back quantity, keep buyPriceAverage
+          const newQty = (asset.quantity || 0) + target.quantity;
+          const buyPrice = asset.buyPriceAverage || 0;
+          const newTotalCost = newQty * buyPrice;
+
+          return {
+            ...asset,
+            quantity: newQty,
+            buyPriceAverage: buyPrice,
+            buyPrice: buyPrice,
+            totalCost: Math.round(newTotalCost),
+            updatedAt: getTodayJalali(),
+          };
+        }
+      })
+    );
+  }, [assetTransactions]);
 
   const updateMarketPrice = useCallback((symbol: string, newPriceToman: number) => {
     setMarketPrices(prev =>
@@ -2078,6 +2248,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     updatePriceSourceConfig,
     applyTelegramPricesFromText,
     addTransaction,
+    addTransactionAndReconcile,
     updateTransaction,
     deleteTransaction,
     divideTransactionBy10,

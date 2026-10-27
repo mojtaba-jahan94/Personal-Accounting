@@ -53,6 +53,7 @@ export interface Transaction {
   debtId?: string; // Optional link to a Debt or Loan
   personId?: string; // Optional link to a Person/Contact
   chequeId?: string; // Optional link to a Cheque
+  goalId?: string; // Optional link to a Goal
   assetTransactionId?: string; // Optional link to an Asset trade
   createdAt?: string;
 }
@@ -195,6 +196,8 @@ export interface ParsedBankSMS {
   cardLast4?: string;
   accountNumber?: string;
   balanceToman?: number;
+  feeToman?: number;
+  isUncertainType?: boolean;
   date?: string;
   time?: string;
   description: string;
