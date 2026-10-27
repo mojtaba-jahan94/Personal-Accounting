@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useFinance } from '../../context/FinanceContext';
 import { Debt, Cheque } from '../../types';
 import { formatCurrency, toPersianDigits } from '../../utils/formatters';
@@ -7,7 +8,13 @@ import { DebtModal } from './DebtModal';
 import { ChequeModal } from './ChequeModal';
 import { PayDebtModal } from './PayDebtModal';
 import { PersonManagerModal } from '../contacts/PersonManagerModal';
-import { CollapsibleSection } from '../common/CollapsibleSection';
+import { Card } from '../ui/Card';
+import { Button } from '../ui/Button';
+import { IconButton } from '../ui/IconButton';
+import { ProgressBar } from '../ui/ProgressBar';
+import { Badge } from '../ui/Badge';
+import { EmptyState } from '../ui/EmptyState';
+import { AnimatedNumber } from '../ui/AnimatedNumber';
 import {
   FileCheck2,
   Users,
@@ -108,7 +115,7 @@ export const DebtsAndChequesView: React.FC = () => {
       const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
       if (diffDays <= 7) {
-        return { label: `${toPersianDigits(diffDays)} روز تا سررسید (نزدیک)`, type: 'soon' as const };
+        return { label: `${toPersianDigits(diffDays)} روز تا سررسید`, type: 'soon' as const };
       }
       return { label: `${toPersianDigits(diffDays)} روز مانده`, type: 'normal' as const };
     } catch {
@@ -117,204 +124,173 @@ export const DebtsAndChequesView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-12">
-      {/* Top Header */}
+    <div className="space-y-8 pb-20 select-none">
+      {/* 1. Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-black text-[#1F2933] dark:text-[#F7F7F2]">
-            مدیریت بدهی، طلب، اقساط و چک‌ها
-          </h2>
-          <p className="text-xs text-[#6B7280] dark:text-[#D1D5DB]/70">
-            ردگیری سررسید تسویه‌ها و پیشگیری از فراموشی چک‌ها و موعد پرداخت‌ها
+          <div className="flex items-center gap-2 mb-1">
+            <span className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
+            <span className="text-[11px] font-mono font-bold tracking-wider text-violet-400 uppercase">
+              OBLIGATIONS & CHEQUES
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-fintech-text-primary tracking-tight">
+            بدهی‌ها، طلب‌ها و چک‌ها
+          </h1>
+          <p className="text-xs text-fintech-text-muted mt-1">
+            مدیریت هوشمند تعهدات مالی، مطالبات از افراد، اقساط و موعد سررسید چک‌های صیادی
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
-          <button
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <Button
+            variant="secondary"
             onClick={() => setIsPersonModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#F7F7F2]/90 dark:bg-[#1F2933]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-[#1F2933] dark:text-[#D1D5DB] text-xs font-bold hover:border-[#A68A64]/40 transition shadow-xs"
-            title="مدیریت اشخاص و طرف‌حساب‌ها"
+            icon={<Users className="w-4 h-4 text-violet-400" />}
           >
-            <Users className="w-4 h-4 text-[#A68A64]" />
-            <span className="whitespace-nowrap">مدیریت طرف‌حساب‌ها</span>
-          </button>
+            مدیریت طرف‌حساب‌ها
+          </Button>
 
           {activeTab === 'cheques' ? (
-            <button
+            <Button
+              variant="primary"
               onClick={() => {
                 setEditingCheque(null);
                 setIsChequeModalOpen(true);
               }}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#A68A64] hover:bg-[#8A704C] text-[#F7F7F2] text-xs font-black shadow-md shadow-[#A68A64]/20 transition active:scale-95"
+              icon={<Plus className="w-4 h-4 stroke-[2.5]" />}
             >
-              <Plus className="w-4 h-4 stroke-[3]" />
-              <span className="whitespace-nowrap">ثبت چک صیادی</span>
-            </button>
+              ثبت چک صیادی
+            </Button>
           ) : (
-            <button
+            <Button
+              variant="primary"
               onClick={() => {
                 setEditingDebt(null);
                 setIsDebtModalOpen(true);
               }}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#A68A64] hover:bg-[#8A704C] text-[#F7F7F2] text-xs font-black shadow-md shadow-[#A68A64]/20 transition active:scale-95"
+              icon={<Plus className="w-4 h-4 stroke-[2.5]" />}
             >
-              <Plus className="w-4 h-4 stroke-[3]" />
-              <span className="whitespace-nowrap">
-                {activeTab === 'credits' ? 'ثبت طلب جدید' : 'ثبت بدهی جدید'}
-              </span>
-            </button>
+              {activeTab === 'credits' ? 'ثبت طلب جدید' : 'ثبت بدهی جدید'}
+            </Button>
           )}
         </div>
       </div>
 
-      {/* Nordic Segmented Tab Bar */}
-      <div className="flex gap-2 p-1.5 bg-[#F7F7F2]/90 dark:bg-[#1F2933]/60 rounded-2xl w-fit border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 shadow-xs">
-        <button
-          onClick={() => setActiveTab('debts')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
-            activeTab === 'debts'
-              ? 'bg-[#A68A64] text-[#F7F7F2] shadow-md shadow-[#A68A64]/20'
-              : 'text-[#6B7280] dark:text-[#D1D5DB]/70 hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
-          }`}
-        >
-          <ArrowUpRight className="w-4 h-4" />
-          <span>بدهی‌های من</span>
-          <span
-            className={`text-[10px] font-mono tabular-nums px-1.5 py-0.5 rounded-full ${
-              activeTab === 'debts'
-                ? 'bg-white/20 text-[#F7F7F2]'
-                : 'bg-[#6B7280]/15 dark:bg-[#D1D5DB]/15 text-[#6B7280] dark:text-[#D1D5DB]'
-            }`}
-          >
-            {toPersianDigits(debtsList.length)}
-          </span>
-        </button>
+      {/* 2. KPI Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <Card variant="glass" className="p-4 border-rose-500/20">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-bold text-rose-400 flex items-center gap-1.5">
+              <ArrowUpRight className="w-4 h-4" />
+              بدهی‌های پرداخت‌نشده
+            </span>
+          </div>
+          <div className="text-lg font-bold font-mono text-rose-400">
+            <AnimatedNumber value={totalDebts} currency={currency} />
+          </div>
+        </Card>
 
-        <button
-          onClick={() => setActiveTab('credits')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
-            activeTab === 'credits'
-              ? 'bg-[#A68A64] text-[#F7F7F2] shadow-md shadow-[#A68A64]/20'
-              : 'text-[#6B7280] dark:text-[#D1D5DB]/70 hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
-          }`}
-        >
-          <ArrowDownLeft className="w-4 h-4" />
-          <span>طلب‌های من</span>
-          <span
-            className={`text-[10px] font-mono tabular-nums px-1.5 py-0.5 rounded-full ${
-              activeTab === 'credits'
-                ? 'bg-white/20 text-[#F7F7F2]'
-                : 'bg-[#6B7280]/15 dark:bg-[#D1D5DB]/15 text-[#6B7280] dark:text-[#D1D5DB]'
-            }`}
-          >
-            {toPersianDigits(creditsList.length)}
-          </span>
-        </button>
+        <Card variant="glass" className="p-4 border-emerald-500/20">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+              <ArrowDownLeft className="w-4 h-4" />
+              طلب‌های وصول‌نشده
+            </span>
+          </div>
+          <div className="text-lg font-bold font-mono text-emerald-400">
+            <AnimatedNumber value={totalCredits} currency={currency} />
+          </div>
+        </Card>
 
-        <button
-          onClick={() => setActiveTab('cheques')}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition ${
-            activeTab === 'cheques'
-              ? 'bg-[#A68A64] text-[#F7F7F2] shadow-md shadow-[#A68A64]/20'
-              : 'text-[#6B7280] dark:text-[#D1D5DB]/70 hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
-          }`}
-        >
-          <FileCheck2 className="w-4 h-4" />
-          <span>چک‌های صیادی</span>
-          <span
-            className={`text-[10px] font-mono tabular-nums px-1.5 py-0.5 rounded-full ${
-              activeTab === 'cheques'
-                ? 'bg-white/20 text-[#F7F7F2]'
-                : 'bg-[#6B7280]/15 dark:bg-[#D1D5DB]/15 text-[#6B7280] dark:text-[#D1D5DB]'
-            }`}
-          >
-            {toPersianDigits(cheques.length)}
-          </span>
-        </button>
+        <Card variant="glass" className="p-4 border-cyan-500/20">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-bold text-cyan-400 flex items-center gap-1.5">
+              <Clock className="w-4 h-4" />
+              چک‌های دریافتی در جریان
+            </span>
+          </div>
+          <div className="text-lg font-bold font-mono text-cyan-400">
+            <AnimatedNumber value={totalPendingChequesReceivable} currency={currency} />
+          </div>
+        </Card>
+
+        <Card variant="glass" className="p-4 border-amber-500/20">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+              <FileCheck2 className="w-4 h-4" />
+              چک‌های پرداختی در جریان
+            </span>
+          </div>
+          <div className="text-lg font-bold font-mono text-amber-400">
+            <AnimatedNumber value={totalPendingChequesPayable} currency={currency} />
+          </div>
+        </Card>
       </div>
 
-      {/* Summary KPI Banner (Collapsible) */}
-      <CollapsibleSection
-        storageKey="debts_summary_kpi"
-        title="خلاصه وضعیت تعهدات و چک‌های در جریان"
-        subtitle="مجموع تعهدات تسویه‌نشده، مطالبات و چک‌های صیادی"
-        icon={<Scale className="w-5 h-5 text-[#A68A64]" />}
-        defaultExpanded={true}
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
-          {/* Card 1: Debts */}
-          <div className="p-4 rounded-2xl bg-[#C0564B]/10 border border-[#C0564B]/20 flex items-center justify-between">
-            <div>
-              <span className="text-xs text-[#6B7280] dark:text-[#D1D5DB]/70">
-                مجموع بدهی‌های پرداخت‌نشده
-              </span>
-              <h4 className="text-lg font-black text-[#C0564B] dark:text-[#F87171] mt-1 font-mono tabular-nums">
-                {formatCurrency(totalDebts, currency)}
-              </h4>
-            </div>
-            <ArrowUpRight className="w-8 h-8 text-[#C0564B]/30" />
-          </div>
+      {/* 3. Segmented Navigation Tabs */}
+      <div className="flex items-center gap-2 p-1 rounded-2xl bg-black/20 dark:bg-white/[0.04] border border-white/5 w-fit">
+        {[
+          { id: 'debts', label: 'بدهی‌های من', icon: ArrowUpRight, count: debtsList.length },
+          { id: 'credits', label: 'طلب‌های من', icon: ArrowDownLeft, count: creditsList.length },
+          { id: 'cheques', label: 'چک‌های صیادی', icon: FileCheck2, count: cheques.length },
+        ].map((tab) => {
+          const isActive = activeTab === tab.id;
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`relative flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-colors ${
+                isActive ? 'text-white' : 'text-fintech-text-muted hover:text-fintech-text-primary'
+              }`}
+            >
+              {isActive && (
+                <motion.div
+                  layoutId="debtActiveTabPill"
+                  className="absolute inset-0 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 shadow-md shadow-violet-500/25 -z-10"
+                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                />
+              )}
+              <Icon className="w-4 h-4" />
+              <span>{tab.label}</span>
+              <span className="text-[10px] font-mono opacity-80">({toPersianDigits(tab.count)})</span>
+            </button>
+          );
+        })}
+      </div>
 
-          {/* Card 2: Credits */}
-          <div className="p-4 rounded-2xl bg-[#2E7D5B]/10 border border-[#2E7D5B]/20 flex items-center justify-between">
-            <div>
-              <span className="text-xs text-[#6B7280] dark:text-[#D1D5DB]/70">
-                مجموع طلب‌های وصول‌نشده
-              </span>
-              <h4 className="text-lg font-black text-[#2E7D5B] dark:text-[#4ADE80] mt-1 font-mono tabular-nums">
-                {formatCurrency(totalCredits, currency)}
-              </h4>
-            </div>
-            <ArrowDownLeft className="w-8 h-8 text-[#2E7D5B]/30" />
-          </div>
-
-          {/* Card 3: Pending Cheques Receivable */}
-          <div className="p-4 rounded-2xl bg-[#4A6FA5]/10 border border-[#4A6FA5]/20 flex items-center justify-between">
-            <div>
-              <span className="text-xs text-[#6B7280] dark:text-[#D1D5DB]/70">
-                چک‌های دریافتی در جریان
-              </span>
-              <h4 className="text-lg font-black text-[#4A6FA5] dark:text-[#60A5FA] mt-1 font-mono tabular-nums">
-                {formatCurrency(totalPendingChequesReceivable, currency)}
-              </h4>
-            </div>
-            <Clock className="w-8 h-8 text-[#4A6FA5]/30" />
-          </div>
-
-          {/* Card 4: Pending Cheques Payable */}
-          <div className="p-4 rounded-2xl bg-[#A68A64]/10 border border-[#A68A64]/20 flex items-center justify-between">
-            <div>
-              <span className="text-xs text-[#6B7280] dark:text-[#D1D5DB]/70">
-                چک‌های پرداختی در جریان
-              </span>
-              <h4 className="text-lg font-black text-[#A68A64] mt-1 font-mono tabular-nums">
-                {formatCurrency(totalPendingChequesPayable, currency)}
-              </h4>
-            </div>
-            <FileCheck2 className="w-8 h-8 text-[#A68A64]/30" />
-          </div>
-        </div>
-      </CollapsibleSection>
-
-      {/* Tab 1 & 2: Debts and Receivables List */}
-      {(activeTab === 'debts' || activeTab === 'credits') && (
-        <div className="space-y-4">
-          <CollapsibleSection
-            storageKey={`list_${activeTab}`}
-            title={activeTab === 'debts' ? 'فهرست بدهی‌ها و تعهدات مالی' : 'فهرست طلب‌ها و مطالبات مالی'}
-            subtitle={`${toPersianDigits((activeTab === 'debts' ? debtsList : creditsList).length)} پرونده ثبت‌شده`}
-            icon={activeTab === 'debts' ? <ArrowUpRight className="w-5 h-5 text-[#C0564B]" /> : <ArrowDownLeft className="w-5 h-5 text-[#2E7D5B]" />}
-            defaultExpanded={true}
+      {/* 4. Tab Content */}
+      <AnimatePresence mode="wait">
+        {(activeTab === 'debts' || activeTab === 'credits') && (
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-4"
           >
-            <div className="space-y-3 pt-1">
-              {(activeTab === 'debts' ? debtsList : creditsList).length === 0 ? (
-                <div className="text-center py-12 text-[#6B7280] text-xs">
-                  {activeTab === 'debts'
-                    ? 'هیچ بدهی ثبت‌شده‌ای وجود ندارد.'
-                    : 'هیچ طلب ثبت‌شده‌ای وجود ندارد.'}
-                </div>
-              ) : (
-                (activeTab === 'debts' ? debtsList : creditsList).map((item) => {
+            {(activeTab === 'debts' ? debtsList : creditsList).length === 0 ? (
+              <Card variant="glass" className="py-14">
+                <EmptyState
+                  icon={Scale}
+                  title={activeTab === 'debts' ? 'هیچ بدهی فعالی ندارید' : 'هیچ طلبی فعالی ندارید'}
+                  description={
+                    activeTab === 'debts'
+                      ? 'تمامی تعهدات تسویه شده یا هنوز موردی ثبت نشده است.'
+                      : 'تمامی مطالبات وصول شده یا موردی ثبت نشده است.'
+                  }
+                  actionLabel={activeTab === 'debts' ? 'ثبت بدهی جدید' : 'ثبت طلب جدید'}
+                  onAction={() => {
+                    setEditingDebt(null);
+                    setIsDebtModalOpen(true);
+                  }}
+                />
+              </Card>
+            ) : (
+              <div className="space-y-3.5">
+                {(activeTab === 'debts' ? debtsList : creditsList).map((item, idx) => {
                   const remaining = Math.max(0, item.amount - item.paidAmount);
                   const percent = Math.min(
                     100,
@@ -328,256 +304,270 @@ export const DebtsAndChequesView: React.FC = () => {
                     item.category === 'loan'
                       ? 'وام بانکی'
                       : item.category === 'installment'
-                      ? 'خرید قسطی'
+                      ? 'خرید اقساطی'
                       : item.category === 'other'
                       ? 'سایر'
                       : 'قرض شخصی';
 
                   return (
-                    <div
+                    <motion.div
                       key={item.id}
-                      className={`p-4 sm:p-5 rounded-2xl bg-[#F7F7F2]/90 dark:bg-[#1F2933]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 flex flex-col gap-4 transition hover:border-[#A68A64]/30 shadow-xs ${
-                        item.isSettled ? 'opacity-70 bg-[#6B7280]/5 dark:bg-[#1F2933]/30' : ''
-                      }`}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.15, delay: idx * 0.03 }}
                     >
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                        <div className="flex items-start gap-3.5">
-                          <div
-                            className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 text-white shadow-xs ${
-                              item.type === 'credit'
-                                ? 'bg-[#2E7D5B]'
-                                : 'bg-[#C0564B]'
-                            }`}
-                          >
-                            {item.type === 'credit' ? (
-                              <ArrowDownLeft className="w-5 h-5" />
-                            ) : (
-                              <ArrowUpRight className="w-5 h-5" />
-                            )}
-                          </div>
-
-                          <div className="space-y-1">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <h4 className="text-sm font-bold text-[#1F2933] dark:text-[#F7F7F2]">
-                                {item.personName}
-                              </h4>
-                              <span
-                                className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                  item.isSettled
-                                    ? 'bg-[#6B7280]/15 text-[#6B7280] dark:text-[#D1D5DB]'
-                                    : item.type === 'credit'
-                                    ? 'bg-[#2E7D5B]/15 text-[#2E7D5B] dark:text-[#4ADE80] border border-[#2E7D5B]/20'
-                                    : 'bg-[#C0564B]/15 text-[#C0564B] dark:text-[#F87171] border border-[#C0564B]/20'
-                                }`}
-                              >
-                                {item.isSettled
-                                  ? 'تسویه شده'
-                                  : item.type === 'credit'
-                                  ? 'طلب من'
-                                  : 'بدهی من'}
-                              </span>
-                              <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-[#6B7280]/10 dark:bg-[#D1D5DB]/10 text-[#6B7280] dark:text-[#D1D5DB]">
-                                {categoryLabel}
-                              </span>
-
-                              {/* Due Date Status Badge */}
-                              {dueInfo && !item.isSettled && (
-                                <span
-                                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
-                                    dueInfo.type === 'overdue'
-                                      ? 'bg-[#C0564B]/15 text-[#C0564B] dark:text-[#F87171] border border-[#C0564B]/25'
-                                      : dueInfo.type === 'today' || dueInfo.type === 'soon'
-                                      ? 'bg-[#A68A64]/15 text-[#A68A64] border border-[#A68A64]/25'
-                                      : 'bg-[#6B7280]/10 text-[#6B7280] dark:text-[#D1D5DB]'
-                                  }`}
-                                >
-                                  {dueInfo.type === 'overdue' && <AlertTriangle className="w-3 h-3" />}
-                                  {dueInfo.type === 'soon' && <Clock className="w-3 h-3" />}
-                                  <span>{dueInfo.label}</span>
-                                </span>
-                              )}
-                            </div>
-
-                            <div className="flex flex-wrap items-center gap-2 text-xs text-[#6B7280]">
-                              <span>موعد سررسید: {toPersianDigits(item.dueDate)}</span>
-                              {item.phoneNumber && (
-                                <>
-                                  <span>•</span>
-                                  <span className="flex items-center gap-1 dir-ltr">
-                                    <Phone className="w-3 h-3 text-[#6B7280]" />
-                                    {toPersianDigits(item.phoneNumber)}
-                                  </span>
-                                </>
-                              )}
-                              {item.description && (
-                                <>
-                                  <span>•</span>
-                                  <span className="truncate max-w-[200px]">{item.description}</span>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 sm:pt-0 border-t sm:border-0 border-[#6B7280]/15 dark:border-[#D1D5DB]/10">
-                          <div className="text-right sm:text-left">
-                            <div className="text-xs text-[#6B7280]">
-                              مبلغ کل: {formatCurrency(item.amount, currency)}
-                            </div>
+                      <Card
+                        variant="glass"
+                        hoverLift={true}
+                        className={`p-4 sm:p-5 space-y-4 ${
+                          item.isSettled ? 'opacity-65' : ''
+                        }`}
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                          <div className="flex items-start gap-3.5">
                             <div
-                              className={`text-sm font-black font-mono tabular-nums ${
-                                item.isSettled
-                                  ? 'text-[#6B7280] line-through'
-                                  : item.type === 'credit'
-                                  ? 'text-[#2E7D5B] dark:text-[#4ADE80]'
-                                  : 'text-[#C0564B] dark:text-[#F87171]'
+                              className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border border-white/10 ${
+                                item.type === 'credit'
+                                  ? 'bg-emerald-500/20 text-emerald-400'
+                                  : 'bg-rose-500/20 text-rose-400'
                               }`}
                             >
-                              مانده: {formatCurrency(remaining, currency)}
+                              {item.type === 'credit' ? (
+                                <ArrowDownLeft className="w-5 h-5" />
+                              ) : (
+                                <ArrowUpRight className="w-5 h-5" />
+                              )}
+                            </div>
+
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h3 className="text-sm font-bold text-white">
+                                  {item.personName}
+                                </h3>
+                                <Badge
+                                  variant={
+                                    item.isSettled
+                                      ? 'neutral'
+                                      : item.type === 'credit'
+                                      ? 'success'
+                                      : 'danger'
+                                  }
+                                  size="sm"
+                                >
+                                  {item.isSettled
+                                    ? 'تسویه شده'
+                                    : item.type === 'credit'
+                                    ? 'طلب من'
+                                    : 'بدهی من'}
+                                </Badge>
+                                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-white/5 text-fintech-text-muted">
+                                  {categoryLabel}
+                                </span>
+
+                                {dueInfo && !item.isSettled && (
+                                  <Badge
+                                    variant={
+                                      dueInfo.type === 'overdue'
+                                        ? 'danger'
+                                        : dueInfo.type === 'soon'
+                                        ? 'warning'
+                                        : 'neutral'
+                                    }
+                                    size="sm"
+                                  >
+                                    {dueInfo.label}
+                                  </Badge>
+                                )}
+                              </div>
+
+                              <div className="flex flex-wrap items-center gap-2 text-xs text-fintech-text-muted font-mono">
+                                <span>سررسید: {toPersianDigits(item.dueDate)}</span>
+                                {item.phoneNumber && (
+                                  <>
+                                    <span>•</span>
+                                    <span className="flex items-center gap-1 dir-ltr text-fintech-text-secondary">
+                                      <Phone className="w-3 h-3 text-fintech-text-muted" />
+                                      {toPersianDigits(item.phoneNumber)}
+                                    </span>
+                                  </>
+                                )}
+                                {item.description && (
+                                  <>
+                                    <span>•</span>
+                                    <span className="truncate max-w-[200px] font-sans">{item.description}</span>
+                                  </>
+                                )}
+                              </div>
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-1.5">
-                            {!item.isSettled && (
-                              <button
-                                onClick={() => setPayingDebt(item)}
-                                className="px-3.5 py-1.5 rounded-xl bg-[#A68A64] hover:bg-[#8A704C] text-[#F7F7F2] text-xs font-bold transition shadow-xs active:scale-95"
+                          <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 sm:pt-0 border-t sm:border-0 border-white/5">
+                            <div className="text-right sm:text-left">
+                              <div className="text-xs text-fintech-text-muted font-mono">
+                                مبلغ کل: {formatCurrency(item.amount, currency)}
+                              </div>
+                              <div
+                                className={`text-sm sm:text-base font-extrabold font-mono tabular-nums ${
+                                  item.isSettled
+                                    ? 'text-fintech-text-muted line-through'
+                                    : item.type === 'credit'
+                                    ? 'text-emerald-400'
+                                    : 'text-rose-400'
+                                }`}
                               >
-                                تسویه / پرداخت قسط
+                                مانده: {formatCurrency(remaining, currency)}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-1.5">
+                              {!item.isSettled && (
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  onClick={() => setPayingDebt(item)}
+                                >
+                                  تسویه / قسط
+                                </Button>
+                              )}
+                              <IconButton
+                                variant="ghost"
+                                size="sm"
+                                icon={<Edit2 className="w-4 h-4" />}
+                                onClick={() => {
+                                  setEditingDebt(item);
+                                  setIsDebtModalOpen(true);
+                                }}
+                                title="ویرایش"
+                              />
+                              <IconButton
+                                variant="ghost"
+                                size="sm"
+                                icon={<Trash2 className="w-4 h-4 text-rose-400" />}
+                                onClick={() => handleDeleteDebt(item.id)}
+                                title="حذف"
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between text-[11px] text-fintech-text-muted">
+                            <span>
+                              پرداخت شده: {formatCurrency(item.paidAmount, currency)} ({toPersianDigits(percent)}٪)
+                            </span>
+                            {hasPayments && (
+                              <button
+                                type="button"
+                                onClick={() => setExpandedDebtId(isExpanded ? null : item.id)}
+                                className="flex items-center gap-1 text-violet-400 hover:text-violet-300 font-bold"
+                              >
+                                <span>تاریخچه پرداخت‌ها ({toPersianDigits(item.payments!.length)})</span>
+                                {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
                               </button>
                             )}
-                            <button
-                              onClick={() => {
-                                setEditingDebt(item);
-                                setIsDebtModalOpen(true);
-                              }}
-                              className="p-1.5 rounded-lg text-[#6B7280] hover:text-[#A68A64] transition"
-                              title="ویرایش"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteDebt(item.id)}
-                              className="p-1.5 rounded-lg text-[#6B7280] hover:text-[#C0564B] transition"
-                              title="حذف"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
                           </div>
-                        </div>
-                      </div>
-
-                      {/* Progress Bar */}
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between text-[11px] text-[#6B7280] dark:text-[#D1D5DB]/70">
-                          <span>
-                            پرداخت شده: {formatCurrency(item.paidAmount, currency)} ({toPersianDigits(percent)}٪)
-                          </span>
-                          {hasPayments && (
-                            <button
-                              type="button"
-                              onClick={() => setExpandedDebtId(isExpanded ? null : item.id)}
-                              className="flex items-center gap-1 text-[#A68A64] hover:underline font-bold"
-                            >
-                              <span>تاریخچه پرداخت‌ها ({toPersianDigits(item.payments!.length)})</span>
-                              {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-                            </button>
-                          )}
-                        </div>
-                        <div className="h-2 w-full bg-[#6B7280]/15 dark:bg-[#D1D5DB]/15 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full transition-all duration-500 rounded-full ${
-                              item.isSettled
-                                ? 'bg-[#2E7D5B]'
-                                : item.type === 'credit'
-                                ? 'bg-[#2E7D5B]'
-                                : 'bg-[#A68A64]'
-                            }`}
-                            style={{ width: `${percent}%` }}
+                          <ProgressBar
+                            value={percent}
+                            colorVariant={item.isSettled ? 'emerald' : item.type === 'credit' ? 'emerald' : 'violet'}
+                            size="sm"
+                            animated={true}
                           />
                         </div>
-                      </div>
 
-                      {/* Installments / Payment History Accordion */}
-                      {isExpanded && hasPayments && (
-                        <div className="pt-3 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10 space-y-2">
-                          <div className="text-[11px] font-bold text-[#1F2933] dark:text-[#D1D5DB] flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5 text-[#A68A64]" />
-                            <span>ریز واریزی‌ها و اقساط ثبت‌شده:</span>
-                          </div>
-                          <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                            {item.payments!.map((pay) => (
-                              <div
-                                key={pay.id}
-                                className="flex items-center justify-between p-2 rounded-xl bg-[#F7F7F2] dark:bg-[#141B22]/70 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 text-xs"
-                              >
-                                <div className="space-y-0.5">
-                                  <div className="font-bold font-mono tabular-nums text-[#1F2933] dark:text-[#F7F7F2]">
-                                    {formatCurrency(pay.amount, currency)}
+                        {/* Payment History Accordion */}
+                        {isExpanded && hasPayments && (
+                          <div className="pt-3 border-t border-white/5 space-y-2">
+                            <div className="text-[11px] font-bold text-fintech-text-primary flex items-center gap-1.5">
+                              <Clock className="w-3.5 h-3.5 text-violet-400" />
+                              <span>ریز واریزی‌ها و اقساط ثبت‌شده:</span>
+                            </div>
+                            <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+                              {item.payments!.map((pay) => (
+                                <div
+                                  key={pay.id}
+                                  className="flex items-center justify-between p-2 rounded-xl bg-black/20 dark:bg-white/[0.02] border border-white/5 text-xs"
+                                >
+                                  <div className="space-y-0.5">
+                                    <div className="font-bold font-mono text-white">
+                                      {formatCurrency(pay.amount, currency)}
+                                    </div>
+                                    <div className="text-[10px] text-fintech-text-muted flex items-center gap-2">
+                                      <span>تاریخ: {toPersianDigits(pay.date)}</span>
+                                      {pay.accountName && (
+                                        <>
+                                          <span>•</span>
+                                          <span className="text-violet-400">حساب: {pay.accountName}</span>
+                                        </>
+                                      )}
+                                    </div>
                                   </div>
-                                  <div className="text-[10px] text-[#6B7280] flex items-center gap-2">
-                                    <span>تاریخ: {toPersianDigits(pay.date)}</span>
-                                    {pay.accountName && (
-                                      <>
-                                        <span>•</span>
-                                        <span className="text-[#A68A64] font-medium">
-                                          حساب: {pay.accountName}
-                                        </span>
-                                      </>
-                                    )}
-                                  </div>
+                                  {pay.description && (
+                                    <div className="text-[11px] text-fintech-text-muted max-w-[140px] truncate">
+                                      {pay.description}
+                                    </div>
+                                  )}
                                 </div>
-                                {pay.description && (
-                                  <div className="text-[11px] text-[#6B7280] max-w-[140px] truncate">
-                                    {pay.description}
-                                  </div>
-                                )}
-                              </div>
-                            ))}
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
+                        )}
+                      </Card>
+                    </motion.div>
                   );
-                })
-              )}
-            </div>
-          </CollapsibleSection>
-        </div>
-      )}
+                })}
+              </div>
+            )}
+          </motion.div>
+        )}
 
-      {/* Tab 3: Cheques List */}
-      {activeTab === 'cheques' && (
-        <div className="space-y-4">
-          <CollapsibleSection
-            storageKey="cheques_list_items"
-            title="فهرست چک‌های صیادی"
-            subtitle={`${toPersianDigits(cheques.length)} فقره چک ثبت‌شده`}
-            icon={<FileCheck2 className="w-5 h-5 text-[#A68A64]" />}
-            defaultExpanded={true}
+        {/* Tab 3: Cheques List */}
+        {activeTab === 'cheques' && (
+          <motion.div
+            key="cheques"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-3.5"
           >
-            <div className="space-y-3 pt-1">
-              {cheques.length === 0 ? (
-                <div className="text-center py-12 text-[#6B7280] text-xs">
-                  هیچ چکی ثبت نشده است.
-                </div>
-              ) : (
-                cheques.map((cheque) => {
-                  const dueInfo = getDueStatus(cheque.dueDate);
+            {cheques.length === 0 ? (
+              <Card variant="glass" className="py-14">
+                <EmptyState
+                  icon={FileCheck2}
+                  title="هیچ چکی ثبت نشده است"
+                  description="برای مدیریت چک‌های دریافتی یا صادرشده صیادی، اولین چک خود را اضافه نمایید."
+                  actionLabel="ثبت چک صیادی"
+                  onAction={() => {
+                    setEditingCheque(null);
+                    setIsChequeModalOpen(true);
+                  }}
+                />
+              </Card>
+            ) : (
+              cheques.map((cheque, idx) => {
+                const dueInfo = getDueStatus(cheque.dueDate);
 
-                  return (
-                    <div
-                      key={cheque.id}
-                      className="p-4 sm:p-5 rounded-2xl bg-[#F7F7F2]/90 dark:bg-[#1F2933]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition hover:border-[#A68A64]/30 shadow-xs"
+                return (
+                  <motion.div
+                    key={cheque.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.15, delay: idx * 0.03 }}
+                  >
+                    <Card
+                      variant="glass"
+                      hoverLift={true}
+                      className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
                     >
                       <div className="flex items-start gap-3.5">
                         <div
-                          className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 text-white shadow-xs ${
+                          className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border border-white/10 ${
                             cheque.status === 'passed' || cheque.status === 'cleared'
-                              ? 'bg-[#2E7D5B]'
+                              ? 'bg-emerald-500/20 text-emerald-400'
                               : cheque.status === 'bounced'
-                              ? 'bg-[#C0564B]'
-                              : 'bg-[#A68A64]'
+                              ? 'bg-rose-500/20 text-rose-400'
+                              : 'bg-violet-500/20 text-violet-400'
                           }`}
                         >
                           <FileCheck2 className="w-5 h-5" />
@@ -585,57 +575,51 @@ export const DebtsAndChequesView: React.FC = () => {
 
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="text-sm font-bold text-[#1F2933] dark:text-[#F7F7F2]">
+                            <h3 className="text-sm font-bold text-white">
                               {cheque.partyName}
-                            </h4>
+                            </h3>
 
-                            {/* Cheque Type */}
-                            <span
-                              className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                                cheque.type === 'receivable'
-                                  ? 'bg-[#2E7D5B]/15 text-[#2E7D5B] dark:text-[#4ADE80] border border-[#2E7D5B]/20'
-                                  : 'bg-[#C0564B]/15 text-[#C0564B] dark:text-[#F87171] border border-[#C0564B]/20'
-                              }`}
+                            <Badge
+                              variant={cheque.type === 'receivable' ? 'success' : 'danger'}
+                              size="sm"
                             >
-                              {cheque.type === 'receivable' ? 'چک دریافتی' : 'چک پرداختی (صادرشده)'}
-                            </span>
+                              {cheque.type === 'receivable' ? 'چک دریافتی' : 'چک پرداختی'}
+                            </Badge>
 
-                            {/* Status Badge */}
-                            <span
-                              className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                            <Badge
+                              variant={
                                 cheque.status === 'passed' || cheque.status === 'cleared'
-                                  ? 'bg-[#2E7D5B]/20 text-[#2E7D5B] dark:text-[#4ADE80]'
+                                  ? 'success'
                                   : cheque.status === 'bounced'
-                                  ? 'bg-[#C0564B]/20 text-[#C0564B] dark:text-[#F87171]'
-                                  : 'bg-[#A68A64]/20 text-[#A68A64]'
-                              }`}
+                                  ? 'danger'
+                                  : 'warning'
+                              }
+                              size="sm"
                             >
                               {cheque.status === 'passed' || cheque.status === 'cleared'
                                 ? 'پاس شده'
                                 : cheque.status === 'bounced'
                                 ? 'برگشتی'
                                 : 'در انتظار'}
-                            </span>
+                            </Badge>
 
-                            {/* Due Countdown Badge */}
                             {dueInfo && cheque.status === 'pending' && (
-                              <span
-                                className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 ${
+                              <Badge
+                                variant={
                                   dueInfo.type === 'overdue'
-                                    ? 'bg-[#C0564B]/15 text-[#C0564B] dark:text-[#F87171] border border-[#C0564B]/25'
-                                    : dueInfo.type === 'today' || dueInfo.type === 'soon'
-                                    ? 'bg-[#A68A64]/15 text-[#A68A64] border border-[#A68A64]/25'
-                                    : 'bg-[#6B7280]/10 text-[#6B7280] dark:text-[#D1D5DB]'
-                                }`}
+                                    ? 'danger'
+                                    : dueInfo.type === 'soon'
+                                    ? 'warning'
+                                    : 'neutral'
+                                }
+                                size="sm"
                               >
-                                {dueInfo.type === 'overdue' && <AlertTriangle className="w-3 h-3" />}
-                                {dueInfo.type === 'soon' && <Clock className="w-3 h-3" />}
-                                <span>{dueInfo.label}</span>
-                              </span>
+                                {dueInfo.label}
+                              </Badge>
                             )}
                           </div>
 
-                          <div className="flex flex-wrap items-center gap-2 text-xs text-[#6B7280] mt-1">
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-fintech-text-muted mt-1 font-mono">
                             <span>سررسید: {toPersianDigits(cheque.dueDate)}</span>
                             <span>•</span>
                             <span>بانک: {cheque.bankName}</span>
@@ -644,7 +628,7 @@ export const DebtsAndChequesView: React.FC = () => {
                             {cheque.sayadNumber && (
                               <>
                                 <span>•</span>
-                                <span className="font-mono text-[11px] dir-ltr text-[#A68A64]">
+                                <span className="dir-ltr text-violet-400 font-mono">
                                   صیاد: {toPersianDigits(cheque.sayadNumber)}
                                 </span>
                               </>
@@ -653,9 +637,9 @@ export const DebtsAndChequesView: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 sm:pt-0 border-t sm:border-0 border-[#6B7280]/15 dark:border-[#D1D5DB]/10">
+                      <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 sm:pt-0 border-t sm:border-0 border-white/5">
                         <div className="text-right sm:text-left">
-                          <div className="text-sm sm:text-base font-black text-[#1F2933] dark:text-[#F7F7F2] font-mono tabular-nums">
+                          <div className="text-sm sm:text-base font-extrabold text-white font-mono tabular-nums">
                             {formatCurrency(cheque.amount, currency)}
                           </div>
                         </div>
@@ -666,7 +650,7 @@ export const DebtsAndChequesView: React.FC = () => {
                             <>
                               <button
                                 onClick={() => changeChequeStatus(cheque.id, 'passed')}
-                                className="px-2.5 py-1.5 rounded-xl bg-[#2E7D5B]/15 hover:bg-[#2E7D5B]/25 text-[#2E7D5B] dark:text-[#4ADE80] text-xs font-bold transition flex items-center gap-1"
+                                className="px-2.5 py-1.5 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 text-xs font-bold transition flex items-center gap-1"
                                 title="ثبت به عنوان پاس شده"
                               >
                                 <Check className="w-3.5 h-3.5" />
@@ -674,7 +658,7 @@ export const DebtsAndChequesView: React.FC = () => {
                               </button>
                               <button
                                 onClick={() => changeChequeStatus(cheque.id, 'bounced')}
-                                className="px-2.5 py-1.5 rounded-xl bg-[#C0564B]/15 hover:bg-[#C0564B]/25 text-[#C0564B] dark:text-[#F87171] text-xs font-bold transition flex items-center gap-1"
+                                className="px-2.5 py-1.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 text-rose-400 text-xs font-bold transition flex items-center gap-1"
                                 title="ثبت به عنوان برگشتی"
                               >
                                 <AlertTriangle className="w-3.5 h-3.5" />
@@ -686,7 +670,7 @@ export const DebtsAndChequesView: React.FC = () => {
                           {(cheque.status === 'passed' || cheque.status === 'cleared' || cheque.status === 'bounced') && (
                             <button
                               onClick={() => changeChequeStatus(cheque.id, 'pending')}
-                              className="px-2.5 py-1.5 rounded-xl bg-[#A68A64]/15 hover:bg-[#A68A64]/25 text-[#A68A64] text-xs font-bold transition flex items-center gap-1"
+                              className="px-2.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-fintech-text-primary text-xs font-bold transition flex items-center gap-1"
                               title="بازگشت به وضعیت در انتظار"
                             >
                               <RotateCcw className="w-3.5 h-3.5" />
@@ -694,33 +678,33 @@ export const DebtsAndChequesView: React.FC = () => {
                             </button>
                           )}
 
-                          <button
+                          <IconButton
+                            variant="ghost"
+                            size="sm"
+                            icon={<Edit2 className="w-4 h-4" />}
                             onClick={() => {
                               setEditingCheque(cheque);
                               setIsChequeModalOpen(true);
                             }}
-                            className="p-1.5 rounded-lg text-[#6B7280] hover:text-[#A68A64] transition"
                             title="ویرایش چک"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </button>
-                          <button
+                          />
+                          <IconButton
+                            variant="ghost"
+                            size="sm"
+                            icon={<Trash2 className="w-4 h-4 text-rose-400" />}
                             onClick={() => handleDeleteCheque(cheque.id)}
-                            className="p-1.5 rounded-lg text-[#6B7280] hover:text-[#C0564B] transition"
                             title="حذف چک"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          />
                         </div>
                       </div>
-                    </div>
-                  );
-                })
-              )}
-            </div>
-          </CollapsibleSection>
-        </div>
-      )}
+                    </Card>
+                  </motion.div>
+                );
+              })
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Modals */}
       <DebtModal
@@ -741,14 +725,12 @@ export const DebtsAndChequesView: React.FC = () => {
         initialCheque={editingCheque}
       />
 
-      {/* Pay Debt Modal */}
       <PayDebtModal
         isOpen={!!payingDebt}
         onClose={() => setPayingDebt(null)}
         debt={payingDebt}
       />
 
-      {/* Person Manager Modal */}
       <PersonManagerModal
         isOpen={isPersonModalOpen}
         onClose={() => setIsPersonModalOpen(false)}
@@ -756,3 +738,5 @@ export const DebtsAndChequesView: React.FC = () => {
     </div>
   );
 };
+
+export default DebtsAndChequesView;

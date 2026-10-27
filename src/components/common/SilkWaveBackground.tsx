@@ -113,11 +113,11 @@ export const SilkWaveBackground: React.FC = () => {
               </>
             ) : (
               <>
-                <stop offset="0%" stopColor="#C2A882" />
-                <stop offset="28%" stopColor="#A68A64" />
-                <stop offset="65%" stopColor="#8A704C" />
-                <stop offset="88%" stopColor="#6B7280" />
-                <stop offset="100%" stopColor="#D1D5DB" />
+                <stop offset="0%" stopColor="#A855F7" />
+                <stop offset="28%" stopColor="#8B5CF6" />
+                <stop offset="65%" stopColor="#6366F1" />
+                <stop offset="88%" stopColor="#4F46E5" />
+                <stop offset="100%" stopColor="#1E1B4B" />
               </>
             )}
           </linearGradient>
@@ -132,9 +132,9 @@ export const SilkWaveBackground: React.FC = () => {
               </>
             ) : (
               <>
-                <stop offset="0%" stopColor="#141B22" stopOpacity="0.85" />
-                <stop offset="45%" stopColor="#1F2933" stopOpacity="0.6" />
-                <stop offset="100%" stopColor="#6B7280" stopOpacity="0.1" />
+                <stop offset="0%" stopColor="#08070B" stopOpacity="0.95" />
+                <stop offset="45%" stopColor="#13101C" stopOpacity="0.7" />
+                <stop offset="100%" stopColor="#3B0764" stopOpacity="0.15" />
               </>
             )}
           </linearGradient>

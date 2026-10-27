@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  X,
   MessageSquareText,
   Clipboard,
   CheckCircle2,
@@ -17,6 +16,8 @@ import { parseBankSMS } from '../../utils/smsParser';
 import { ParsedBankSMS } from '../../types';
 import { formatCurrency, toPersianDigits, numberToPersianWords } from '../../utils/formatters';
 import { getTodayJalali } from '../../utils/jalali';
+import { ModalShell } from '../ui/ModalShell';
+import { Button } from '../ui/Button';
 
 interface SMSAssistantModalProps {
   isOpen: boolean;
@@ -203,336 +204,307 @@ export const SMSAssistantModal: React.FC<SMSAssistantModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#1F2933]/75 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200">
-      <div className="w-full sm:max-w-xl max-h-[92dvh] flex flex-col rounded-t-3xl sm:rounded-3xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 bg-[#F7F7F2]/95 dark:bg-[#1F2933]/95 backdrop-blur-2xl text-[#1F2933] dark:text-[#F7F7F2] shadow-2xl overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
-        {/* Mobile drag handle indicator */}
-        <div className="pt-2 sm:hidden flex justify-center">
-          <div className="w-12 h-1.5 bg-[#6B7280]/30 rounded-full" />
-        </div>
+    <ModalShell
+      isOpen={isOpen}
+      onClose={handleModalClose}
+      title="دستیار هوشمند پیامک بانکی"
+      subtitle="تشخیص خودکار مبلغ، نام بانک، شماره کارت و تسویه مانده"
+      size="xl"
+    >
+      <form onSubmit={handleConfirmSubmit} className="space-y-4">
+        {/* Action Button & Input */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-bold text-fintech-text-primary">
+              متن پیامک بانک را وارد یا الصاق کنید:
+            </label>
 
-        {/* Sticky Header */}
-        <div className="px-6 py-4 border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/10 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-2xl bg-[#A68A64]/15 border border-[#A68A64]/30 text-[#A68A64] flex items-center justify-center shadow-sm">
-              <MessageSquareText className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-base sm:text-lg font-black text-[#1F2933] dark:text-[#F7F7F2] flex items-center gap-2">
-                <span>دستیار هوشمند پیامک بانکی</span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#A68A64]/15 text-[#A68A64] border border-[#A68A64]/30">
-                  Nordic AI
-                </span>
-              </h3>
-              <p className="text-xs text-[#6B7280] dark:text-[#D1D5DB]">
-                تشخیص خودکار مبلغ، نام بانک، شماره کارت و تسویه مانده
-              </p>
-            </div>
+            <button
+              type="button"
+              onClick={handleReadClipboard}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-500/15 hover:bg-violet-500/25 text-violet-400 text-xs font-bold transition border border-violet-500/30"
+            >
+              <Clipboard className="w-3.5 h-3.5" />
+              <span>خواندن از کلیپ‌بورد</span>
+            </button>
           </div>
-          <button
-            onClick={handleModalClose}
-            className="p-1.5 rounded-xl text-[#6B7280] hover:text-[#1F2933] dark:hover:text-[#F7F7F2] hover:bg-[#6B7280]/10 transition"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
 
-        {/* Scrollable Body */}
-        <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-4 overscroll-contain">
-          {/* Action Button & Input */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2]">
-                متن پیامک بانک را وارد یا الصاق کنید:
-              </label>
+          <textarea
+            rows={3}
+            value={rawText}
+            onChange={e => setRawText(e.target.value)}
+            placeholder="متن پیامک واریز یا برداشت بانک (مثلاً: بانک ملت، برداشت ۵۰۰،۰۰۰ ریال از کارت ۱۲۳۴...)"
+            className="w-full px-3.5 py-2.5 rounded-2xl text-xs bg-white/[0.04] border border-white/10 focus:outline-none focus:border-violet-500/50 text-white leading-relaxed resize-none transition"
+          />
 
+          {clipboardError && (
+            <div className="text-[11px] text-rose-400 flex items-center gap-1.5 bg-rose-500/10 p-2.5 rounded-xl border border-rose-500/20">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              <span>{clipboardError}</span>
+            </div>
+          )}
+
+          {/* Sample Buttons for quick testing */}
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span className="text-[10px] text-fintech-text-muted font-bold">تست سریع:</span>
+            {SAMPLE_SMS.map((sample, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setRawText(sample.text)}
+                className="text-[10px] px-2.5 py-1 rounded-lg bg-white/5 text-fintech-text-muted hover:bg-violet-500/15 hover:text-violet-300 transition border border-white/5"
+              >
+                {sample.title}
+              </button>
+            ))}
+          </div>
+
+          {/* Currency Unit Selection Toggle */}
+          <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.02] border border-white/10 text-xs">
+            <span className="text-[11px] font-bold text-fintech-text-muted">
+              واحد پول پیامک:
+            </span>
+            <div className="flex items-center gap-1 bg-black/30 p-0.5 rounded-lg text-[10px] font-bold border border-white/5">
               <button
                 type="button"
-                onClick={handleReadClipboard}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#A68A64]/15 hover:bg-[#A68A64]/25 text-[#A68A64] text-xs font-bold transition border border-[#A68A64]/30"
+                onClick={() => setForceCurrencyUnit('auto')}
+                className={`px-2 py-0.5 rounded-md transition ${
+                  forceCurrencyUnit === 'auto'
+                    ? 'bg-violet-600 text-white shadow-xs'
+                    : 'text-fintech-text-muted hover:text-white'
+                }`}
               >
-                <Clipboard className="w-3.5 h-3.5" />
-                <span>خواندن از کلیپ‌بورد</span>
+                تشخیص خودکار
+              </button>
+              <button
+                type="button"
+                onClick={() => setForceCurrencyUnit('rial')}
+                className={`px-2 py-0.5 rounded-md transition ${
+                  forceCurrencyUnit === 'rial'
+                    ? 'bg-violet-600 text-white shadow-xs'
+                    : 'text-fintech-text-muted hover:text-white'
+                }`}
+              >
+                ریال (تبدیل به تومان ÷۱۰)
+              </button>
+              <button
+                type="button"
+                onClick={() => setForceCurrencyUnit('toman')}
+                className={`px-2 py-0.5 rounded-md transition ${
+                  forceCurrencyUnit === 'toman'
+                    ? 'bg-violet-600 text-white shadow-xs'
+                    : 'text-fintech-text-muted hover:text-white'
+                }`}
+              >
+                تومان (بدون تبدیل)
               </button>
             </div>
-
-            <textarea
-              rows={3}
-              value={rawText}
-              onChange={e => setRawText(e.target.value)}
-              placeholder="متن پیامک واریز یا برداشت بانک (مثلاً: بانک ملت، برداشت ۵۰۰،۰۰۰ ریال از کارت ۱۲۳۴...)"
-              className="w-full px-3.5 py-2.5 rounded-2xl text-xs bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 focus:outline-none focus:border-[#A68A64] text-[#1F2933] dark:text-[#F7F7F2] leading-relaxed resize-none transition"
-            />
-
-            {clipboardError && (
-              <div className="text-[11px] text-[#C0564B] flex items-center gap-1.5 bg-[#C0564B]/10 p-2.5 rounded-xl border border-[#C0564B]/20">
-                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                <span>{clipboardError}</span>
-              </div>
-            )}
-
-            {/* Sample Buttons for quick testing */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <span className="text-[10px] text-[#6B7280] font-bold">تست سریع:</span>
-              {SAMPLE_SMS.map((sample, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => setRawText(sample.text)}
-                  className="text-[10px] px-2.5 py-1 rounded-lg bg-[#6B7280]/10 text-[#6B7280] dark:text-[#D1D5DB] hover:bg-[#A68A64]/15 hover:text-[#A68A64] transition"
-                >
-                  {sample.title}
-                </button>
-              ))}
-            </div>
-
-            {/* Currency Unit Selection Toggle */}
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#6B7280]/5 dark:bg-[#182028]/40 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 text-xs">
-              <span className="text-[11px] font-bold text-[#6B7280] dark:text-[#D1D5DB]">
-                واحد پول پیامک:
-              </span>
-              <div className="flex items-center gap-1 bg-[#6B7280]/10 dark:bg-[#1F2933] p-0.5 rounded-lg text-[10px] font-bold">
-                <button
-                  type="button"
-                  onClick={() => setForceCurrencyUnit('auto')}
-                  className={`px-2 py-0.5 rounded-md transition ${
-                    forceCurrencyUnit === 'auto'
-                      ? 'bg-[#A68A64] text-[#F7F7F2] shadow-xs'
-                      : 'text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
-                  }`}
-                >
-                  تشخیص خودکار
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setForceCurrencyUnit('rial')}
-                  className={`px-2 py-0.5 rounded-md transition ${
-                    forceCurrencyUnit === 'rial'
-                      ? 'bg-[#A68A64] text-[#F7F7F2] shadow-xs'
-                      : 'text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
-                  }`}
-                >
-                  ریال (تبدیل به تومان ÷۱۰)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setForceCurrencyUnit('toman')}
-                  className={`px-2 py-0.5 rounded-md transition ${
-                    forceCurrencyUnit === 'toman'
-                      ? 'bg-[#A68A64] text-[#F7F7F2] shadow-xs'
-                      : 'text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
-                  }`}
-                >
-                  تومان (بدون تبدیل)
-                </button>
-              </div>
-            </div>
           </div>
+        </div>
 
-          {/* Parsed Result Preview */}
-          {parsed ? (
-            <div className="space-y-4 pt-2 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10">
-              <div className="p-4 rounded-2xl bg-white/60 dark:bg-[#182028]/80 border border-[#A68A64]/25 space-y-3">
+        {/* Parsed Result Preview */}
+        {parsed ? (
+          <div className="space-y-4 pt-2 border-t border-white/10">
+            <div className="p-4 rounded-2xl bg-white/[0.03] border border-violet-500/20 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black text-white flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-violet-400" />
+                  <span>اطلاعات استخراج‌شده از پیامک:</span>
+                </span>
+                <div className="flex items-center gap-1 bg-black/30 p-0.5 rounded-lg text-[10px] font-bold border border-white/5">
+                  <button
+                    type="button"
+                    onClick={() => handleTypeChange('income')}
+                    className={`px-2 py-0.5 rounded-md flex items-center gap-1 transition ${
+                      parsed.type === 'income'
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold'
+                        : 'text-fintech-text-muted hover:text-white'
+                    }`}
+                  >
+                    <ArrowDownLeft className="w-3 h-3" />
+                    <span>واریز</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleTypeChange('expense')}
+                    className={`px-2 py-0.5 rounded-md flex items-center gap-1 transition ${
+                      parsed.type === 'expense'
+                        ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold'
+                        : 'text-fintech-text-muted hover:text-white'
+                    }`}
+                  >
+                    <ArrowUpRight className="w-3 h-3" />
+                    <span>برداشت / خرید</span>
+                  </button>
+                </div>
+              </div>
+
+              {parsed.isUncertainType && (
+                <div className="text-[11px] text-amber-400 bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20 flex items-center gap-1.5">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  <span>جهت انتقال در پیامک نامشخص بود و برداشت در نظر گرفته شد. در صورت نیاز نوع تراکنش را تغییر دهید.</span>
+                </div>
+              )}
+
+              {/* Amount Highlight & Live Words Preview */}
+              <div className="p-3.5 rounded-xl bg-black/20 border border-white/5 flex flex-col gap-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-black text-[#1F2933] dark:text-[#F7F7F2] flex items-center gap-1.5">
-                    <Sparkles className="w-4 h-4 text-[#A68A64]" />
-                    <span>اطلاعات استخراج‌شده از پیامک:</span>
-                  </span>
-                  <div className="flex items-center gap-1 bg-[#6B7280]/10 dark:bg-[#1F2933] p-0.5 rounded-lg text-[10px] font-bold">
-                    <button
-                      type="button"
-                      onClick={() => handleTypeChange('income')}
-                      className={`px-2 py-0.5 rounded-md flex items-center gap-1 transition ${
-                        parsed.type === 'income'
-                          ? 'bg-[#2E7D5B] text-white shadow-xs font-bold'
-                          : 'text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
-                      }`}
-                    >
-                      <ArrowDownLeft className="w-3 h-3" />
-                      <span>واریز</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleTypeChange('expense')}
-                      className={`px-2 py-0.5 rounded-md flex items-center gap-1 transition ${
-                        parsed.type === 'expense'
-                          ? 'bg-[#C0564B] text-white shadow-xs font-bold'
-                          : 'text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
-                      }`}
-                    >
-                      <ArrowUpRight className="w-3 h-3" />
-                      <span>برداشت / خرید</span>
-                    </button>
+                  <span className="text-xs text-fintech-text-muted">مبلغ تراکنش:</span>
+                  <div className="text-left">
+                    <span className="text-base sm:text-lg font-black text-violet-300 font-mono">
+                      {formatCurrency(parsed.amountToman, currency)}
+                    </span>
+                    <span className="text-[10px] text-fintech-text-muted block">
+                      (معادل {toPersianDigits((parsed.amountToman * 10).toLocaleString())} ریال)
+                    </span>
                   </div>
                 </div>
+                {/* Live Persian Words helper */}
+                <div className="text-[11px] font-bold text-violet-300 bg-violet-500/10 px-2.5 py-1 rounded-lg border border-violet-500/20 text-center">
+                  {numberToPersianWords(parsed.amountToman, currency)}
+                </div>
+              </div>
 
-                {parsed.isUncertainType && (
-                  <div className="text-[11px] text-[#A68A64] bg-[#A68A64]/10 p-2.5 rounded-xl border border-[#A68A64]/20 flex items-center gap-1.5">
-                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                    <span>جهت انتقال در پیامک نامشخص بود و برداشت در نظر گرفته شد. در صورت نیاز نوع تراکنش را تغییر دهید.</span>
+              {/* Grid of details */}
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="p-2.5 rounded-xl bg-white/[0.02] space-y-0.5 border border-white/5">
+                  <span className="text-[10px] text-fintech-text-muted block">بانک صادرکننده:</span>
+                  <span className="font-bold text-white">
+                    {parsed.bankName}
+                  </span>
+                </div>
+
+                <div className="p-2.5 rounded-xl bg-white/[0.02] space-y-0.5 border border-white/5">
+                  <span className="text-[10px] text-fintech-text-muted block">کارت / حساب:</span>
+                  <span className="font-mono font-bold text-white">
+                    {parsed.cardLast4 ? `**** ${parsed.cardLast4}` : 'نامشخص'}
+                  </span>
+                </div>
+
+                {parsed.feeToman !== undefined && parsed.feeToman > 0 && (
+                  <div className="p-2.5 rounded-xl bg-white/[0.02] space-y-0.5 border border-white/5">
+                    <span className="text-[10px] text-fintech-text-muted block">کارمزد پیامک:</span>
+                    <span className="font-mono font-bold text-white">
+                      {formatCurrency(parsed.feeToman, currency)}
+                    </span>
                   </div>
                 )}
 
-                {/* Amount Highlight & Live Words Preview */}
-                <div className="p-3.5 rounded-xl bg-[#F7F7F2] dark:bg-[#1F2933] border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 flex flex-col gap-1.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-[#6B7280] dark:text-[#D1D5DB]">مبلغ تراکنش:</span>
-                    <div className="text-left">
-                      <span className="text-base sm:text-lg font-black text-[#A68A64] font-mono">
-                        {formatCurrency(parsed.amountToman, currency)}
-                      </span>
-                      <span className="text-[10px] text-[#6B7280] block">
-                        (معادل {toPersianDigits((parsed.amountToman * 10).toLocaleString())} ریال)
+                {parsed.balanceToman !== undefined && (
+                  <div className="p-3 rounded-xl bg-white/[0.02] space-y-2 col-span-2 border border-white/10">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] text-fintech-text-muted block">مانده حساب اعلامی در پیامک:</span>
+                      <span className="font-bold text-white font-mono">
+                        {formatCurrency(parsed.balanceToman, currency)}
                       </span>
                     </div>
-                  </div>
-                  {/* Live Persian Words helper */}
-                  <div className="text-[11px] font-bold text-[#A68A64] dark:text-[#C2A882] bg-[#A68A64]/10 dark:bg-[#A68A64]/15 px-2.5 py-1 rounded-lg border border-[#A68A64]/20 text-center">
-                    {numberToPersianWords(parsed.amountToman, currency)}
-                  </div>
-                </div>
-
-                {/* Grid of details */}
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="p-2.5 rounded-xl bg-[#6B7280]/5 dark:bg-[#182028]/60 space-y-0.5 border border-[#6B7280]/10 dark:border-[#D1D5DB]/5">
-                    <span className="text-[10px] text-[#6B7280] block">بانک صادرکننده:</span>
-                    <span className="font-bold text-[#1F2933] dark:text-[#F7F7F2]">
-                      {parsed.bankName}
-                    </span>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-[#6B7280]/5 dark:bg-[#182028]/60 space-y-0.5 border border-[#6B7280]/10 dark:border-[#D1D5DB]/5">
-                    <span className="text-[10px] text-[#6B7280] block">کارت / حساب:</span>
-                    <span className="font-mono font-bold text-[#1F2933] dark:text-[#F7F7F2]">
-                      {parsed.cardLast4 ? `**** ${parsed.cardLast4}` : 'نامشخص'}
-                    </span>
-                  </div>
-
-                  {parsed.feeToman !== undefined && parsed.feeToman > 0 && (
-                    <div className="p-2.5 rounded-xl bg-[#6B7280]/5 dark:bg-[#182028]/60 space-y-0.5 border border-[#6B7280]/10 dark:border-[#D1D5DB]/5">
-                      <span className="text-[10px] text-[#6B7280] block">کارمزد پیامک:</span>
-                      <span className="font-mono font-bold text-[#1F2933] dark:text-[#F7F7F2]">
-                        {formatCurrency(parsed.feeToman, currency)}
+                    <label className="flex items-center gap-2 cursor-pointer select-none pt-1 border-t border-white/5">
+                      <input
+                        type="checkbox"
+                        checked={syncBalanceWithBank}
+                        onChange={e => setSyncBalanceWithBank(e.target.checked)}
+                        className="w-3.5 h-3.5 rounded text-violet-500 accent-violet-500"
+                      />
+                      <span className="text-[11px] text-fintech-text-primary font-medium">
+                        تراز کردن مانده این حساب در سیستم با مانده اعلامی بانک
                       </span>
-                    </div>
-                  )}
+                    </label>
+                  </div>
+                )}
+              </div>
+            </div>
 
-                  {parsed.balanceToman !== undefined && (
-                    <div className="p-3 rounded-xl bg-[#6B7280]/5 dark:bg-[#182028]/60 space-y-2 col-span-2 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] text-[#6B7280] dark:text-[#D1D5DB] block">مانده حساب اعلامی در پیامک:</span>
-                        <span className="font-bold text-[#1F2933] dark:text-[#F7F7F2] font-mono">
-                          {formatCurrency(parsed.balanceToman, currency)}
-                        </span>
-                      </div>
-                      <label className="flex items-center gap-2 cursor-pointer select-none pt-1 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10">
-                        <input
-                          type="checkbox"
-                          checked={syncBalanceWithBank}
-                          onChange={e => setSyncBalanceWithBank(e.target.checked)}
-                          className="w-3.5 h-3.5 rounded text-[#A68A64] focus:ring-[#A68A64]"
-                        />
-                        <span className="text-[11px] text-[#1F2933] dark:text-[#F7F7F2] font-medium">
-                          تراز کردن مانده این حساب در سیستم با مانده اعلامی بانک
-                        </span>
-                      </label>
-                    </div>
-                  )}
-                </div>
+            {/* Account & Category Selection Form */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-fintech-text-primary flex items-center gap-1">
+                  <CreditCard className="w-3.5 h-3.5 text-violet-400" />
+                  <span>حساب بانکی مقصد/مبدا:</span>
+                </label>
+                <select
+                  value={selectedAccountId}
+                  onChange={e => setSelectedAccountId(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl text-xs bg-white/[0.04] border border-white/10 focus:outline-none focus:border-violet-500/50 text-white"
+                >
+                  {accounts.map(a => (
+                    <option key={a.id} value={a.id} className="bg-[#121215] text-white">
+                      {a.name} ({formatCurrency(a.balance, currency)})
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              {/* Account & Category Selection Form */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] flex items-center gap-1">
-                    <CreditCard className="w-3.5 h-3.5 text-[#A68A64]" />
-                    <span>حساب بانکی مقصد/مبدا:</span>
-                  </label>
-                  <select
-                    value={selectedAccountId}
-                    onChange={e => setSelectedAccountId(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl text-xs bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 focus:outline-none focus:border-[#A68A64] text-[#1F2933] dark:text-[#F7F7F2]"
-                  >
-                    {accounts.map(a => (
-                      <option key={a.id} value={a.id} className="dark:bg-[#1F2933]">
-                        {a.name} ({formatCurrency(a.balance, currency)})
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-fintech-text-primary flex items-center gap-1">
+                  <Layers className="w-3.5 h-3.5 text-violet-400" />
+                  <span>دسته‌بندی:</span>
+                </label>
+                <select
+                  value={selectedCategoryId}
+                  onChange={e => setSelectedCategoryId(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl text-xs bg-white/[0.04] border border-white/10 focus:outline-none focus:border-violet-500/50 text-white"
+                >
+                  {categories
+                    .filter(c => c.type === (parsed.type === 'income' ? 'income' : 'expense'))
+                    .map(c => (
+                      <option key={c.id} value={c.id} className="bg-[#121215] text-white">
+                        {c.name}
                       </option>
                     ))}
-                  </select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] flex items-center gap-1">
-                    <Layers className="w-3.5 h-3.5 text-[#A68A64]" />
-                    <span>دسته‌بندی:</span>
-                  </label>
-                  <select
-                    value={selectedCategoryId}
-                    onChange={e => setSelectedCategoryId(e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl text-xs bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 focus:outline-none focus:border-[#A68A64] text-[#1F2933] dark:text-[#F7F7F2]"
-                  >
-                    {categories
-                      .filter(c => c.type === (parsed.type === 'income' ? 'income' : 'expense'))
-                      .map(c => (
-                        <option key={c.id} value={c.id} className="dark:bg-[#1F2933]">
-                          {c.name}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Description edit */}
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] block">
-                  توضیحات تراکنش:
-                </label>
-                <input
-                  type="text"
-                  value={description}
-                  onChange={e => setDescription(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl text-xs bg-white/70 dark:bg-[#182028]/60 border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 focus:outline-none focus:border-[#A68A64] text-[#1F2933] dark:text-[#F7F7F2]"
-                />
+                </select>
               </div>
             </div>
-          ) : rawText.trim().length > 0 ? (
-            <div className="p-4 rounded-2xl bg-[#C0564B]/10 border border-[#C0564B]/20 text-xs text-[#C0564B] flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>
-                متن وارد شده به عنوان پیامک بانکی استاندارد شناسایی نشد. لطفاً متن کامل پیامک را کپی کنید.
-              </span>
-            </div>
-          ) : (
-            <div className="p-4 rounded-2xl bg-[#6B7280]/5 dark:bg-[#182028]/40 text-[#6B7280] dark:text-[#D1D5DB] text-xs text-center space-y-1 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10">
-              <HelpCircle className="w-5 h-5 mx-auto text-[#A68A64] mb-1" />
-              <p className="font-bold text-[#1F2933] dark:text-[#F7F7F2]">نحوه استفاده در موبایل و دسکتاپ:</p>
-              <p className="text-[11px] leading-relaxed">
-                هر زمان پیامک برداشت یا واریز از بانک دریافت کردید، متن آن را کپی کرده و دکمه «خواندن از کلیپ‌بورد» را بزنید تا برنامه بلافاصله تراکنش را با حساب بانکی شما تطبیق دهد.
-              </p>
-            </div>
-          )}
-        </div>
 
-        {/* Sticky Footer */}
-        <div className="px-6 py-4 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10 bg-[#F7F7F2]/90 dark:bg-[#182028]/90 flex items-center justify-end gap-3 shrink-0">
-          <button
+            {/* Description edit */}
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-fintech-text-primary block">
+                توضیحات تراکنش:
+              </label>
+              <input
+                type="text"
+                value={description}
+                onChange={e => setDescription(e.target.value)}
+                className="w-full px-3 py-2 rounded-xl text-xs bg-white/[0.04] border border-white/10 focus:outline-none focus:border-violet-500/50 text-white"
+              />
+            </div>
+          </div>
+        ) : rawText.trim().length > 0 ? (
+          <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-400 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>
+              متن وارد شده به عنوان پیامک بانکی استاندارد شناسایی نشد. لطفاً متن کامل پیامک را کپی کنید.
+            </span>
+          </div>
+        ) : (
+          <div className="p-4 rounded-2xl bg-white/[0.02] text-fintech-text-muted text-xs text-center space-y-1 border border-white/5">
+            <HelpCircle className="w-5 h-5 mx-auto text-violet-400 mb-1" />
+            <p className="font-bold text-white">نحوه استفاده در موبایل و دسکتاپ:</p>
+            <p className="text-[11px] leading-relaxed">
+              هر زمان پیامک برداشت یا واریز از بانک دریافت کردید، متن آن را کپی کرده و دکمه «خواندن از کلیپ‌بورد» را بزنید تا برنامه بلافاصله تراکنش را با حساب بانکی شما تطبیق دهد.
+            </p>
+          </div>
+        )}
+
+        {/* Footer actions */}
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
+          <Button
             type="button"
+            variant="ghost"
             onClick={handleModalClose}
-            className="px-4 py-2.5 rounded-xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-[#6B7280] dark:text-[#D1D5DB] hover:bg-[#6B7280]/10 font-bold text-xs transition"
           >
             انصراف
-          </button>
+          </Button>
           {parsed && (
-            <button
-              type="button"
-              onClick={handleConfirmSubmit}
-              className="px-5 py-2.5 rounded-xl bg-[#2E7D5B] hover:bg-[#25664a] text-[#F7F7F2] font-black text-xs shadow-lg shadow-[#2E7D5B]/25 transition active:scale-95 flex items-center gap-1.5"
+            <Button
+              type="submit"
+              variant="primary"
+              icon={<CheckCircle2 className="w-4 h-4" />}
             >
-              <CheckCircle2 className="w-4 h-4" />
-              <span>تأیید و ثبت آنی تراکنش</span>
-            </button>
+              تأیید و ثبت آنی تراکنش
+            </Button>
           )}
         </div>
-      </div>
-    </div>
+      </form>
+    </ModalShell>
   );
 };

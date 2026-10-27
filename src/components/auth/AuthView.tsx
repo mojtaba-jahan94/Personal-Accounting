@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { BrandLogo } from '../common/BrandLogo';
+import { Card } from '../ui/Card';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
 import {
   User,
   Lock,
@@ -67,7 +71,6 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
     }
   };
 
-  // Quick Demo / Offline account option
   const handleQuickDemo = async () => {
     setIsSubmitting(true);
     setErrorMsg(null);
@@ -84,42 +87,52 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
   return (
     <div
       dir="rtl"
-      className="min-h-screen w-full flex items-center justify-center p-4 sm:p-6 bg-[#F7F7F2] dark:bg-[#1F2933] text-[#1F2933] dark:text-[#F7F7F2] relative overflow-hidden"
+      className="min-h-screen w-full flex items-center justify-center p-4 sm:p-6 bg-fintech-bg text-fintech-text-primary relative overflow-hidden select-none"
     >
       {/* Soft Ambient Radiance */}
-      <div className="absolute top-1/4 -right-20 w-80 h-80 bg-[#A68A64]/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 -left-20 w-80 h-80 bg-[#2E7D5B]/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 -right-20 w-96 h-96 bg-violet-600/20 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 -left-20 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="w-full max-w-md relative z-10">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.96 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3 }}
+        className="w-full max-w-md relative z-10"
+      >
         {/* Brand / Logo header */}
         <div className="text-center mb-6 space-y-2">
           <div className="inline-flex items-center justify-center mb-2">
             <BrandLogo size={64} animated={true} />
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-[#1F2933] dark:text-[#F7F7F2]">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
             حسابداری شخصی
           </h1>
-          <p className="text-xs text-[#6B7280] dark:text-[#D1D5DB]/70 font-medium">
+          <p className="text-xs text-fintech-text-muted font-medium">
             مدیریت دخل و خرج، بودجه‌بندی و پایش هوشمند دارایی‌ها
           </p>
         </div>
 
-        {/* Card */}
-        <div className="bg-white/90 dark:bg-[#141B22]/80 backdrop-blur-xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+        {/* Auth Glass Card */}
+        <Card variant="glass" className="p-6 sm:p-8 backdrop-blur-2xl border-white/10 shadow-2xl space-y-6">
           {/* Tab selector */}
-          <div className="grid grid-cols-2 gap-1.5 p-1 bg-[#6B7280]/15 dark:bg-[#D1D5DB]/15 rounded-2xl text-xs font-bold">
+          <div className="grid grid-cols-2 gap-1.5 p-1 bg-black/20 dark:bg-white/[0.04] border border-white/5 rounded-2xl text-xs font-bold relative">
             <button
               type="button"
               onClick={() => {
                 setActiveTab('login');
                 setErrorMsg(null);
               }}
-              className={`py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 ${
-                activeTab === 'login'
-                  ? 'bg-[#A68A64] text-[#F7F7F2] shadow-xs'
-                  : 'text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
+              className={`relative py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 ${
+                activeTab === 'login' ? 'text-white' : 'text-fintech-text-muted hover:text-white'
               }`}
             >
+              {activeTab === 'login' && (
+                <motion.div
+                  layoutId="authTabPill"
+                  className="absolute inset-0 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 shadow-md shadow-violet-500/25 -z-10"
+                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                />
+              )}
               <LogIn className="w-3.5 h-3.5" />
               <span>ورود به حساب</span>
             </button>
@@ -129,12 +142,17 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
                 setActiveTab('register');
                 setErrorMsg(null);
               }}
-              className={`py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 ${
-                activeTab === 'register'
-                  ? 'bg-[#A68A64] text-[#F7F7F2] shadow-xs'
-                  : 'text-[#6B7280] dark:text-[#D1D5DB] hover:text-[#1F2933] dark:hover:text-[#F7F7F2]'
+              className={`relative py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 ${
+                activeTab === 'register' ? 'text-white' : 'text-fintech-text-muted hover:text-white'
               }`}
             >
+              {activeTab === 'register' && (
+                <motion.div
+                  layoutId="authTabPill"
+                  className="absolute inset-0 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 shadow-md shadow-violet-500/25 -z-10"
+                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                />
+              )}
               <UserPlus className="w-3.5 h-3.5" />
               <span>ثبت‌نام جدید</span>
             </button>
@@ -142,7 +160,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
 
           {/* Error Message */}
           {errorMsg && (
-            <div className="p-3.5 rounded-2xl bg-[#C0564B]/15 border border-[#C0564B]/30 flex items-start gap-2.5 text-xs font-bold text-[#C0564B] dark:text-[#F87171] animate-in fade-in duration-200">
+            <div className="p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-start gap-2.5 text-xs font-bold text-rose-400">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span className="leading-relaxed">{errorMsg}</span>
             </div>
@@ -152,7 +170,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
           {activeTab === 'login' && (
             <form onSubmit={handleLoginSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-[#1F2933] dark:text-[#D1D5DB] mb-1.5">
+                <label className="block text-xs font-bold text-fintech-text-primary mb-1.5">
                   نام کاربری
                 </label>
                 <div className="relative">
@@ -163,16 +181,16 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="مثال: ali_reza"
                     dir="ltr"
-                    className="w-full pl-3.5 pr-10 py-3 rounded-2xl bg-white dark:bg-[#1F2933] border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-mono font-bold text-[#1F2933] dark:text-[#F7F7F2] outline-none focus:border-[#A68A64] focus:ring-1 focus:ring-[#A68A64] transition"
+                    className="w-full pl-3.5 pr-10 py-3 rounded-2xl bg-black/20 dark:bg-white/[0.04] border border-white/10 text-xs font-mono font-bold text-white outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/40 transition"
                   />
-                  <div className="absolute right-3.5 top-3.5 text-[#6B7280] pointer-events-none">
+                  <div className="absolute right-3.5 top-3.5 text-fintech-text-muted pointer-events-none">
                     <User className="w-4 h-4" />
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#1F2933] dark:text-[#D1D5DB] mb-1.5">
+                <label className="block text-xs font-bold text-fintech-text-primary mb-1.5">
                   کلمه عبور
                 </label>
                 <div className="relative">
@@ -183,15 +201,15 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="کلمه عبور خود را وارد نمایید"
                     dir="ltr"
-                    className="w-full pl-10 pr-10 py-3 rounded-2xl bg-white dark:bg-[#1F2933] border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-mono font-bold text-[#1F2933] dark:text-[#F7F7F2] outline-none focus:border-[#A68A64] focus:ring-1 focus:ring-[#A68A64] transition"
+                    className="w-full pl-10 pr-10 py-3 rounded-2xl bg-black/20 dark:bg-white/[0.04] border border-white/10 text-xs font-mono font-bold text-white outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/40 transition"
                   />
-                  <div className="absolute right-3.5 top-3.5 text-[#6B7280] pointer-events-none">
+                  <div className="absolute right-3.5 top-3.5 text-fintech-text-muted pointer-events-none">
                     <Lock className="w-4 h-4" />
                   </div>
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute left-3.5 top-3.5 text-[#6B7280] hover:text-[#1F2933] dark:hover:text-[#F7F7F2] transition"
+                    className="absolute left-3.5 top-3.5 text-fintech-text-muted hover:text-white transition"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -204,28 +222,23 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
                     type="checkbox"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
-                    className="w-4 h-4 rounded text-[#A68A64] focus:ring-[#A68A64] accent-[#A68A64]"
+                    className="w-4 h-4 rounded border-white/20 bg-white/5 text-violet-500 focus:ring-violet-500 accent-violet-600"
                   />
-                  <span className="font-bold text-[#6B7280] dark:text-[#D1D5DB]/70">
+                  <span className="font-bold text-fintech-text-muted">
                     مرا به خاطر بسپار
                   </span>
                 </label>
               </div>
 
-              <button
+              <Button
                 type="submit"
-                disabled={isSubmitting}
-                className="w-full py-3.5 rounded-2xl bg-[#A68A64] hover:bg-[#8A704C] active:scale-[0.99] text-[#F7F7F2] font-black text-xs sm:text-sm shadow-lg shadow-[#A68A64]/20 transition flex items-center justify-center gap-2 disabled:opacity-50"
+                variant="primary"
+                fullWidth={true}
+                isLoading={isSubmitting}
+                icon={<LogIn className="w-4 h-4" />}
               >
-                {isSubmitting ? (
-                  <div className="w-5 h-5 rounded-full border-2 border-[#F7F7F2] border-t-transparent animate-spin" />
-                ) : (
-                  <>
-                    <LogIn className="w-4 h-4" />
-                    <span>ورود به سامانه</span>
-                  </>
-                )}
-              </button>
+                ورود به سامانه
+              </Button>
             </form>
           )}
 
@@ -233,7 +246,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
           {activeTab === 'register' && (
             <form onSubmit={handleRegisterSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-[#1F2933] dark:text-[#D1D5DB] mb-1.5">
+                <label className="block text-xs font-bold text-fintech-text-primary mb-1.5">
                   نام کاربری (انگلیسی)
                 </label>
                 <div className="relative">
@@ -244,16 +257,16 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="مثال: mohammad_94"
                     dir="ltr"
-                    className="w-full pl-3.5 pr-10 py-3 rounded-2xl bg-white dark:bg-[#1F2933] border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-mono font-bold text-[#1F2933] dark:text-[#F7F7F2] outline-none focus:border-[#A68A64] focus:ring-1 focus:ring-[#A68A64] transition"
+                    className="w-full pl-3.5 pr-10 py-3 rounded-2xl bg-black/20 dark:bg-white/[0.04] border border-white/10 text-xs font-mono font-bold text-white outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/40 transition"
                   />
-                  <div className="absolute right-3.5 top-3.5 text-[#6B7280] pointer-events-none">
+                  <div className="absolute right-3.5 top-3.5 text-fintech-text-muted pointer-events-none">
                     <User className="w-4 h-4" />
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#1F2933] dark:text-[#D1D5DB] mb-1.5">
+                <label className="block text-xs font-bold text-fintech-text-primary mb-1.5">
                   نام و نام خانوادگی (اختیاری)
                 </label>
                 <input
@@ -261,12 +274,12 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="مثال: محمد احمدی"
-                  className="w-full px-4 py-3 rounded-2xl bg-white dark:bg-[#1F2933] border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-bold text-[#1F2933] dark:text-[#F7F7F2] outline-none focus:border-[#A68A64] focus:ring-1 focus:ring-[#A68A64] transition"
+                  className="w-full px-4 py-3 rounded-2xl bg-black/20 dark:bg-white/[0.04] border border-white/10 text-xs font-bold text-white outline-none focus:border-violet-500/60 transition"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#1F2933] dark:text-[#D1D5DB] mb-1.5">
+                <label className="block text-xs font-bold text-fintech-text-primary mb-1.5">
                   کلمه عبور (حداقل ۶ کاراکتر)
                 </label>
                 <div className="relative">
@@ -277,15 +290,15 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="حداقل ۶ کاراکتر"
                     dir="ltr"
-                    className="w-full pl-10 pr-10 py-3 rounded-2xl bg-white dark:bg-[#1F2933] border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-mono font-bold text-[#1F2933] dark:text-[#F7F7F2] outline-none focus:border-[#A68A64] focus:ring-1 focus:ring-[#A68A64] transition"
+                    className="w-full pl-10 pr-10 py-3 rounded-2xl bg-black/20 dark:bg-white/[0.04] border border-white/10 text-xs font-mono font-bold text-white outline-none focus:border-violet-500/60 transition"
                   />
-                  <div className="absolute right-3.5 top-3.5 text-[#6B7280] pointer-events-none">
+                  <div className="absolute right-3.5 top-3.5 text-fintech-text-muted pointer-events-none">
                     <Lock className="w-4 h-4" />
                   </div>
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute left-3.5 top-3.5 text-[#6B7280] hover:text-[#1F2933] dark:hover:text-[#F7F7F2] transition"
+                    className="absolute left-3.5 top-3.5 text-fintech-text-muted hover:text-white transition"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -293,7 +306,7 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-[#1F2933] dark:text-[#D1D5DB] mb-1.5">
+                <label className="block text-xs font-bold text-fintech-text-primary mb-1.5">
                   تکرار کلمه عبور
                 </label>
                 <input
@@ -303,41 +316,36 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="تکرار کلمه عبور"
                   dir="ltr"
-                  className="w-full px-4 py-3 rounded-2xl bg-white dark:bg-[#1F2933] border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs font-mono font-bold text-[#1F2933] dark:text-[#F7F7F2] outline-none focus:border-[#A68A64] focus:ring-1 focus:ring-[#A68A64] transition"
+                  className="w-full px-4 py-3 rounded-2xl bg-black/20 dark:bg-white/[0.04] border border-white/10 text-xs font-mono font-bold text-white outline-none focus:border-violet-500/60 transition"
                 />
               </div>
 
-              <button
+              <Button
                 type="submit"
-                disabled={isSubmitting}
-                className="w-full py-3.5 rounded-2xl bg-[#A68A64] hover:bg-[#8A704C] active:scale-[0.99] text-[#F7F7F2] font-black text-xs sm:text-sm shadow-lg shadow-[#A68A64]/20 transition flex items-center justify-center gap-2 disabled:opacity-50"
+                variant="primary"
+                fullWidth={true}
+                isLoading={isSubmitting}
+                icon={<UserPlus className="w-4 h-4" />}
               >
-                {isSubmitting ? (
-                  <div className="w-5 h-5 rounded-full border-2 border-[#F7F7F2] border-t-transparent animate-spin" />
-                ) : (
-                  <>
-                    <UserPlus className="w-4 h-4" />
-                    <span>ایجاد حساب کاربری</span>
-                  </>
-                )}
-              </button>
+                ایجاد حساب کاربری
+              </Button>
             </form>
           )}
 
           {/* Quick Demo Option */}
-          <div className="pt-3 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10 flex items-center justify-center text-xs">
+          <div className="pt-3 border-t border-white/10 flex items-center justify-center text-xs">
             <button
               type="button"
               onClick={handleQuickDemo}
               disabled={isSubmitting}
-              className="text-[#A68A64] hover:underline font-bold transition flex items-center gap-1.5 py-1.5 px-3 rounded-xl hover:bg-[#A68A64]/10"
+              className="text-violet-400 hover:text-violet-300 font-bold transition flex items-center gap-1.5 py-1.5 px-3 rounded-xl hover:bg-violet-500/10"
             >
-              <span>ورود سریع با کاربر آزمایشی</span>
+              <span>ورود سریع با حساب آزمایشی (Demo)</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
-        </div>
-      </div>
+        </Card>
+      </motion.div>
     </div>
   );
 };

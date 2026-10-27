@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useFinance } from '../../context/FinanceContext';
 import { Goal } from '../../types';
 import {
@@ -10,7 +11,14 @@ import {
 } from '../../utils/formatters';
 import { getTodayJalali, jalaliToGregorian, normalizeJalaliDate } from '../../utils/jalali';
 import { GoalModal } from './GoalModal';
-import { CollapsibleSection } from '../common/CollapsibleSection';
+import { Card } from '../ui/Card';
+import { Button } from '../ui/Button';
+import { IconButton } from '../ui/IconButton';
+import { ProgressBar } from '../ui/ProgressBar';
+import { Badge } from '../ui/Badge';
+import { EmptyState } from '../ui/EmptyState';
+import { AnimatedNumber } from '../ui/AnimatedNumber';
+import { ModalShell } from '../ui/ModalShell';
 import confetti from 'canvas-confetti';
 import {
   Target,
@@ -19,9 +27,7 @@ import {
   Trash2,
   PiggyBank,
   Sparkles,
-  X,
   Check,
-  Calendar,
   Clock,
 } from 'lucide-react';
 
@@ -99,76 +105,78 @@ export const GoalsView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 pb-12">
-      {/* Header */}
+    <div className="space-y-8 pb-20 select-none">
+      {/* 1. Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-black text-[#1F2933] dark:text-[#F7F7F2]">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
+            <span className="text-[11px] font-mono font-bold tracking-wider text-violet-400 uppercase">
+              SAVINGS & FINANCIAL GOALS
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-fintech-text-primary tracking-tight">
             قلک و اهداف مالی
-          </h2>
-          <p className="text-xs text-[#6B7280] dark:text-[#D1D5DB]/70">
-            برنامه‌ریزی برای خرید‌های بزرگ، پس‌اندازهای مهم و تحقق اهداف زندگی
+          </h1>
+          <p className="text-xs text-fintech-text-muted mt-1">
+            برنامه‌ریزی برای خریدهای مهم، پس‌انداز هدفمند و رویاهای آینده
           </p>
         </div>
 
-        <button
+        <Button
+          variant="primary"
           onClick={() => {
             setEditingGoal(null);
             setIsGoalModalOpen(true);
           }}
-          className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#A68A64] hover:bg-[#8A704C] text-[#F7F7F2] text-xs font-black shadow-md shadow-[#A68A64]/20 transition self-start sm:self-auto active:scale-95"
+          icon={<Plus className="w-4 h-4 stroke-[2.5]" />}
         >
-          <Plus className="w-4 h-4 stroke-[3]" />
-          <span>هدف جدید</span>
-        </button>
+          تعریف هدف جدید
+        </Button>
       </div>
 
-      {/* Goals Grid (Collapsible) */}
-      <CollapsibleSection
-        storageKey="goals_grid"
-        title="اهداف مالی و قلک‌های پس‌انداز"
-        subtitle={`${toPersianDigits(goals.length)} هدف تعریف‌شده`}
-        icon={<Target className="w-5 h-5 text-[#A68A64]" />}
-        defaultExpanded={true}
-        headerAction={
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
+      {/* 2. Goals Grid */}
+      {goals.length === 0 ? (
+        <Card variant="glass" className="py-14">
+          <EmptyState
+            icon={Target}
+            title="هنوز هدفی ثبت نشده است"
+            description="برای خود یک هدف مالی مثل خرید خودرو، مسافرت یا پس‌انداز اضطراری تعریف کنید."
+            actionLabel="تعریف اولین هدف"
+            onAction={() => {
               setEditingGoal(null);
               setIsGoalModalOpen(true);
             }}
-            className="text-xs font-bold text-[#A68A64] hover:underline flex items-center gap-1 px-2 py-1"
-          >
-            <Plus className="w-3.5 h-3.5" />
-            <span>هدف جدید</span>
-          </button>
-        }
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pt-1">
-          {goals.length === 0 ? (
-            <div className="col-span-3 text-center py-12 text-[#6B7280] text-xs">
-              هنوز هدفی ثبت نشده است. با دکمه بالا هدف جدید اضافه کنید.
-            </div>
-          ) : (
-            goals.map((goal) => {
-              const percent = Math.min(
-                100,
-                Math.round((goal.currentAmount / goal.targetAmount) * 100)
-              );
-              const isCompleted = goal.currentAmount >= goal.targetAmount;
-              const remaining = Math.max(0, goal.targetAmount - goal.currentAmount);
-              const advice = getMonthlySavingsAdvice(goal, remaining);
+          />
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {goals.map((goal, idx) => {
+            const percent = Math.min(
+              100,
+              Math.round((goal.currentAmount / goal.targetAmount) * 100)
+            );
+            const isCompleted = goal.currentAmount >= goal.targetAmount;
+            const remaining = Math.max(0, goal.targetAmount - goal.currentAmount);
+            const advice = getMonthlySavingsAdvice(goal, remaining);
 
-              return (
-                <div
-                  key={goal.id}
-                  className={`p-5 rounded-2xl bg-[#F7F7F2]/90 dark:bg-[#1F2933]/60 border border-[#6B7280]/15 dark:border-[#D1D5DB]/10 space-y-4 relative overflow-hidden transition hover:border-[#A68A64]/30 shadow-xs ${
-                    isCompleted ? 'border-[#2E7D5B]/40 dark:border-[#2E7D5B]/50' : ''
+            return (
+              <motion.div
+                key={goal.id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: idx * 0.05 }}
+              >
+                <Card
+                  variant={isCompleted ? 'gradient' : 'glass'}
+                  hoverLift={true}
+                  className={`p-5 space-y-4 relative overflow-hidden ${
+                    isCompleted ? 'border-emerald-500/30' : ''
                   }`}
                 >
                   {isCompleted && (
-                    <div className="absolute -top-1 -right-1 bg-[#2E7D5B] text-white text-[10px] font-bold px-3 py-1 rounded-bl-xl flex items-center gap-1 shadow-xs">
-                      <Sparkles className="w-3 h-3" />
+                    <div className="absolute top-0 left-0 bg-emerald-500/20 text-emerald-300 border-b border-r border-emerald-500/30 text-[10px] font-bold px-3 py-1 rounded-br-2xl flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-emerald-400" />
                       <span>هدف محقق شد!</span>
                     </div>
                   )}
@@ -177,17 +185,17 @@ export const GoalsView: React.FC = () => {
                   <div className="flex items-start justify-between pt-1">
                     <div className="flex items-center gap-3">
                       <div
-                        className="w-11 h-11 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-xs"
-                        style={{ backgroundColor: goal.color || '#A68A64' }}
+                        className="w-11 h-11 rounded-2xl flex items-center justify-center text-white shrink-0 border border-white/10 shadow-sm"
+                        style={{ backgroundColor: `${goal.color || '#8b5cf6'}25`, color: goal.color || '#a78bfa' }}
                       >
                         <Target className="w-5 h-5" />
                       </div>
                       <div>
-                        <h3 className="text-sm font-bold text-[#1F2933] dark:text-[#F7F7F2]">
+                        <h3 className="text-sm font-bold text-fintech-text-primary">
                           {goal.title}
                         </h3>
                         {goal.category && (
-                          <span className="text-[11px] text-[#A68A64] font-medium">
+                          <span className="text-[11px] text-violet-400 font-medium">
                             {goal.category}
                           </span>
                         )}
@@ -195,45 +203,43 @@ export const GoalsView: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-1">
-                      <button
+                      <IconButton
+                        variant="ghost"
+                        size="sm"
+                        icon={<Edit2 className="w-3.5 h-3.5" />}
                         onClick={() => {
                           setEditingGoal(goal);
                           setIsGoalModalOpen(true);
                         }}
-                        className="p-1.5 rounded-lg text-[#6B7280] hover:text-[#A68A64] hover:bg-[#6B7280]/10 transition"
                         title="ویرایش"
-                      >
-                        <Edit2 className="w-3.5 h-3.5" />
-                      </button>
-                      <button
+                      />
+                      <IconButton
+                        variant="ghost"
+                        size="sm"
+                        icon={<Trash2 className="w-3.5 h-3.5 text-rose-400" />}
                         onClick={() => handleDelete(goal.id)}
-                        className="p-1.5 rounded-lg text-[#6B7280] hover:text-[#C0564B] hover:bg-[#C0564B]/10 transition"
                         title="حذف"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      />
                     </div>
                   </div>
 
                   {/* Amounts */}
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-[#6B7280]">پس‌انداز شده:</span>
-                    <span className="font-bold text-[#1F2933] dark:text-[#F7F7F2] font-mono tabular-nums">
-                      {formatCurrency(goal.currentAmount, currency)}
+                    <span className="text-fintech-text-muted">پس‌انداز شده:</span>
+                    <span className="font-extrabold text-white font-mono tabular-nums">
+                      <AnimatedNumber value={goal.currentAmount} currency={currency} />
                     </span>
                   </div>
 
                   {/* Progress Bar */}
                   <div className="space-y-1.5">
-                    <div className="w-full bg-[#6B7280]/15 dark:bg-[#D1D5DB]/15 rounded-full h-2.5 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          isCompleted ? 'bg-[#2E7D5B]' : 'bg-[#A68A64]'
-                        }`}
-                        style={{ width: `${percent}%` }}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between text-[11px] text-[#6B7280]">
+                    <ProgressBar
+                      value={percent}
+                      colorVariant={isCompleted ? 'emerald' : 'violet'}
+                      size="md"
+                      animated={true}
+                    />
+                    <div className="flex items-center justify-between text-[11px] text-fintech-text-muted">
                       <span>پیشرفت: {toPersianDigits(percent)}٪</span>
                       <span className="font-mono tabular-nums">
                         هدف: {formatCurrency(goal.targetAmount, currency)}
@@ -241,11 +247,11 @@ export const GoalsView: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Smart Advice Pill if available */}
+                  {/* Smart Advice Pill */}
                   {advice && !isCompleted && (
-                    <div className="p-2 rounded-xl bg-[#A68A64]/10 border border-[#A68A64]/20 text-[11px] text-[#A68A64] flex items-center justify-between">
-                      <span className="flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" />
+                    <div className="p-2.5 rounded-xl bg-violet-500/10 border border-violet-500/20 text-[11px] text-violet-300 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5 text-violet-400" />
                         <span>پس‌انداز پیشنهادی:</span>
                       </span>
                       <span className="font-bold font-mono tabular-nums">
@@ -255,95 +261,86 @@ export const GoalsView: React.FC = () => {
                   )}
 
                   {/* Footer Action */}
-                  <div className="pt-2 border-t border-[#6B7280]/15 dark:border-[#D1D5DB]/10 flex items-center justify-between gap-2">
-                    <span className="text-[11px] text-[#6B7280]">
-                      {isCompleted
-                        ? 'تبریک! هدف محقق شد'
-                        : `مانده: ${formatCurrency(remaining, currency)}`}
+                  <div className="pt-2 border-t border-white/5 flex items-center justify-between gap-2">
+                    <span className="text-[11px] text-fintech-text-muted">
+                      {isCompleted ? (
+                        <Badge variant="success" size="sm">تکمیل شده</Badge>
+                      ) : (
+                        `مانده: ${formatCurrency(remaining, currency)}`
+                      )}
                     </span>
                     {!isCompleted && (
-                      <button
+                      <Button
+                        variant="secondary"
+                        size="sm"
                         onClick={() => setDepositGoal(goal)}
-                        className="px-3 py-1.5 rounded-xl bg-[#A68A64]/15 hover:bg-[#A68A64]/25 text-[#A68A64] text-xs font-bold transition flex items-center gap-1 active:scale-95"
+                        icon={<PiggyBank className="w-3.5 h-3.5 text-violet-400" />}
                       >
-                        <PiggyBank className="w-3.5 h-3.5" />
-                        <span>واریز به قلک</span>
-                      </button>
+                        واریز به قلک
+                      </Button>
                     )}
                   </div>
-                </div>
-              );
-            })
-          )}
-        </div>
-      </CollapsibleSection>
-
-      {/* Deposit to Goal Modal */}
-      {depositGoal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1F2933]/70 backdrop-blur-sm">
-          <div className="relative w-full max-w-sm bg-[#F7F7F2] dark:bg-[#1F2933] rounded-3xl p-5 shadow-2xl border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-[#6B7280]/15 dark:border-[#D1D5DB]/10">
-              <div className="flex items-center gap-2">
-                <PiggyBank className="w-5 h-5 text-[#A68A64]" />
-                <h4 className="text-sm font-bold text-[#1F2933] dark:text-[#F7F7F2]">
-                  واریز به «{depositGoal.title}»
-                </h4>
-              </div>
-              <button
-                onClick={() => setDepositGoal(null)}
-                className="p-1 text-[#6B7280] hover:bg-[#6B7280]/10 rounded-full"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <form onSubmit={handleDepositSubmit} className="space-y-3">
-              <div>
-                <label className="block text-xs font-semibold text-[#1F2933] dark:text-[#D1D5DB] mb-1">
-                  مبلغ واریزی ({currency === 'toman' ? 'تومان' : 'ریال'})
-                </label>
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  required
-                  value={depositAmount}
-                  onChange={(e) =>
-                    setDepositAmount(formatAmountInput(sanitizeAmountInput(e.target.value)))
-                  }
-                  placeholder="مبلغ واریز..."
-                  className="w-full px-3 py-2.5 rounded-xl bg-white dark:bg-[#141B22] border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-sm font-bold outline-none text-[#1F2933] dark:text-[#F7F7F2] font-mono tabular-nums"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[#1F2933] dark:text-[#D1D5DB] mb-1">
-                  کسر از حساب (اختیاری)
-                </label>
-                <select
-                  value={depositAccountId}
-                  onChange={(e) => setDepositAccountId(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#141B22] border border-[#6B7280]/20 dark:border-[#D1D5DB]/15 text-xs outline-none text-[#1F2933] dark:text-[#F7F7F2]"
-                >
-                  <option value="">بدون کسر از موجودی کارت‌ها</option>
-                  {accounts.map((a) => (
-                    <option key={a.id} value={a.id}>
-                      {a.name} (موجودی: {formatCurrency(a.balance, currency)})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-2.5 rounded-xl bg-[#A68A64] hover:bg-[#8A704C] text-[#F7F7F2] font-bold text-xs shadow-md transition flex items-center justify-center gap-1.5 active:scale-95"
-              >
-                <Check className="w-4 h-4" />
-                <span>تایید و واریز به قلک</span>
-              </button>
-            </form>
-          </div>
+                </Card>
+              </motion.div>
+            );
+          })}
         </div>
       )}
+
+      {/* Deposit to Goal Modal */}
+      <ModalShell
+        isOpen={Boolean(depositGoal)}
+        onClose={() => setDepositGoal(null)}
+        title={`واریز به «${depositGoal?.title || ''}»`}
+        subtitle="مبلغ موردنظر را برای اضافه شدن به این هدف وارد کنید"
+        size="sm"
+      >
+        <form onSubmit={handleDepositSubmit} className="space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-fintech-text-primary mb-1">
+              مبلغ واریزی ({currency === 'toman' ? 'تومان' : 'ریال'})
+            </label>
+            <input
+              type="text"
+              inputMode="decimal"
+              required
+              value={depositAmount}
+              onChange={(e) =>
+                setDepositAmount(formatAmountInput(sanitizeAmountInput(e.target.value)))
+              }
+              placeholder="مثلاً ۱,۰۰۰,۰۰۰"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-black/20 dark:bg-white/[0.04] border border-white/10 text-sm font-bold outline-none text-white font-mono tabular-nums focus:border-violet-500/60 transition"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-fintech-text-primary mb-1">
+              کسر از حساب (اختیاری)
+            </label>
+            <select
+              value={depositAccountId}
+              onChange={(e) => setDepositAccountId(e.target.value)}
+              className="w-full px-3.5 py-2.5 rounded-xl bg-black/20 dark:bg-white/[0.04] border border-white/10 text-xs font-bold outline-none text-white focus:border-violet-500/60 transition"
+            >
+              <option value="" className="bg-[#18181b] text-white">بدون کسر از موجودی حساب‌ها</option>
+              {accounts.map((a) => (
+                <option key={a.id} value={a.id} className="bg-[#18181b] text-white">
+                  {a.name} (موجودی: {formatCurrency(a.balance, currency)})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <Button
+            type="submit"
+            variant="primary"
+            fullWidth={true}
+            icon={<Check className="w-4 h-4 stroke-[2.5]" />}
+          >
+            تایید و واریز به قلک
+          </Button>
+        </form>
+      </ModalShell>
 
       <GoalModal
         isOpen={isGoalModalOpen}
@@ -356,3 +353,5 @@ export const GoalsView: React.FC = () => {
     </div>
   );
 };
+
+export default GoalsView;

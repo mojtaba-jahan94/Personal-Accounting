@@ -227,8 +227,10 @@ const MainApp: React.FC = () => {
       ? 'animate-view-slide-backward'
       : 'animate-view-transition';
 
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
+
   return (
-    <div className="min-h-screen flex flex-col transition-colors relative">
+    <div className="min-h-screen flex flex-col transition-colors relative bg-fintech-bg text-fintech-text-main">
       {/* Ambient background: Silk Wave or Clean Minimal Nordic */}
       {themeConfig.backgroundStyle === 'silk_wave' ? (
         <SilkWaveBackground />
@@ -238,6 +240,8 @@ const MainApp: React.FC = () => {
 
       <Header
         currentTab={currentTab}
+        onSelectTab={handleSelectTab}
+        onToggleMobileSidebar={() => setIsMobileDrawerOpen((p) => !p)}
         onOpenTransactionModal={() => handleOpenTransactionModal()}
         onOpenTransferModal={() => setIsTransferModalOpen(true)}
         onOpenSmsModal={() => setIsSmsModalOpen(true)}
@@ -258,14 +262,19 @@ const MainApp: React.FC = () => {
       )}
 
       <div className="flex-1 flex max-w-7xl w-full mx-auto relative z-10">
-        <Sidebar currentTab={currentTab} onSelectTab={handleSelectTab} />
+        <Sidebar
+          currentTab={currentTab}
+          onSelectTab={handleSelectTab}
+          isMobileDrawerOpen={isMobileDrawerOpen}
+          onCloseMobileDrawer={() => setIsMobileDrawerOpen(false)}
+        />
 
         <main
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
-          className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 pb-28 lg:pb-10 overflow-x-hidden touch-pan-y"
+          className="flex-1 p-3 sm:p-6 lg:p-8 min-w-0 pb-28 lg:pb-10 overflow-x-hidden touch-pan-y"
         >
-          <div key={currentTab} className={`w-full ${animationClass}`}>
+          <div key={currentTab} className="w-full">
             {renderCurrentView()}
           </div>
         </main>

@@ -8,6 +8,29 @@ export default {
   theme: {
     extend: {
       colors: {
+        fintech: {
+          bg: 'var(--bg-app)',
+          card: 'var(--bg-card)',
+          'card-hover': 'var(--bg-card-hover)',
+          'card-solid': 'var(--bg-card-solid)',
+          elevated: 'var(--bg-elevated)',
+          border: 'var(--border-glass)',
+          'border-glow': 'var(--border-glass-glow)',
+          'inner-highlight': 'var(--inner-highlight)',
+          primary: 'var(--accent-from)',
+          secondary: 'var(--accent-to)',
+        },
+        'fintech-text': {
+          main: 'var(--text-main)',
+          muted: 'var(--text-muted)',
+          sub: 'var(--text-sub)',
+        },
+        'fintech-status': {
+          success: 'var(--success)',
+          danger: 'var(--danger)',
+          warning: 'var(--warning)',
+          info: 'var(--info)',
+        },
         nordic: {
           charcoal: '#1F2933',
           fjord: '#6B7280',
@@ -61,6 +84,13 @@ export default {
           600: '#A7443A',
           400: '#F87171',
         },
+      },
+      boxShadow: {
+        'glass': '0 16px 36px -12px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.06) inset',
+        'glass-hover': '0 20px 42px -10px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.12) inset',
+        'glow-violet': '0 0 30px -5px rgba(139, 92, 246, 0.35)',
+        'glow-emerald': '0 0 25px -4px rgba(16, 185, 129, 0.35)',
+        'glow-rose': '0 0 25px -4px rgba(244, 63, 94, 0.35)',
       },
       fontFamily: {
         sans: ['Vazirmatn', 'IRANYekanX', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],

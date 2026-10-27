@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useFinance } from '../../context/FinanceContext';
 import { Account, AccountType, Transaction } from '../../types';
 import { formatCurrency, formatCardNumber, toPersianDigits } from '../../utils/formatters';
@@ -8,24 +9,26 @@ import { AccountModal } from './AccountModal';
 import { TransferModal } from './TransferModal';
 import { TransactionModal } from '../transactions/TransactionModal';
 import { TabType } from '../layout/Sidebar';
+import { Card } from '../ui/Card';
+import { Button } from '../ui/Button';
+import { IconButton } from '../ui/IconButton';
+import { Badge } from '../ui/Badge';
+import { EmptyState } from '../ui/EmptyState';
+import { AnimatedNumber } from '../ui/AnimatedNumber';
 import {
   CreditCard,
   Wallet,
   PiggyBank,
   Plus,
   ArrowLeftRight,
-  Edit2,
-  Trash2,
   Copy,
   Check,
-  Building2,
   Layers,
   ArrowUpRight,
   ArrowDownLeft,
   ChevronLeft,
   Sparkles,
   SlidersHorizontal,
-  ChevronDown,
 } from 'lucide-react';
 
 interface AccountsViewProps {
@@ -113,10 +116,32 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onSelectTab }) => {
     }
   };
 
-  const getCardTier = (index: number, isDefault?: boolean) => {
-    if (isDefault || index === 0) return { label: 'GOLD', badge: '✦ AURUM GOLD', isGold: true };
-    if (index === 1) return { label: 'METAL', badge: '✦ AURUM METAL', isGold: false };
-    return { label: 'OBSIDIAN', badge: '✦ AURUM OBSIDIAN', isGold: false };
+  const getCardStyle = (index: number, isDefault?: boolean) => {
+    if (isDefault || index === 0) {
+      return {
+        badge: 'کارت اصلی',
+        gradient: 'from-[#1e1b4b] via-[#2e1065] to-[#0f172a]',
+        border: 'border-violet-500/40',
+        glow: 'shadow-[0_20px_40px_rgba(139,92,246,0.18)]',
+        accent: 'text-violet-300',
+      };
+    }
+    if (index % 3 === 1) {
+      return {
+        badge: 'کارت دوم',
+        gradient: 'from-[#0f172a] via-[#1e293b] to-[#090d16]',
+        border: 'border-cyan-500/30',
+        glow: 'shadow-[0_20px_40px_rgba(6,182,212,0.12)]',
+        accent: 'text-cyan-300',
+      };
+    }
+    return {
+      badge: 'کارت فرعی',
+      gradient: 'from-[#18181b] via-[#27272a] to-[#09090b]',
+      border: 'border-emerald-500/30',
+      glow: 'shadow-[0_20px_40px_rgba(16,185,129,0.12)]',
+      accent: 'text-emerald-300',
+    };
   };
 
   // Quick Action Handlers
@@ -172,203 +197,188 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onSelectTab }) => {
   const savingsTotal = savingsAccounts.reduce((sum, a) => sum + a.balance, 0);
 
   return (
-    <div className="space-y-8 pb-16 select-none">
+    <div className="space-y-8 pb-20 select-none">
       {/* 1. Header & Overall Liquidity Banner */}
-      <div className="rounded-3xl p-6 sm:p-8 bg-[#121215]/90 border border-white/[0.08] shadow-[0_24px_50px_rgba(0,0,0,0.85)] relative overflow-hidden backdrop-blur-2xl">
-        {/* Subtle Luxury Sheen */}
-        <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-[#DFC296]/[0.06] blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-[#A390B8]/[0.04] blur-3xl pointer-events-none" />
+      <Card variant="gradient" className="p-6 sm:p-8 relative overflow-hidden">
+        {/* Ambient Glows */}
+        <div className="absolute top-0 right-0 w-80 h-80 rounded-full bg-violet-600/15 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-indigo-600/10 blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[10px] tracking-[0.22em] text-[#DFC296] uppercase font-mono font-bold flex items-center gap-1.5">
-                <span>✦ LIQUIDITY OVERVIEW</span>
+              <span className="text-[10px] tracking-wider text-violet-400 uppercase font-mono font-bold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
+                <span>LIQUIDITY & WALLET</span>
               </span>
-              <span className="text-[#8E8B82] text-[9px]">•</span>
-              <span className="text-xs text-[#8E8B82] font-mono">
-                {toPersianDigits(accounts.length)} حساب فعال
+              <span className="text-fintech-text-muted text-[10px]">•</span>
+              <span className="text-xs text-fintech-text-muted font-mono">
+                {toPersianDigits(accounts.length)} حساب و کارت فعال
               </span>
             </div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light font-serif tracking-tight text-[#F4F0EA] tabular-nums">
-              {formatCurrency(totalBalance, currency)}
-            </h2>
-            <p className="text-xs text-[#8E8B82] mt-2 font-sans">
-              مجموع کل نقدینگی فعال در کارت‌های بانکی، کیف‌پول‌های نقدی و صندوق‌های ذخیره
+            <div className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white font-mono">
+              <AnimatedNumber value={totalBalance} currency={currency} />
+            </div>
+            <p className="text-xs text-fintech-text-muted mt-2">
+              مجموع کل نقدینگی فعال در کارت‌های بانکی، کیف‌پول‌های نقدی و صندوق‌های پس‌انداز
             </p>
           </div>
 
           {/* Action Buttons */}
           <div className="flex items-center gap-3 flex-wrap">
-            <button
+            <Button
+              variant="secondary"
               onClick={() => {
                 setTransferFromId(undefined);
                 setIsTransferModalOpen(true);
               }}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] text-[#F4F0EA] text-xs font-bold transition border border-white/[0.08] active:scale-95"
+              icon={<ArrowLeftRight className="w-4 h-4 text-violet-400" />}
             >
-              <ArrowLeftRight className="w-4 h-4 text-[#DFC296]" />
-              <span>انتقال وجه</span>
-            </button>
+              انتقال بین‌حساب‌ها
+            </Button>
 
-            <button
+            <Button
+              variant="primary"
               onClick={() => {
                 setEditingAccount(null);
                 setIsAccountModalOpen(true);
               }}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#DFC296] hover:bg-[#CBB084] text-[#0A0A0C] text-xs font-bold shadow-lg shadow-[#DFC296]/20 transition active:scale-95"
+              icon={<Plus className="w-4 h-4 stroke-[2.5]" />}
             >
-              <Plus className="w-4 h-4 stroke-[2.5]" />
-              <span>+ افزودن حساب جدید</span>
-            </button>
+              افزودن حساب جدید
+            </Button>
           </div>
         </div>
 
         {/* Breakdown by Account Type */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-6 border-t border-white/[0.07] relative z-10">
-          <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-between">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 pt-6 border-t border-white/10 relative z-10">
+          <div className="p-3.5 rounded-2xl bg-black/20 dark:bg-white/[0.03] border border-white/5 flex items-center justify-between">
             <div>
-              <span className="text-[10px] text-[#8E8B82] block font-mono">
+              <span className="text-[10px] text-fintech-text-muted block font-mono">
                 کارت‌های بانکی ({toPersianDigits(bankAccounts.length)})
               </span>
-              <span className="font-bold font-mono text-sm sm:text-base text-[#F4F0EA]">
-                {formatCurrency(bankTotal, currency)}
+              <span className="font-bold font-mono text-sm sm:text-base text-white">
+                <AnimatedNumber value={bankTotal} currency={currency} />
               </span>
             </div>
-            <div className="p-2 rounded-xl bg-[#DFC296]/10 text-[#DFC296]">
-              <CreditCard className="w-4 h-4 stroke-[1.6]" />
+            <div className="p-2.5 rounded-xl bg-violet-500/15 text-violet-400">
+              <CreditCard className="w-4 h-4" />
             </div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-between">
+          <div className="p-3.5 rounded-2xl bg-black/20 dark:bg-white/[0.03] border border-white/5 flex items-center justify-between">
             <div>
-              <span className="text-[10px] text-[#8E8B82] block font-mono">
+              <span className="text-[10px] text-fintech-text-muted block font-mono">
                 کیف‌پول نقدی ({toPersianDigits(cashAccounts.length)})
               </span>
-              <span className="font-bold font-mono text-sm sm:text-base text-[#F4F0EA]">
-                {formatCurrency(cashTotal, currency)}
+              <span className="font-bold font-mono text-sm sm:text-base text-white">
+                <AnimatedNumber value={cashTotal} currency={currency} />
               </span>
             </div>
-            <div className="p-2 rounded-xl bg-[#7A9A95]/15 text-[#7A9A95]">
-              <Wallet className="w-4 h-4 stroke-[1.6]" />
+            <div className="p-2.5 rounded-xl bg-emerald-500/15 text-emerald-400">
+              <Wallet className="w-4 h-4" />
             </div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-between">
+          <div className="p-3.5 rounded-2xl bg-black/20 dark:bg-white/[0.03] border border-white/5 flex items-center justify-between">
             <div>
-              <span className="text-[10px] text-[#8E8B82] block font-mono">
+              <span className="text-[10px] text-fintech-text-muted block font-mono">
                 پس‌انداز و ذخایر ({toPersianDigits(savingsAccounts.length)})
               </span>
-              <span className="font-bold font-mono text-sm sm:text-base text-[#F4F0EA]">
-                {formatCurrency(savingsTotal, currency)}
+              <span className="font-bold font-mono text-sm sm:text-base text-white">
+                <AnimatedNumber value={savingsTotal} currency={currency} />
               </span>
             </div>
-            <div className="p-2 rounded-xl bg-[#A390B8]/15 text-[#A390B8]">
-              <PiggyBank className="w-4 h-4 stroke-[1.6]" />
+            <div className="p-2.5 rounded-xl bg-indigo-500/15 text-indigo-400">
+              <PiggyBank className="w-4 h-4" />
             </div>
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* 2. Interactive Stacked Wallet Container */}
       <div className="space-y-6">
-        {/* Wallet Header & "ALL CARDS" Toggle */}
+        {/* Wallet Header & View Toggle */}
         <div className="flex items-center justify-between px-1">
-          <div className="flex items-center gap-3">
-            <h2 className="text-xl sm:text-2xl font-light font-serif tracking-tight text-[#F4F0EA]">
-              کیف پول{' '}
-              <span className="text-[#8E8B82] text-xs font-mono font-normal tracking-widest">
-                / WALLET
-              </span>
+          <div>
+            <h2 className="text-xl sm:text-2xl font-extrabold text-fintech-text-primary tracking-tight">
+              کیف کارت‌ها و حساب‌ها
             </h2>
-            <span className="text-[11px] font-mono text-[#8E8B82] hidden sm:inline">
-              (روی هر کارت کلیک کنید تا متمرکز شود)
-            </span>
+            <p className="text-xs text-fintech-text-muted mt-0.5">
+              برای مشاهده موجودی و ثبت تراکنش، روی هر کارت کلیک کنید
+            </p>
           </div>
 
-          {/* Toggle Stacked vs Grid View */}
-          <button
-            type="button"
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => setIsStackExpanded((prev) => !prev)}
-            className={`text-[10px] tracking-[0.18em] uppercase rounded-full px-4 py-2 border transition-all duration-300 flex items-center gap-2 ${
-              isStackExpanded
-                ? 'text-[#0A0A0C] bg-[#DFC296] border-[#DFC296] font-bold shadow-md shadow-[#DFC296]/20'
-                : 'text-[#8E8B82] hover:text-[#DFC296] border-white/[0.12] bg-[#121215] hover:border-[#DFC296]/40'
-            }`}
+            icon={<Layers className="w-3.5 h-3.5 text-violet-400" />}
           >
-            <Layers className="w-3.5 h-3.5 stroke-[1.8]" />
-            <span>{isStackExpanded ? 'نمایش پشته (STACK)' : 'همه کارت‌ها (ALL CARDS)'}</span>
-          </button>
+            {isStackExpanded ? 'نمایش پشته کارت‌ها' : 'مشاهده همه کارت‌ها'}
+          </Button>
         </div>
 
         {/* Cards Render Area */}
         {accounts.length === 0 ? (
-          <div className="p-12 text-center rounded-3xl bg-[#121215]/80 border border-white/[0.08] space-y-4">
-            <div className="w-16 h-16 rounded-full bg-white/[0.04] border border-white/[0.08] flex items-center justify-center mx-auto text-[#DFC296]">
-              <CreditCard className="w-8 h-8 stroke-[1.5]" />
-            </div>
-            <h3 className="text-lg font-serif font-light text-[#F4F0EA]">هنوز حسابی تعریف نشده است</h3>
-            <p className="text-xs text-[#8E8B82] max-w-sm mx-auto">
-              برای شروع ثبت تراکنش‌ها، کارت بانکی یا کیف‌پول نقدی خود را اضافه کنید.
-            </p>
-            <button
-              onClick={() => setIsAccountModalOpen(true)}
-              className="px-5 py-2.5 rounded-full bg-[#DFC296] text-[#0A0A0C] text-xs font-bold shadow-lg"
-            >
-              افزودن اولین کارت
-            </button>
-          </div>
+          <Card variant="glass" className="py-12">
+            <EmptyState
+              icon={CreditCard}
+              title="هنوز حسابی تعریف نشده است"
+              description="برای شروع ثبت تراکنش‌ها، کارت بانکی یا کیف‌پول نقدی خود را اضافه کنید."
+              actionLabel="افزودن اولین کارت"
+              onAction={() => setIsAccountModalOpen(true)}
+            />
+          </Card>
         ) : isStackExpanded ? (
           /* ================= EXPANDED GRID VIEW ================= */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {accounts.map((acc, index) => {
-              const tier = getCardTier(index, acc.isDefault);
+              const style = getCardStyle(index, acc.isDefault);
               const isSelected = acc.id === activeSelectedId;
-              const cardClass = tier.isGold ? 'aurum-card-gold' : 'aurum-card-obsidian';
 
               return (
                 <div
                   key={acc.id}
                   onClick={() => setSelectedAccountId(acc.id)}
-                  className={`${cardClass} aurum-shimmer-effect rounded-3xl p-6 min-h-[220px] flex flex-col justify-between cursor-pointer transition-all duration-300 hover:-translate-y-1.5 ${
-                    isSelected ? 'ring-2 ring-[#DFC296] shadow-[0_20px_40px_rgba(223,194,150,0.25)]' : ''
+                  className={`bg-gradient-to-br ${style.gradient} ${style.border} ${style.glow} border rounded-3xl p-6 min-h-[220px] flex flex-col justify-between cursor-pointer transition-all duration-300 hover:-translate-y-1.5 relative overflow-hidden ${
+                    isSelected ? 'ring-2 ring-violet-400 shadow-[0_20px_45px_rgba(139,92,246,0.25)]' : ''
                   }`}
                 >
-                  {/* Card Top Row */}
                   <div className="flex items-start justify-between relative z-10">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs sm:text-sm font-bold text-[#F4F0EA]">
+                        <span className="text-sm font-bold text-white">
                           {acc.bankName || acc.name}
                         </span>
-                        <span className="text-[9px] font-mono tracking-widest px-2 py-0.5 rounded-full bg-black/40 text-[#DFC296] border border-[#DFC296]/30 font-semibold">
-                          {tier.label}
+                        <span className="text-[10px] font-mono tracking-wider px-2 py-0.5 rounded-full bg-black/40 text-violet-300 border border-violet-500/20 font-semibold">
+                          {style.badge}
                         </span>
                       </div>
-                      <span className="text-[11px] text-[#8E8B82] block mt-1 font-mono">
+                      <span className="text-[11px] text-white/60 block mt-1 font-mono">
                         {getAccountTypeLabel(acc.type)}
                       </span>
                     </div>
 
                     {/* Chip & Contactless */}
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-6 rounded bg-gradient-to-tr from-[#DFC296] via-[#F4F0EA] to-[#CBB084] shadow-xs border border-black/30" />
+                      <div className="w-8 h-6 rounded bg-gradient-to-tr from-amber-300 via-amber-100 to-amber-400 shadow-xs border border-black/30" />
                       <span className="text-xs text-white/50 font-mono">)))</span>
                     </div>
                   </div>
 
-                  {/* Card Middle: 16-Digit Card Number */}
+                  {/* 16-Digit Card Number */}
                   <div className="my-4 relative z-10">
-                    <div className="font-mono text-base tracking-[0.2em] dir-ltr text-center text-[#F4F0EA] font-bold p-2 rounded-xl bg-black/30 border border-white/[0.08] flex items-center justify-center gap-2">
+                    <div className="font-mono text-base tracking-[0.2em] dir-ltr text-center text-white font-bold p-2.5 rounded-xl bg-black/40 border border-white/10 flex items-center justify-center gap-2">
                       <span>{formatCardNumber(acc.cardNumber || '••••••••••••••••')}</span>
                       {acc.cardNumber && (
                         <button
                           onClick={(e) => handleCopy(acc.cardNumber || '', acc.id + '-card', e)}
-                          className="p-1 rounded-md text-[#8E8B82] hover:text-[#DFC296] transition"
+                          className="p-1 rounded-md text-white/60 hover:text-white transition"
                           title="کپی شماره کارت"
                         >
                           {copiedId === acc.id + '-card' ? (
-                            <Check className="w-3.5 h-3.5 text-[#7A9A95]" />
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
                           ) : (
                             <Copy className="w-3.5 h-3.5" />
                           )}
@@ -378,9 +388,9 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onSelectTab }) => {
                   </div>
 
                   {/* Card Bottom Row */}
-                  <div className="flex items-center justify-between text-[11px] font-mono text-[#8E8B82] uppercase tracking-wider relative z-10 border-t border-white/[0.08] pt-3">
-                    <span className="truncate max-w-[120px] text-[#F4F0EA]">{acc.name}</span>
-                    <span className="text-xs font-bold font-mono text-[#DFC296]">
+                  <div className="flex items-center justify-between text-[11px] font-mono text-white/60 uppercase tracking-wider relative z-10 border-t border-white/10 pt-3">
+                    <span className="truncate max-w-[120px] text-white font-sans">{acc.name}</span>
+                    <span className="text-xs font-bold font-mono text-white">
                       {formatCurrency(acc.balance, currency)}
                     </span>
                   </div>
@@ -393,72 +403,60 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onSelectTab }) => {
           <div className="max-w-xl mx-auto w-full relative pt-2 pb-6">
             <div className="relative flex flex-col items-center">
               {accounts.map((acc, index) => {
-                const tier = getCardTier(index, acc.isDefault);
+                const style = getCardStyle(index, acc.isDefault);
                 const isSelected = acc.id === activeSelectedId;
-                const cardClass = tier.isGold ? 'aurum-card-gold' : 'aurum-card-obsidian';
-
-                // Determine stack order: selected card has highest z-index
                 const zIndex = isSelected ? 30 : 20 - index;
                 const topOverlapClass = index === 0 ? 'mt-0' : '-mt-32 sm:-mt-36';
 
                 return (
-                  <div
+                  <motion.div
                     key={acc.id}
                     onClick={() => setSelectedAccountId(acc.id)}
                     style={{ zIndex }}
-                    className={`w-full ${topOverlapClass} ${cardClass} aurum-shimmer-effect rounded-3xl p-6 sm:p-7 min-h-[220px] sm:min-h-[240px] flex flex-col justify-between cursor-pointer transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                    layout
+                    transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+                    className={`w-full ${topOverlapClass} bg-gradient-to-br ${style.gradient} ${style.border} rounded-3xl p-6 sm:p-7 min-h-[220px] sm:min-h-[240px] flex flex-col justify-between cursor-pointer border relative overflow-hidden transition-all duration-300 ${
                       isSelected
-                        ? 'scale-100 shadow-[0_30px_60px_rgba(0,0,0,0.95)] ring-1 ring-[#DFC296]/50'
-                        : 'scale-[0.97] opacity-85 hover:opacity-100 hover:-translate-y-4 hover:scale-[0.985] shadow-[0_16px_36px_rgba(0,0,0,0.8)]'
+                        ? 'scale-100 shadow-[0_30px_60px_rgba(0,0,0,0.9)] ring-2 ring-violet-400/80'
+                        : 'scale-[0.97] opacity-85 hover:opacity-100 hover:-translate-y-4 hover:scale-[0.985] shadow-[0_16px_36px_rgba(0,0,0,0.7)]'
                     }`}
                   >
                     {/* Card Top Row */}
                     <div className="flex items-start justify-between relative z-10">
                       <div>
                         <div className="flex items-center gap-2.5">
-                          <span className="text-base sm:text-lg font-bold text-[#F4F0EA] tracking-wide">
+                          <span className="text-base sm:text-lg font-bold text-white tracking-wide">
                             {acc.bankName || acc.name}
                           </span>
-                          <span className="text-[10px] font-mono tracking-widest px-2.5 py-0.5 rounded-full bg-black/40 text-[#DFC296] border border-[#DFC296]/30 font-semibold uppercase">
-                            {tier.badge}
+                          <span className="text-[10px] font-mono tracking-wider px-2.5 py-0.5 rounded-full bg-black/40 text-violet-300 border border-violet-500/20 font-semibold">
+                            {style.badge}
                           </span>
                         </div>
-                        <span className="text-[11px] text-[#8E8B82] block mt-1 font-mono">
+                        <span className="text-[11px] text-white/60 block mt-1 font-mono">
                           {getAccountTypeLabel(acc.type)}
                         </span>
                       </div>
 
-                      {/* EMV Chip & Contactless */}
+                      {/* Chip & Contactless */}
                       <div className="flex items-center gap-3">
-                        <svg className="w-10 h-7 rounded-sm shadow-xs" viewBox="0 0 40 28" fill="none">
-                          <rect width="40" height="28" rx="4" fill="url(#emvGoldGrad)" stroke="#CBB084" strokeWidth="0.5" />
-                          <path d="M14 0v28M26 0v28M0 14h40M14 9h12M14 19h12" stroke="#8A704C" strokeWidth="0.8" opacity="0.6" />
-                          <rect x="16" y="11" width="8" height="6" rx="1" fill="#DFC296" opacity="0.8" />
-                          <defs>
-                            <linearGradient id="emvGoldGrad" x1="0" y1="0" x2="40" y2="28" gradientUnits="userSpaceOnUse">
-                              <stop stopColor="#DFC296" />
-                              <stop offset="0.5" stopColor="#F4F0EA" />
-                              <stop offset="1" stopColor="#CBB084" />
-                            </linearGradient>
-                          </defs>
-                        </svg>
+                        <div className="w-9 h-7 rounded bg-gradient-to-tr from-amber-300 via-amber-100 to-amber-400 shadow-sm border border-black/30" />
                         <span className="text-sm text-white/50 font-mono font-bold">)))</span>
                       </div>
                     </div>
 
                     {/* Card Middle: 16-Digit Card Number with Copy */}
                     <div className="my-3 sm:my-4 relative z-10">
-                      <div className="font-mono text-base sm:text-lg tracking-[0.22em] dir-ltr text-center text-[#F4F0EA] font-bold p-2.5 rounded-2xl bg-black/40 border border-white/[0.08] flex items-center justify-between px-4">
+                      <div className="font-mono text-base sm:text-lg tracking-[0.22em] dir-ltr text-center text-white font-bold p-2.5 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-between px-4">
                         <span>{formatCardNumber(acc.cardNumber || '•••• •••• •••• ••••')}</span>
                         {acc.cardNumber && (
                           <button
                             type="button"
                             onClick={(e) => handleCopy(acc.cardNumber || '', acc.id + '-card', e)}
-                            className="p-1.5 rounded-lg text-[#8E8B82] hover:text-[#DFC296] hover:bg-white/[0.08] transition"
+                            className="p-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition"
                             title="کپی شماره کارت"
                           >
                             {copiedId === acc.id + '-card' ? (
-                              <Check className="w-4 h-4 text-[#7A9A95]" />
+                              <Check className="w-4 h-4 text-emerald-400" />
                             ) : (
                               <Copy className="w-4 h-4" />
                             )}
@@ -468,27 +466,27 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onSelectTab }) => {
                     </div>
 
                     {/* Card Bottom Row: Cardholder Name & Sheba / Status */}
-                    <div className="flex items-center justify-between text-[11px] font-mono text-[#8E8B82] uppercase tracking-wider relative z-10 border-t border-white/[0.08] pt-3">
+                    <div className="flex items-center justify-between text-[11px] font-mono text-white/60 uppercase tracking-wider relative z-10 border-t border-white/10 pt-3">
                       <div>
-                        <span className="text-[10px] text-[#8E8B82] block">دارنده کارت:</span>
-                        <span className="text-xs font-bold text-[#F4F0EA] truncate block max-w-[160px]">
+                        <span className="text-[10px] text-white/50 block">دارنده حساب:</span>
+                        <span className="text-xs font-bold text-white truncate block max-w-[160px] font-sans">
                           {acc.name}
                         </span>
                       </div>
 
                       {acc.shaba ? (
                         <div className="text-left dir-ltr">
-                          <span className="text-[10px] text-[#8E8B82] block">شماره شبا:</span>
-                          <span className="text-xs font-bold text-[#DFC296] font-mono flex items-center gap-1">
+                          <span className="text-[10px] text-white/50 block">شماره شبا:</span>
+                          <span className="text-xs font-bold text-violet-300 font-mono flex items-center gap-1">
                             <span>IR{acc.shaba.slice(-8)}</span>
                             <button
                               type="button"
                               onClick={(e) => handleCopy(`IR${acc.shaba}`, acc.id + '-shaba', e)}
-                              className="text-[#8E8B82] hover:text-[#DFC296]"
+                              className="text-white/60 hover:text-white"
                               title="کپی شماره شبا"
                             >
                               {copiedId === acc.id + '-shaba' ? (
-                                <Check className="w-3 h-3 text-[#7A9A95]" />
+                                <Check className="w-3 h-3 text-emerald-400" />
                               ) : (
                                 <Copy className="w-3 h-3" />
                               )}
@@ -496,126 +494,113 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onSelectTab }) => {
                           </span>
                         </div>
                       ) : (
-                        <span className="text-xs font-mono text-[#DFC296]">
+                        <span className="text-xs font-mono font-bold text-violet-300">
                           {formatCurrency(acc.balance, currency)}
                         </span>
                       )}
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
           </div>
         )}
 
-        {/* 3. Selected Card Hero Balance & Metadata Bar */}
+        {/* 3. Selected Card Hero Balance & Quick Actions */}
         {selectedCard && (
           <div className="max-w-xl mx-auto w-full space-y-6 pt-2">
-            <div className="rounded-3xl p-6 sm:p-7 bg-[#121215]/95 border border-white/[0.08] shadow-[0_20px_45px_rgba(0,0,0,0.9)] backdrop-blur-2xl space-y-5">
-              {/* Metadata Micro-Label */}
+            <Card variant="elevated" className="p-6 sm:p-7 space-y-5">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] tracking-[0.2em] text-[#8E8B82] uppercase font-mono">
+                <span className="text-[11px] tracking-wider text-fintech-text-muted uppercase font-mono">
                   {selectedCard.bankName || 'کارت فعال'} •{' '}
                   {selectedCard.cardNumber ? `پایان به ${selectedCard.cardNumber.slice(-4)}` : selectedCard.name}
                 </span>
-                <span className="bg-[#DFC296]/10 text-[#DFC296] border border-[#DFC296]/20 rounded-full px-3 py-1 text-xs tabular-nums font-mono font-bold">
+                <Badge variant="primary" size="sm">
                   {getAccountTypeLabel(selectedCard.type)}
-                </span>
+                </Badge>
               </div>
 
               {/* Hero Balance */}
               <div className="flex items-baseline justify-between gap-4 flex-wrap">
                 <div>
-                  <span className="text-xs text-[#8E8B82] block font-mono mb-1">موجودی فعلی حساب:</span>
-                  <div className="text-4xl sm:text-5xl font-serif font-light tracking-tight text-[#F4F0EA] tabular-nums">
-                    {formatCurrency(selectedCard.balance, currency)}
+                  <span className="text-xs text-fintech-text-muted block font-mono mb-1">موجودی فعلی حساب:</span>
+                  <div className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white font-mono">
+                    <AnimatedNumber value={selectedCard.balance} currency={currency} />
                   </div>
                 </div>
 
                 {typeof selectedCard.initialBalance === 'number' &&
                   selectedCard.initialBalance !== selectedCard.balance && (
-                    <div className="text-left text-xs font-mono text-[#8E8B82]">
+                    <div className="text-left text-xs font-mono text-fintech-text-muted">
                       <span className="block text-[10px]">مانده اولیه:</span>
-                      <span className="text-[#F4F0EA]/70">
+                      <span className="text-white/70">
                         {formatCurrency(selectedCard.initialBalance, currency)}
                       </span>
                     </div>
                   )}
               </div>
 
-              {/* 4 Circular Quick-Action Buttons Row */}
-              <div className="pt-4 border-t border-white/[0.07]">
+              {/* 4 Circular Quick-Action Buttons */}
+              <div className="pt-4 border-t border-white/10">
                 <div className="grid grid-cols-4 gap-2 sm:gap-4 place-items-center">
-                  {/* Action 1: ثبت هزینه */}
                   <div className="flex flex-col items-center">
                     <button
                       type="button"
                       onClick={handleQuickExpense}
-                      className="w-14 h-14 rounded-full border border-white/[0.09] bg-[#121215] hover:bg-[#1A191E] hover:border-[#DFC296]/50 active:scale-95 transition-all flex items-center justify-center text-[#F4F0EA] shadow-lg group"
+                      className="w-14 h-14 rounded-2xl border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 active:scale-95 transition-all flex items-center justify-center text-rose-400 shadow-md group"
                       title="ثبت هزینه از این کارت"
                     >
-                      <ArrowUpRight className="w-5 h-5 text-[#C98A82] group-hover:scale-110 transition-transform stroke-[1.8]" />
+                      <ArrowUpRight className="w-5 h-5 group-hover:scale-110 transition-transform" />
                     </button>
-                    <span className="text-[11px] text-[#8E8B82] mt-2 tracking-wide font-sans text-center">
-                      ثبت هزینه
-                    </span>
+                    <span className="text-[11px] text-fintech-text-muted mt-2">ثبت هزینه</span>
                   </div>
 
-                  {/* Action 2: افزایش موجودی */}
                   <div className="flex flex-col items-center">
                     <button
                       type="button"
                       onClick={handleQuickIncome}
-                      className="w-14 h-14 rounded-full border border-white/[0.09] bg-[#121215] hover:bg-[#1A191E] hover:border-[#DFC296]/50 active:scale-95 transition-all flex items-center justify-center text-[#F4F0EA] shadow-lg group"
+                      className="w-14 h-14 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20 active:scale-95 transition-all flex items-center justify-center text-emerald-400 shadow-md group"
                       title="افزایش موجودی و واریز"
                     >
-                      <ArrowDownLeft className="w-5 h-5 text-[#7A9A95] group-hover:scale-110 transition-transform stroke-[1.8]" />
+                      <ArrowDownLeft className="w-5 h-5 group-hover:scale-110 transition-transform" />
                     </button>
-                    <span className="text-[11px] text-[#8E8B82] mt-2 tracking-wide font-sans text-center">
-                      واریز وجه
-                    </span>
+                    <span className="text-[11px] text-fintech-text-muted mt-2">واریز وجه</span>
                   </div>
 
-                  {/* Action 3: انتقال وجه */}
                   <div className="flex flex-col items-center">
                     <button
                       type="button"
                       onClick={handleQuickTransfer}
-                      className="w-14 h-14 rounded-full border border-white/[0.09] bg-[#121215] hover:bg-[#1A191E] hover:border-[#DFC296]/50 active:scale-95 transition-all flex items-center justify-center text-[#F4F0EA] shadow-lg group"
+                      className="w-14 h-14 rounded-2xl border border-violet-500/20 bg-violet-500/10 hover:bg-violet-500/20 active:scale-95 transition-all flex items-center justify-center text-violet-400 shadow-md group"
                       title="انتقال به کارت دیگر"
                     >
-                      <ArrowLeftRight className="w-5 h-5 text-[#DFC296] group-hover:scale-110 transition-transform stroke-[1.8]" />
+                      <ArrowLeftRight className="w-5 h-5 group-hover:scale-110 transition-transform" />
                     </button>
-                    <span className="text-[11px] text-[#8E8B82] mt-2 tracking-wide font-sans text-center">
-                      انتقال
-                    </span>
+                    <span className="text-[11px] text-fintech-text-muted mt-2">انتقال</span>
                   </div>
 
-                  {/* Action 4: جزئیات / ویرایش */}
                   <div className="flex flex-col items-center">
                     <button
                       type="button"
                       onClick={handleQuickEdit}
-                      className="w-14 h-14 rounded-full border border-white/[0.09] bg-[#121215] hover:bg-[#1A191E] hover:border-[#DFC296]/50 active:scale-95 transition-all flex items-center justify-center text-[#F4F0EA] shadow-lg group"
+                      className="w-14 h-14 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 active:scale-95 transition-all flex items-center justify-center text-fintech-text-primary shadow-md group"
                       title="ویرایش یا حذف حساب"
                     >
-                      <SlidersHorizontal className="w-5 h-5 text-[#8E8B82] group-hover:text-[#DFC296] group-hover:scale-110 transition-all stroke-[1.8]" />
+                      <SlidersHorizontal className="w-5 h-5 group-hover:scale-110 transition-transform" />
                     </button>
-                    <span className="text-[11px] text-[#8E8B82] mt-2 tracking-wide font-sans text-center">
-                      مدیریت
-                    </span>
+                    <span className="text-[11px] text-fintech-text-muted mt-2">مدیریت</span>
                   </div>
                 </div>
               </div>
-            </div>
+            </Card>
 
-            {/* 5. Minimalist Recent Transactions for Selected Card */}
-            <div className="rounded-3xl p-6 bg-[#121215]/90 border border-white/[0.08] shadow-xl backdrop-blur-2xl space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-white/[0.07]">
+            {/* 4. Recent Transactions for Selected Card */}
+            <Card variant="glass" className="p-5 sm:p-6 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-white/10">
                 <div className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#DFC296]" />
-                  <h3 className="text-xs font-bold font-mono tracking-wider text-[#F4F0EA] uppercase">
-                    تراکنش‌های اخیر (RECENT)
+                  <span className="w-2 h-2 rounded-full bg-violet-400" />
+                  <h3 className="text-xs font-bold font-mono tracking-wider text-white uppercase">
+                    تراکنش‌های اخیر این کارت
                   </h3>
                 </div>
 
@@ -623,7 +608,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onSelectTab }) => {
                   <button
                     type="button"
                     onClick={() => onSelectTab('transactions')}
-                    className="flex items-center gap-1 text-[11px] font-mono text-[#8E8B82] hover:text-[#DFC296] transition"
+                    className="flex items-center gap-1 text-[11px] text-violet-400 hover:text-violet-300 transition"
                   >
                     <span>مشاهده همه</span>
                     <ChevronLeft className="w-3.5 h-3.5" />
@@ -632,11 +617,11 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onSelectTab }) => {
               </div>
 
               {cardTransactions.length === 0 ? (
-                <div className="py-6 text-center text-xs text-[#8E8B82] font-sans">
+                <div className="py-6 text-center text-xs text-fintech-text-muted font-sans">
                   هیچ تراکنشی اخیراً برای این کارت ثبت نشده است.
                 </div>
               ) : (
-                <div className="divide-y divide-white/[0.06]">
+                <div className="divide-y divide-white/5">
                   {cardTransactions.map((tx) => {
                     const cat = categories.find((c) => c.id === tx.categoryId);
                     const isExpense = tx.type === 'expense';
@@ -647,30 +632,28 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onSelectTab }) => {
                         key={tx.id}
                         className="py-3 flex items-center justify-between gap-3 group transition"
                       >
-                        {/* Right: Category Icon & Title */}
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className="w-10 h-10 rounded-full bg-white/[0.04] border border-white/[0.07] flex items-center justify-center text-[#DFC296] shrink-0">
+                          <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-violet-400 shrink-0">
                             {cat ? getCategoryIcon(cat.icon, 'w-4 h-4') : <Sparkles className="w-4 h-4" />}
                           </div>
                           <div className="min-w-0">
-                            <span className="text-sm font-medium text-[#F4F0EA] truncate block">
+                            <span className="text-sm font-semibold text-white truncate block">
                               {tx.description || cat?.name || 'تراکنش'}
                             </span>
-                            <span className="text-[11px] text-[#8E8B82] font-mono block mt-0.5">
+                            <span className="text-[11px] text-fintech-text-muted font-mono block mt-0.5">
                               {tx.date} {tx.time ? `• ${tx.time}` : ''}
                             </span>
                           </div>
                         </div>
 
-                        {/* Left: Formatted Amount */}
                         <div className="text-left font-mono text-sm tabular-nums shrink-0 font-bold">
                           <span
                             className={
                               isExpense
-                                ? 'text-[#F4F0EA]'
+                                ? 'text-rose-400'
                                 : isIncome
-                                ? 'text-[#7A9A95]'
-                                : 'text-[#DFC296]'
+                                ? 'text-emerald-400'
+                                : 'text-violet-400'
                             }
                           >
                             {isExpense ? '- ' : isIncome ? '+ ' : ''}
@@ -682,7 +665,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onSelectTab }) => {
                   })}
                 </div>
               )}
-            </div>
+            </Card>
           </div>
         )}
       </div>
