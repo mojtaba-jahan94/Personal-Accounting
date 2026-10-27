@@ -46,7 +46,7 @@ const ViewLoadingFallback: React.FC = () => (
 );
 
 const MainApp: React.FC = () => {
-  const { themeConfig } = useFinance();
+  const { themeConfig, conflictNotice, dismissConflictNotice } = useFinance();
   const [currentTab, setCurrentTab] = useState<TabType>('dashboard');
   const [slideDirection, setSlideDirection] = useState<'forward' | 'backward' | 'default'>('default');
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
@@ -242,6 +242,20 @@ const MainApp: React.FC = () => {
         onOpenTransferModal={() => setIsTransferModalOpen(true)}
         onOpenSmsModal={() => setIsSmsModalOpen(true)}
       />
+
+      {conflictNotice && (
+        <div className="max-w-7xl mx-auto w-full px-3 sm:px-6 mt-2 z-50">
+          <div className="bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-200 px-4 py-2.5 rounded-2xl text-xs sm:text-sm flex items-center justify-between shadow-sm">
+            <span>{conflictNotice}</span>
+            <button
+              onClick={dismissConflictNotice}
+              className="text-xs bg-amber-500/20 hover:bg-amber-500/30 text-amber-900 dark:text-amber-100 px-2.5 py-1 rounded-xl transition-colors font-medium mr-2"
+            >
+              متوجه شدم
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="flex-1 flex max-w-7xl w-full mx-auto relative z-10">
         <Sidebar currentTab={currentTab} onSelectTab={handleSelectTab} />
