@@ -1291,6 +1291,16 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       );
     }
 
+    if (tx.goalId) {
+      setGoals(prev =>
+        prev.map(g =>
+          g.id === tx.goalId
+            ? { ...g, currentAmount: Math.max(0, g.currentAmount - diff) }
+            : g
+        )
+      );
+    }
+
     setTransactions(prev =>
       prev.map(t => (t.id === txId ? { ...t, amount: newAmount, fee: newFee } : t))
     );
@@ -1327,6 +1337,16 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       );
     }
 
+    if (tx.goalId) {
+      setGoals(prev =>
+        prev.map(g =>
+          g.id === tx.goalId
+            ? { ...g, currentAmount: g.currentAmount + diff }
+            : g
+        )
+      );
+    }
+
     setTransactions(prev =>
       prev.map(t => (t.id === txId ? { ...t, amount: newAmount, fee: newFee } : t))
     );
@@ -1335,13 +1355,15 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const batchFixRialTransactions = (): number => {
     let fixedCount = 0;
     const debtDeltas = new Map<string, number>();
+    const fixedTxIds = new Set<string>();
 
     const updatedTransactions = transactions.map(tx => {
       if (tx.amount >= 100000000) {
         fixedCount++;
-        const newAmount = tx.amount / 10;
+        fixedTxIds.add(tx.id);
+        const newAmount = Math.round(tx.amount / 10);
         const diff = tx.amount - newAmount;
-        const newFee = tx.fee ? (tx.fee / 10) : undefined;
+        const newFee = tx.fee ? Math.round(tx.fee / 10) : undefined;
 
         if (tx.debtId) {
           const currentDebtDiff = debtDeltas.get(tx.debtId) || 0;
@@ -1362,10 +1384,17 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
             const dDiff = debtDeltas.get(d.id);
             if (dDiff) {
               const newPaid = Math.max(0, d.paidAmount - dDiff);
+              const updatedPayments = (d.payments || []).map(p => {
+                if ((p.transactionId && fixedTxIds.has(p.transactionId)) || fixedTxIds.has(p.id.replace(/^dp-/, ''))) {
+                  return { ...p, amount: Math.round(p.amount / 10) };
+                }
+                return p;
+              });
               return {
                 ...d,
                 paidAmount: newPaid,
                 isSettled: newPaid >= d.amount,
+                payments: updatedPayments,
               };
             }
             return d;
@@ -1646,8 +1675,8 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     let linkedTxId: string | undefined;
 
     const isCleared = ch.status === 'passed' || ch.status === 'cleared';
-    const targetAccountId = ch.accountId || (accounts[0]?.id || '');
-    if (isCleared && targetAccountId) {
+    const finalAccountId = isCleared ? (ch.accountId || (accounts[0]?.id || '')) : ch.accountId;
+    if (isCleared && finalAccountId) {
       linkedTxId = genId('tx-ch');
       const isPayable = ch.type === 'payable';
       const chTx: Transaction = {
@@ -1659,7 +1688,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
           ? `پاس شدن چک پرداختی شماره ${ch.chequeNumber} (در وجه ${ch.partyName})`
           : `وصول چک دریافتی شماره ${ch.chequeNumber} (از ${ch.partyName})`,
         categoryId: isPayable ? 'cat-cheque-pay' : 'cat-cheque-collect',
-        accountId: targetAccountId,
+        accountId: finalAccountId,
         chequeId: newChId,
         relatedEntityId: newChId,
         tags: ['چک', ch.bankName, ch.partyName],
@@ -1670,7 +1699,7 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const newCh: Cheque = {
       ...ch,
       id: newChId,
-      accountId: targetAccountId || ch.accountId,
+      accountId: finalAccountId,
       transactionId: linkedTxId,
       clearedDate: isCleared ? (ch.clearedDate || getTodayJalali()) : undefined,
     };

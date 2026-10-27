@@ -118,20 +118,27 @@ export function parseBankSMS(
   let type: TransactionType = 'expense';
   let isUncertainType = false;
 
+  const hasVarizOrBestankar = /واریز|واریزشده|واریز\s*شد|بستانکار/i.test(normalized);
+  const hasBardashtOrKasr = /برداشت|کسر/i.test(normalized);
   const hasIncomeKeyword = /واریز|واریزشده|واریز\s*شد|بستانکار|سود\s*سپرده|به\s*حساب\s*شما|دریافت/i.test(normalized);
   const hasExpenseKeyword = /برداشت|خرید|کسر|بدهکار|پرداخت|قبض|شارژ|از\s*حساب\s*شما|از\s*حساب/i.test(normalized);
   const hasUnambiguousExpense = /برداشت|خرید|کسر|قبض|شارژ/i.test(normalized);
 
-  if (hasIncomeKeyword && !hasUnambiguousExpense) {
+  if (hasVarizOrBestankar && !hasBardashtOrKasr) {
+    type = 'income';
+  } else if (hasIncomeKeyword && !hasExpenseKeyword) {
     type = 'income';
   } else if (hasExpenseKeyword && !hasIncomeKeyword) {
     type = 'expense';
   } else if (hasIncomeKeyword && hasExpenseKeyword) {
-    // Both matched (e.g. "برداشت از حساب ... جهت واریز به ...")
-    if (/به\s*حساب\s*شما/i.test(normalized) && !/از\s*حساب\s*شما/i.test(normalized) && !hasUnambiguousExpense) {
+    // Both matched (and rule above did not decide, e.g. text contains both واریز and برداشت)
+    if (/به\s*حساب\s*شما/i.test(normalized) && !/از\s*حساب\s*شما/i.test(normalized) && !hasBardashtOrKasr) {
       type = 'income';
     } else {
       type = 'expense';
+    }
+    if (hasUnambiguousExpense) {
+      isUncertainType = true;
     }
   } else if (attachedSign === '+') {
     type = 'income';
@@ -144,6 +151,13 @@ export function parseBankSMS(
   }
 
   // 5. Extract Card / Account last 4 digits
+  // Clean copy of text by removing dates and times so digits like "1403" in "به تاریخ 1403/06/22" aren't matched
+  const textWithoutDatesAndTimes = normalized
+    .replace(/\b(140[0-9]|139[0-9])[\/\-.](0?[1-9]|1[0-2])[\/\-.](0?[1-9]|[12][0-9]|3[01])\b/g, ' ')
+    .replace(/\b(0?[1-9]|[12][0-9]|3[01])[\/\-.](0?[1-9]|1[0-2])[\/\-.](140[0-9]|139[0-9])\b/g, ' ')
+    .replace(/\b[0-9]{2}[\/\-.](0?[1-9]|1[0-2])[\/\-.][0-9]{2}\b/g, ' ')
+    .replace(/\b([01]?[0-9]|2[0-3]):([0-5][0-9])(?::([0-5][0-9]))?\b/g, ' ');
+
   let cardLast4: string | undefined;
   const cardPatterns = [
     /(?:کارت|بلوکارت|حساب|از|به)[^\d]{0,15}[*xX]*(\d{4})\b/i,
@@ -152,7 +166,7 @@ export function parseBankSMS(
     /(\d{16})/, // Full 16-digit card number -> extract last 4
   ];
   for (const cp of cardPatterns) {
-    const cm = normalized.match(cp);
+    const cm = textWithoutDatesAndTimes.match(cp);
     if (cm && cm[1]) {
       cardLast4 = cm[1].length === 16 ? cm[1].slice(12) : cm[1];
       break;

@@ -180,6 +180,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     const canonicalAmount = inputUnit === 'rial' ? Math.round(numAmount / 10) : numAmount;
     const rawFee = parseAmount(fee);
     const canonicalFee = type === 'transfer' && inputUnit === 'rial' ? Math.round(rawFee / 10) : rawFee;
+    const resolvedFee = type === 'transfer'
+      ? canonicalFee
+      : (initialTransaction?.fee !== undefined ? initialTransaction.fee : undefined);
 
     const txData = {
       type,
@@ -189,11 +192,16 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       categoryId: type === 'transfer' ? 'cat-other-exp' : categoryId,
       accountId,
       toAccountId: type === 'transfer' ? toAccountId : undefined,
-      fee: type === 'transfer' ? canonicalFee : undefined,
+      fee: resolvedFee,
       receiptUrl,
       tags,
       personId: personId || undefined,
       debtId: type !== 'transfer' && linkToDebt && selectedDebtId ? selectedDebtId : undefined,
+      chequeId: initialTransaction?.chequeId,
+      goalId: initialTransaction?.goalId,
+      assetTransactionId: initialTransaction?.assetTransactionId,
+      transferId: initialTransaction?.transferId,
+      relatedEntityId: initialTransaction?.relatedEntityId,
     };
 
     if (initialTransaction) {

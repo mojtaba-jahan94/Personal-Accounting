@@ -54,6 +54,7 @@ export const SMSAssistantModal: React.FC<SMSAssistantModalProps> = ({
   const [forceCurrencyUnit, setForceCurrencyUnit] = useState<'auto' | 'rial' | 'toman'>('auto');
   const [syncBalanceWithBank, setSyncBalanceWithBank] = useState<boolean>(false);
   const [clipboardError, setClipboardError] = useState<string | null>(null);
+  const [typeOverride, setTypeOverride] = useState<'income' | 'expense' | null>(null);
 
   const lastParsedRawTextRef = useRef<string>('');
 
@@ -61,26 +62,40 @@ export const SMSAssistantModal: React.FC<SMSAssistantModalProps> = ({
     if (!rawText.trim()) {
       setParsed(null);
       lastParsedRawTextRef.current = '';
+      setTypeOverride(null);
       return;
     }
-    const result = parseBankSMS(rawText, forceCurrencyUnit);
-    setParsed(result);
 
     const isNewRawText = rawText !== lastParsedRawTextRef.current;
+    if (isNewRawText) {
+      setTypeOverride(null);
+    }
 
-    if (result && isNewRawText) {
+    const result = parseBankSMS(rawText, forceCurrencyUnit);
+    const activeTypeOverride = isNewRawText ? null : typeOverride;
+    const finalParsed = result
+      ? {
+          ...result,
+          type: activeTypeOverride || result.type,
+          isUncertainType: activeTypeOverride ? false : result.isUncertainType,
+        }
+      : null;
+
+    setParsed(finalParsed);
+
+    if (finalParsed && isNewRawText) {
       lastParsedRawTextRef.current = rawText;
-      setDescription(result.description);
+      setDescription(finalParsed.description);
 
       // Match in stages:
       // 1) exact match on the card's last 4 digits
-      let matchedAcc = result.cardLast4
-        ? accounts.find(a => a.cardNumber?.endsWith(result.cardLast4!))
+      let matchedAcc = finalParsed.cardLast4
+        ? accounts.find(a => a.cardNumber?.endsWith(finalParsed.cardLast4!))
         : undefined;
 
       // 2) bank name match (use ^بانک\s* anchored)
       if (!matchedAcc) {
-        const cleanBankName = result.bankName.replace(/^بانک\s*/, '').trim();
+        const cleanBankName = finalParsed.bankName.replace(/^بانک\s*/, '').trim();
         if (cleanBankName) {
           matchedAcc = accounts.find(
             a =>
@@ -101,15 +116,16 @@ export const SMSAssistantModal: React.FC<SMSAssistantModalProps> = ({
 
       // Auto match category by type
       const suitableCategories = categories.filter(
-        c => c.type === (result.type === 'income' ? 'income' : 'expense')
+        c => c.type === (finalParsed.type === 'income' ? 'income' : 'expense')
       );
       if (suitableCategories.length > 0) {
         setSelectedCategoryId(suitableCategories[0].id);
       }
     }
-  }, [rawText, forceCurrencyUnit, accounts, categories]);
+  }, [rawText, forceCurrencyUnit, accounts, categories, typeOverride]);
 
   const handleTypeChange = (newType: 'income' | 'expense') => {
+    setTypeOverride(newType);
     if (!parsed) return;
     setParsed({ ...parsed, type: newType, isUncertainType: false });
 
@@ -127,6 +143,7 @@ export const SMSAssistantModal: React.FC<SMSAssistantModalProps> = ({
     setSelectedCategoryId('');
     setDescription('');
     lastParsedRawTextRef.current = '';
+    setTypeOverride(null);
     setSyncBalanceWithBank(false);
     onClose();
   };
