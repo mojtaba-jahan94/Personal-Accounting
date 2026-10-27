@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useFinance } from '../../context/FinanceContext';
 import { useAuth } from '../../context/AuthContext';
-import { BackgroundStyle } from '../../types';
+import { BackgroundStyle, ThemePaletteId, Currency } from '../../types';
 import { THEME_PALETTES } from '../../utils/liquidGlassPresets';
 import { Card } from '../ui/Card';
 import { Button } from '../ui/Button';
@@ -10,7 +10,6 @@ import { Badge } from '../ui/Badge';
 import {
   Moon,
   Sun,
-  Palette,
   Sparkles,
   Check,
   Layers,
@@ -23,24 +22,31 @@ import {
   Users,
   Database,
   User,
+  Shield,
+  Gauge,
+  Palette,
+  ArrowLeftRight,
+  Activity,
+  Cloud,
   Zap,
 } from 'lucide-react';
 import { PersonManagerModal } from '../contacts/PersonManagerModal';
 import { UserProfileModal } from '../auth/UserProfileModal';
+import { TursoConfigModal } from './TursoConfigModal';
 import { AnimationLevel, getAnimationLevel, setAnimationLevel } from '../../utils/motionSettings';
 
-const BACKGROUND_STYLES: { id: BackgroundStyle; name: string; desc: string; previewClass: string }[] = [
-  {
-    id: 'clean_minimal',
-    name: 'مینیمال آرام',
-    desc: 'پس‌زمینه آرام و متمرکز با هاله‌های نوری محو و ملایم پالت فعال',
-    previewClass: 'from-[#0b0c10] via-[#1f2833] to-[#0b0c10]',
-  },
+const BACKGROUND_OPTIONS: { id: BackgroundStyle; name: string; desc: string; gradient: string }[] = [
   {
     id: 'silk_wave',
-    name: 'موج ابریشمی سه‌بعدی',
-    desc: 'موج زنده و متحرک ابریشم ارگانیک سازگار با پالت انتخابی',
-    previewClass: 'from-violet-950 via-indigo-900 to-black',
+    name: 'امواج زنده آئورا (VisionOS)',
+    desc: 'موج‌های نوری پویا، ذرات کریستالی و گرادیان متحرک فضایی',
+    gradient: 'from-violet-600/30 via-indigo-600/20 to-cyan-500/20',
+  },
+  {
+    id: 'clean_minimal',
+    name: 'مینیمال آرام و متمرکز',
+    desc: 'پس‌زمینه آرام بدون حرکت اضافی جهت تمرکز حداکثری و مصرف بهینه باتری',
+    gradient: 'from-zinc-800/40 via-zinc-900/40 to-black/60',
   },
 ];
 
@@ -64,18 +70,19 @@ export const SettingsView: React.FC = () => {
   const [message, setMessage] = useState<string | null>(null);
   const [isPersonModalOpen, setIsPersonModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isTursoModalOpen, setIsTursoModalOpen] = useState(false);
   const [isSyncingTurso, setIsSyncingTurso] = useState(false);
   const [animLevel, setAnimLevel] = useState<AnimationLevel>(() => getAnimationLevel());
 
   const showNotification = (msg: string) => {
     setMessage(msg);
-    setTimeout(() => setMessage(null), 3000);
+    setTimeout(() => setMessage(null), 3200);
   };
 
   const handleAnimationLevelChange = (level: AnimationLevel) => {
     setAnimationLevel(level);
     setAnimLevel(level);
-    showNotification(`سطح پویانمایی به «${level === 'full' ? 'کامل' : level === 'lite' ? 'سبک و روان' : 'خاموش'}» تغییر یافت.`);
+    showNotification(`سطح پویانمایی به «${level === 'full' ? 'کامل و پویا' : level === 'lite' ? 'روان و سبک' : 'خاموش'}» تغییر یافت.`);
   };
 
   const handleExportBackup = () => {
@@ -125,425 +132,418 @@ export const SettingsView: React.FC = () => {
     }
   };
 
+  const isTursoOnline = tursoStatus === 'connected';
+
   return (
-    <div className="space-y-6 pb-20 max-w-4xl mx-auto select-none">
+    <div className="space-y-6 pb-24 max-w-4xl mx-auto select-none dir-rtl">
       {/* 1. Header */}
-      <div>
-        <div className="flex items-center gap-2 mb-1">
-          <span className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" />
-          <span className="text-[11px] font-mono font-bold tracking-wider text-violet-400 uppercase">
-            PREFERENCES & SYSTEM
-          </span>
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+      >
+        <div>
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="w-2 h-2 rounded-full bg-violet-400 animate-ping" />
+            <span className="text-[11px] font-mono font-bold tracking-wider text-violet-400 uppercase">
+              CONTROL PANEL & PREFERENCES
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-2.5">
+            تنظیمات و شخصی‌سازی
+          </h1>
+          <p className="text-xs text-zinc-400 mt-1">
+            کنترل هویت دیداری، جلوه‌های فضایی، پایگاه داده ابری و نسخه پشتیبان
+          </p>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-fintech-text-primary tracking-tight">
-          تنظیمات ظاهر و سامانه
-        </h1>
-        <p className="text-xs text-fintech-text-muted mt-1">
-          شخصی‌سازی پالت‌های رنگی، حالت روز و شب، پشتیبان‌گیری و پایگاه داده ابری Turso
-        </p>
-      </div>
 
-      {message && (
-        <div className="p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-2 animate-in fade-in">
-          <CheckCircle2 className="w-4 h-4" />
-          <span>{message}</span>
+        {/* Live sync quick trigger */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={async () => {
+              if (isTursoOnline) {
+                setIsSyncingTurso(true);
+                await syncAllToTurso();
+                setIsSyncingTurso(false);
+                showNotification('همگام‌سازی ابری با موفقیت به پایان رسید.');
+              }
+            }}
+            disabled={isSyncingTurso || !isTursoOnline}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-xs font-bold text-zinc-300 hover:text-white transition active:scale-95 disabled:opacity-40"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-violet-400 ${isSyncingTurso ? 'animate-spin' : ''}`} />
+            <span>همگام‌سازی ابری</span>
+          </button>
         </div>
-      )}
+      </motion.div>
 
-      {/* 2. Theme Palette Selector */}
+      {/* Floating Alert Toast */}
+      <AnimatePresence>
+        {message && (
+          <motion.div
+            initial={{ opacity: 0, y: -15, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.96 }}
+            className="p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-2.5 shadow-lg shadow-emerald-500/10 backdrop-blur-xl"
+          >
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+            <span>{message}</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 2. Bento Card: User Account & Cloud Sync Status */}
       <Card variant="glass" className="p-5 sm:p-6 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/10">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-violet-500/15 text-violet-400">
-              <Sparkles className="w-5 h-5" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="relative">
+              <div className="w-13 h-13 rounded-2xl bg-gradient-to-tr from-violet-600 via-indigo-600 to-cyan-500 text-white flex items-center justify-center font-black text-lg shadow-lg shadow-violet-500/25">
+                {user ? user.displayName?.charAt(0) || user.username?.charAt(0).toUpperCase() : '؟'}
+              </div>
+              <span
+                className={`absolute -bottom-1 -left-1 w-4 h-4 rounded-full border-2 border-[#0c0a14] ${
+                  isTursoOnline ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
+                }`}
+                title={isTursoOnline ? 'متصل به سرور' : 'حالت محلی'}
+              />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white">
-                پالت هویت بصری و تم برنامه
-              </h2>
-              <p className="text-xs text-fintech-text-muted">
-                انتخاب استایل و ترکیب رنگ‌های اصلی رابط کاربری
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-extrabold text-white">
+                  {user ? user.displayName : 'کاربر مهمان'}
+                </h2>
+                <Badge variant={isTursoOnline ? 'success' : 'warning'} size="sm">
+                  {isTursoOnline ? 'همگام با سرور Turso' : 'حالت محلی (آفلاین)'}
+                </Badge>
+              </div>
+              <p className="text-xs text-zinc-400 font-mono mt-0.5 dir-ltr text-right">
+                {user ? `@${user.username}` : '@guest'}
               </p>
             </div>
           </div>
 
-          <Badge variant="primary" size="sm">
-            {(themeConfig.palette || 'nordic') === 'juniper_coral' ? 'ارس و مرجان' : 'نوردیک چوب گرم'}
-          </Badge>
+          <div className="flex flex-wrap items-center gap-2 self-end sm:self-auto">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setIsTursoModalOpen(true)}
+              icon={<Database className="w-3.5 h-3.5 text-indigo-400" />}
+            >
+              پیکربندی سرور Turso
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setIsPersonModalOpen(true)}
+              icon={<Users className="w-3.5 h-3.5 text-cyan-400" />}
+            >
+              طرف‌حساب‌ها
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setIsProfileModalOpen(true)}
+              icon={<User className="w-3.5 h-3.5 text-violet-400" />}
+            >
+              پروفایل و امنیت
+            </Button>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          {THEME_PALETTES.map((palette) => {
-            const isSelected = (themeConfig.palette || 'nordic') === palette.id;
-            return (
-              <button
-                key={palette.id}
-                type="button"
-                onClick={() => {
-                  updateThemeConfig({
-                    palette: palette.id,
-                    customAccentHex: palette.id === 'juniper_coral' ? '#7D2826' : '#A68A64',
-                  });
-                  showNotification(`تم «${palette.name}» با موفقیت فعال شد.`);
-                }}
-                className={`p-4 rounded-2xl border text-right transition-[border-color,background-color,box-shadow] duration-150 flex flex-col justify-between gap-3 relative ${
-                  isSelected
-                    ? 'border-violet-500 bg-violet-500/10 shadow-lg shadow-violet-500/15 ring-2 ring-violet-500/30'
-                    : 'bg-black/20 dark:bg-white/[0.02] border-white/10 hover:border-violet-500/40'
-                }`}
-              >
-                <div className="w-full">
-                  <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-xs sm:text-sm font-bold text-white">
+        {/* Sync telemetry bar */}
+        <div className="pt-3 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-2 text-zinc-400">
+            <Database className="w-3.5 h-3.5 text-indigo-400" />
+            <span>وضعیت ذخیره‌سازی داده‌ها:</span>
+            <span className="font-bold text-white">
+              {cloudSyncStatus === 'synced'
+                ? 'ذخیره آنی در فضای ابری Turso'
+                : cloudSyncStatus === 'syncing'
+                ? 'در حال همگام‌سازی با پایگاه داده...'
+                : cloudSyncStatus === 'error'
+                ? 'خطا در ارتباط با سرور ابری'
+                : 'آفلاین (ذخیره روی حافظه محلی مرورگر)'}
+            </span>
+          </div>
+
+          <div className="text-[11px] text-zinc-400 font-mono">
+            {isTursoOnline ? 'Turso Cloud LibSQL Engine' : 'Local IndexedDB / Storage'}
+          </div>
+        </div>
+      </Card>
+
+      {/* 3. Bento Card: Appearance & Theme Mode */}
+      <Card variant="glass" className="p-5 sm:p-6 space-y-6">
+        <div className="flex items-center justify-between pb-3 border-b border-white/10">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-violet-500/15 text-violet-400">
+              <Palette className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-extrabold text-white">
+                هویت دیداری و حالت روشنایی
+              </h2>
+              <p className="text-xs text-zinc-400">
+                حالت روز/شب، ترکیب رنگ‌های فضایی و پالت اختصاصی نئونی
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-black/40 border border-white/10">
+            <button
+              type="button"
+              onClick={() => {
+                if (darkMode) toggleDarkMode();
+              }}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${
+                !darkMode
+                  ? 'bg-amber-400/20 text-amber-300 shadow-sm border border-amber-400/30'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <Sun className="w-3.5 h-3.5 text-amber-400" />
+              <span>روز</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (!darkMode) toggleDarkMode();
+              }}
+              className={`flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition ${
+                darkMode
+                  ? 'bg-violet-600 text-white shadow-sm shadow-violet-600/30'
+                  : 'text-zinc-400 hover:text-white'
+              }`}
+            >
+              <Moon className="w-3.5 h-3.5 text-violet-300" />
+              <span>شب</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Theme Palette Switcher */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-zinc-300 block">
+              پالت رنگی تم اصلی (Neo-Fintech Themes):
+            </span>
+            <span className="text-[11px] text-zinc-400 font-mono">
+              تغییر بلادرنگ پس‌زمینه، دکمه‌ها و نورپردازی
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {THEME_PALETTES.map((palette) => {
+              const isSelected = (themeConfig.palette || 'cyber_violet') === palette.id;
+              const accentHex = palette.colors[1]?.hex || '#8B5CF6';
+
+              return (
+                <button
+                  key={palette.id}
+                  type="button"
+                  onClick={() => {
+                    updateThemeConfig({
+                      palette: palette.id,
+                      customAccentHex: accentHex,
+                    });
+                    showNotification(`پالت «${palette.name}» فعال شد و اتمسفر برنامه تغییر یافت.`);
+                  }}
+                  className={`p-4 rounded-2xl border text-right transition-all duration-200 flex flex-col justify-between gap-3 relative overflow-hidden group active:scale-[0.98] ${
+                    isSelected
+                      ? 'border-white/30 bg-white/[0.08] shadow-lg shadow-[0_0_25px_var(--primary-glow)] ring-2 ring-[color:var(--primary-color)]/40'
+                      : 'bg-white/[0.02] border-white/10 hover:border-white/25 hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-4 h-4 rounded-full bg-gradient-to-tr ${palette.gradient} border border-white/30 shadow-xs ring-2 ring-white/10`} />
+                      <span className="text-xs font-extrabold text-white group-hover:text-zinc-200 transition-colors">
                         {palette.name}
-                      </h3>
-                      {palette.id === 'juniper_coral' && (
-                        <Badge variant="danger" size="sm">جدید</Badge>
-                      )}
+                      </span>
                     </div>
                     {isSelected && (
-                      <div className="w-5 h-5 rounded-full bg-violet-500 text-white flex items-center justify-center shrink-0">
-                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                      <div
+                        className="w-4 h-4 rounded-full text-white flex items-center justify-center shrink-0 shadow-sm"
+                        style={{ backgroundColor: accentHex }}
+                      >
+                        <Check className="w-2.5 h-2.5 stroke-[3]" />
                       </div>
                     )}
                   </div>
 
-                  <p className="text-[11px] text-fintech-text-muted leading-relaxed">
+                  <p className="text-[11px] text-zinc-400 leading-relaxed line-clamp-2">
                     {palette.desc}
                   </p>
-                </div>
 
-                <div className="pt-2.5 border-t border-white/5 flex items-center justify-between gap-2">
-                  <div className="flex items-center -space-x-1.5 space-x-reverse">
-                    {palette.colors.map((c) => (
-                      <div
-                        key={c.key}
-                        className="w-5 h-5 rounded-full border border-white/20 shadow-xs relative"
-                        style={{ backgroundColor: c.hex }}
-                        title={`${c.name}: ${c.hex} (${c.role})`}
-                      />
-                    ))}
+                  <div className="flex items-center justify-between pt-2 border-t border-white/5 w-full">
+                    <div className="flex items-center gap-1.5">
+                      {palette.colors.map((c) => (
+                        <div
+                          key={c.key}
+                          className="w-3.5 h-3.5 rounded-full border border-white/20 shadow-xs"
+                          style={{ backgroundColor: c.hex }}
+                          title={`${c.name}: ${c.hex}`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-[10px] text-zinc-400 font-mono">
+                      {palette.enName}
+                    </span>
                   </div>
-                  <div className="text-[10px] text-fintech-text-muted font-mono flex items-center gap-1">
-                    {palette.colors.map((c) => (
-                      <span key={c.key} className="px-1 py-0.5 rounded bg-white/5 text-[9px]">
-                        {c.name}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </Card>
-
-      {/* 3. Appearance & Day/Night Mode Card */}
-      <Card variant="glass" className="p-5 sm:p-6 space-y-5">
-        <div className="flex items-center gap-2.5 pb-3 border-b border-white/10">
-          <div className="p-2 rounded-xl bg-violet-500/15 text-violet-400">
-            <Palette className="w-5 h-5" />
+                </button>
+              );
+            })}
           </div>
+        </div>
+
+        {/* Background Style Switcher */}
+        <div className="space-y-3 pt-3 border-t border-white/5">
+          <span className="text-xs font-bold text-zinc-300 block">
+            سبک پس‌زمینه فضایی:
+          </span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {BACKGROUND_OPTIONS.map((bg) => {
+              const isSelected = (themeConfig.backgroundStyle || 'silk_wave') === bg.id;
+              return (
+                <button
+                  key={bg.id}
+                  type="button"
+                  onClick={() => {
+                    updateThemeConfig({ backgroundStyle: bg.id });
+                    showNotification(`پس‌زمینه «${bg.name}» فعال شد.`);
+                  }}
+                  className={`p-3.5 rounded-2xl border text-right transition-all flex items-center justify-between gap-3 ${
+                    isSelected
+                      ? 'border-violet-500 bg-violet-600/10 shadow-lg shadow-violet-500/15 ring-2 ring-violet-500/20'
+                      : 'bg-white/[0.02] border-white/10 hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-8 h-8 rounded-xl bg-gradient-to-tr ${bg.gradient} border border-white/20 flex items-center justify-center shrink-0 shadow-xs`}>
+                      <Layers className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-white">{bg.name}</h4>
+                      <p className="text-[10px] text-zinc-400 mt-0.5">{bg.desc}</p>
+                    </div>
+                  </div>
+                  {isSelected && (
+                    <div className="w-4 h-4 rounded-full bg-violet-500 text-white flex items-center justify-center shrink-0">
+                      <Check className="w-2.5 h-2.5 stroke-[3]" />
+                    </div>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Fluid Motion & Turbo 60fps Mode */}
+        <div className="pt-3 border-t border-white/5 grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
           <div>
-            <h2 className="text-base font-bold text-white">
-              حالت روشنایی (روز / شب)
-            </h2>
-            <p className="text-xs text-fintech-text-muted">
-              انتخاب حالت روز یا شب سازگار با پالت انتخابی
+            <div className="flex items-center gap-2 mb-1">
+              <Zap className="w-4 h-4 text-cyan-400" />
+              <span className="text-xs font-bold text-white">
+                حالت توربو ۶۰ فریم (بهینه‌سازی عملکرد)
+              </span>
+            </div>
+            <p className="text-[11px] text-zinc-400 leading-relaxed">
+              کاهش بلور سنگین در پس‌زمینه برای افزایش سرعت و روانی اسکرول
             </p>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => {
-              if (darkMode) toggleDarkMode();
-            }}
-            className={`p-4 rounded-2xl border transition-[border-color,background-color,box-shadow,color] duration-150 flex items-center justify-center gap-3 font-bold text-sm ${
-              !darkMode
-                ? 'bg-white text-zinc-900 border-violet-500 shadow-lg shadow-violet-500/15 ring-2 ring-violet-500/20'
-                : 'bg-black/20 dark:bg-white/[0.02] text-fintech-text-muted border-white/10 hover:border-violet-500/30'
-            }`}
-          >
-            <Sun className={`w-5 h-5 ${!darkMode ? 'text-amber-500' : 'text-fintech-text-muted'}`} />
-            <span>حالت روشن (روز)</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              if (!darkMode) toggleDarkMode();
-            }}
-            className={`p-4 rounded-2xl border transition-[border-color,background-color,box-shadow,color] duration-150 flex items-center justify-center gap-3 font-bold text-sm ${
-              darkMode
-                ? 'bg-violet-950/40 text-white border-violet-500 shadow-lg shadow-violet-500/25 ring-2 ring-violet-500/30'
-                : 'bg-black/20 dark:bg-white/[0.02] text-fintech-text-muted border-white/10 hover:border-violet-500/30'
-            }`}
-          >
-            <Moon className={`w-5 h-5 ${darkMode ? 'text-violet-400' : 'text-fintech-text-muted'}`} />
-            <span>حالت تیره (شب)</span>
-          </button>
-        </div>
-
-        {/* 60fps Performance Mode */}
-        <div className="pt-3 border-t border-white/5 flex items-center justify-between">
-          <div>
-            <span className="text-xs font-bold text-white block">
-              حالت بهینه عملکرد (۶۰ فریم فوق‌روان)
+          <div className="flex items-center justify-between sm:justify-end gap-3">
+            <span className="text-xs text-zinc-400 font-mono">
+              {themeConfig.performanceMode ? 'فعال (Ultra Fast)' : 'حداکثر کیفیت بلور'}
             </span>
-            <span className="text-[11px] text-fintech-text-muted">
-              کاهش بلور سنگین در پس‌زمینه برای افزایش سرعت دستگاه‌های ضعیف‌تر
-            </span>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={themeConfig.performanceMode ?? false}
+                onChange={(e) => updateThemeConfig({ performanceMode: e.target.checked })}
+                className="sr-only peer"
+              />
+              <div className="w-11 h-6 bg-white/15 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-transform peer-checked:bg-cyan-500"></div>
+            </label>
           </div>
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input
-              type="checkbox"
-              checked={themeConfig.performanceMode ?? false}
-              onChange={(e) => updateThemeConfig({ performanceMode: e.target.checked })}
-              className="sr-only peer"
-            />
-            <div className="w-11 h-6 bg-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-[transform] after:duration-150 peer-checked:bg-violet-600"></div>
-          </label>
         </div>
 
-        {/* Animation Level Setting */}
-        <div className="pt-3 border-t border-white/5 space-y-2.5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <span className="text-xs font-bold text-white block">
-                سطح پویانمایی و جلوه‌های حرکتی (Animation Level)
-              </span>
-              <span className="text-[11px] text-fintech-text-muted">
-                سبک: بدون امواج متحرک و شمارش مداوم • خاموش: لغو کامل انیمیشن‌ها
+        {/* Animation Level */}
+        <div className="pt-3 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2 mb-0.5">
+              <Gauge className="w-4 h-4 text-violet-400" />
+              <span className="text-xs font-bold text-white">
+                سطح پویانمایی و جلوه‌های حرکتی
               </span>
             </div>
-            <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-black/20 border border-white/5 self-start sm:self-auto">
-              {(['full', 'lite', 'off'] as const).map((lvl) => {
-                const labels = { full: 'کامل (Full)', lite: 'سبک (Lite)', off: 'خاموش (Off)' };
-                const isSelected = animLevel === lvl;
-                return (
-                  <button
-                    key={lvl}
-                    type="button"
-                    onClick={() => handleAnimationLevelChange(lvl)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-[background-color,border-color,color] duration-150 ${
-                      isSelected
-                        ? 'bg-violet-600 text-white shadow-sm'
-                        : 'text-fintech-text-muted hover:text-white'
-                    }`}
-                  >
-                    {labels[lvl]}
-                  </button>
-                );
-              })}
-            </div>
+            <p className="text-[11px] text-zinc-400">
+              تنظیم شتاب و میزان پویایی المان‌های رابط کاربری
+            </p>
+          </div>
+
+          <div className="flex items-center gap-1 p-1 rounded-2xl bg-black/40 border border-white/10 self-start sm:self-auto">
+            {(['full', 'lite', 'off'] as const).map((lvl) => {
+              const labels = { full: 'کامل و پویا', lite: 'سبک و روان', off: 'خاموش' };
+              const isSelected = animLevel === lvl;
+              return (
+                <button
+                  key={lvl}
+                  type="button"
+                  onClick={() => handleAnimationLevelChange(lvl)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
+                    isSelected
+                      ? 'bg-violet-600 text-white shadow-sm'
+                      : 'text-zinc-400 hover:text-white'
+                  }`}
+                >
+                  {labels[lvl]}
+                </button>
+              );
+            })}
           </div>
         </div>
       </Card>
 
-      {/* 4. Background Style Card */}
+      {/* 4. Bento Card: Currency Settings */}
       <Card variant="glass" className="p-5 sm:p-6 space-y-4">
-        <div className="flex items-center gap-2.5 pb-3 border-b border-white/10">
-          <div className="p-2 rounded-xl bg-violet-500/15 text-violet-400">
-            <Layers className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-base font-bold text-white">
-              طرح و پس‌زمینه محیط برنامه
-            </h2>
-            <p className="text-xs text-fintech-text-muted">
-              انتخاب میان پس‌زمینه مینیمال آرام یا امواج ابریشمی متحرک
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-          {BACKGROUND_STYLES.map((bg) => {
-            const isSelected = (themeConfig.backgroundStyle || 'clean_minimal') === bg.id;
-            return (
-              <button
-                key={bg.id}
-                type="button"
-                onClick={() => updateThemeConfig({ backgroundStyle: bg.id })}
-                className={`p-4 rounded-2xl border text-right transition-[border-color,background-color,box-shadow] duration-150 flex items-center justify-between gap-3 ${
-                  isSelected
-                    ? 'border-violet-500 bg-violet-500/10 shadow-lg shadow-violet-500/10 ring-2 ring-violet-500/20'
-                    : 'bg-black/20 dark:bg-white/[0.02] border-white/10 hover:border-violet-500/30'
-                }`}
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2.5">
-                    <div className={`w-5 h-5 rounded-full bg-gradient-to-tr ${bg.previewClass} border border-white/20 shrink-0`} />
-                    <h3 className="text-xs font-bold text-white">{bg.name}</h3>
-                  </div>
-                  <p className="text-[11px] text-fintech-text-muted mt-1">{bg.desc}</p>
-                </div>
-                {isSelected && (
-                  <div className="w-5 h-5 rounded-full bg-violet-500 text-white flex items-center justify-center shrink-0">
-                    <Check className="w-3.5 h-3.5 stroke-[3]" />
-                  </div>
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </Card>
-
-      {/* 5. Contacts & Persons Management Card */}
-      <Card variant="glass" className="p-5 sm:p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center justify-between pb-3 border-b border-white/10">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-violet-500/15 text-violet-400">
-              <Users className="w-5 h-5" />
+              <Coins className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-white">
-                دفترچه طرف‌حساب‌ها و اشخاص
+              <h2 className="text-base font-extrabold text-white">
+                واحد پولی و مالی پیش‌فرض
               </h2>
-              <p className="text-xs text-fintech-text-muted">
-                مدیریت نام، شماره تماس و طرف‌حساب‌های بدهی، طلب، چک و تراکنش‌ها
+              <p className="text-xs text-zinc-400">
+                تغییر نحوه نمایش ارقام مالی بین تومان و ریال در تمام گزارش‌ها
               </p>
             </div>
           </div>
 
-          <Button
-            variant="secondary"
-            onClick={() => setIsPersonModalOpen(true)}
-            icon={<Users className="w-4 h-4 text-violet-400" />}
-          >
-            مدیریت مخاطبین
-          </Button>
-        </div>
-      </Card>
-
-      {/* 6. Cloud Database & User Account */}
-      <Card variant="glass" className="p-5 sm:p-6 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-white/10">
-          <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-indigo-500/15 text-indigo-400">
-              <Database className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-base font-bold text-white">
-                پایگاه داده سرور Turso و حساب کاربری
-              </h2>
-              <p className="text-xs text-fintech-text-muted">
-                ذخیره‌سازی اطلاعات روی سرور و همگام‌سازی ابری امن
-              </p>
-            </div>
-          </div>
-
-          <div>
-            {tursoStatus === 'connected' ? (
-              <Badge variant="success" size="md">
-                متصل به سرور Turso
-              </Badge>
-            ) : (
-              <Badge variant="warning" size="md">
-                در انتظار اتصال
-              </Badge>
-            )}
-          </div>
-        </div>
-
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-black/20 dark:bg-white/[0.02] border border-white/5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
-              {user ? user.displayName.charAt(0) || user.username.charAt(0).toUpperCase() : '؟'}
-            </div>
-            <div>
-              <span className="text-xs font-bold text-white block">
-                {user ? user.displayName : 'کاربر مهمان'}
-              </span>
-              <span className="text-[11px] text-fintech-text-muted font-mono dir-ltr">
-                {user ? `@${user.username}` : '@guest'}
-              </span>
-            </div>
-          </div>
-
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setIsProfileModalOpen(true)}
-            icon={<User className="w-3.5 h-3.5" />}
-          >
-            پروفایل و امنیت
-          </Button>
-        </div>
-
-        <div className="flex items-center justify-between text-xs pt-1 px-1">
-          <span className="text-fintech-text-muted">
-            وضعیت همگام‌سازی داده‌ها:
-          </span>
-          <div className="flex items-center gap-3">
-            <span className="font-bold text-white">
-              {cloudSyncStatus === 'synced'
-                ? 'ذخیره شده روی سرور Turso'
-                : cloudSyncStatus === 'syncing'
-                ? 'در حال ذخیره‌سازی روی سرور...'
-                : cloudSyncStatus === 'error'
-                ? 'خطا در ارتباط با سرور'
-                : 'آفلاین'}
-            </span>
+          <div className="flex gap-1.5 p-1 bg-black/40 rounded-2xl border border-white/10">
             <button
-              onClick={async () => {
-                setIsSyncingTurso(true);
-                await syncAllToTurso();
-                setIsSyncingTurso(false);
-                showNotification('اطلاعات با سرور Turso همگام‌سازی شدند.');
+              onClick={() => {
+                setCurrency('toman');
+                showNotification('واحد پولی به تومان تغییر یافت.');
               }}
-              disabled={isSyncingTurso || tursoStatus !== 'connected'}
-              className="text-violet-400 font-bold hover:underline flex items-center gap-1 disabled:opacity-40"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isSyncingTurso ? 'animate-spin' : ''}`} />
-              <span>همگام‌سازی دستی</span>
-            </button>
-          </div>
-        </div>
-      </Card>
-
-      {/* 7. Currency & Data Management */}
-      <Card variant="glass" className="p-5 sm:p-6 space-y-4">
-        <div className="flex items-center gap-2.5 pb-3 border-b border-white/10">
-          <div className="p-2 rounded-xl bg-violet-500/15 text-violet-400">
-            <Coins className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-base font-bold text-white">
-              واحد پولی و پشتیبان‌گیری داده‌ها
-            </h2>
-            <p className="text-xs text-fintech-text-muted">
-              واحد پیش‌فرض نمایش مبالغ، دانلود خروجی پشتیبان و بازنشانی کامل
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between p-3.5 rounded-2xl bg-black/20 dark:bg-white/[0.02] border border-white/5">
-          <div>
-            <span className="text-xs font-bold text-white block">
-              واحد پولی پیش‌فرض
-            </span>
-            <span className="text-[11px] text-fintech-text-muted">تغییر نمایش بین تومان و ریال در تمام بخش‌ها</span>
-          </div>
-          <div className="flex gap-1.5 p-1 bg-black/30 dark:bg-white/5 rounded-xl border border-white/5">
-            <button
-              onClick={() => setCurrency('toman')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+              className={`px-4 py-1.5 rounded-xl text-xs font-bold transition ${
                 currency === 'toman'
                   ? 'bg-violet-600 text-white shadow-xs'
-                  : 'text-fintech-text-muted hover:text-white'
+                  : 'text-zinc-400 hover:text-white'
               }`}
             >
               تومان
             </button>
             <button
-              onClick={() => setCurrency('rial')}
-              className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+              onClick={() => {
+                setCurrency('rial');
+                showNotification('واحد پولی به ریال تغییر یافت.');
+              }}
+              className={`px-4 py-1.5 rounded-xl text-xs font-bold transition ${
                 currency === 'rial'
                   ? 'bg-violet-600 text-white shadow-xs'
-                  : 'text-fintech-text-muted hover:text-white'
+                  : 'text-zinc-400 hover:text-white'
               }`}
             >
               ریال
@@ -551,40 +551,111 @@ export const SettingsView: React.FC = () => {
           </div>
         </div>
 
-        {/* Backup Actions */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-          <Button
-            variant="secondary"
-            onClick={handleExportBackup}
-            icon={<Download className="w-4 h-4 text-violet-400" />}
-          >
-            دانلود فایل پشتیبان (JSON)
-          </Button>
-
-          <label className="flex items-center justify-center gap-2 p-2.5 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-white text-xs font-bold transition cursor-pointer active:scale-95">
-            <Upload className="w-4 h-4 text-emerald-400" />
-            <span>بازیابی از فایل پشتیبان</span>
-            <input type="file" accept=".json" onChange={handleImportBackup} className="hidden" />
-          </label>
-
-          <Button
-            variant="secondary"
-            onClick={handleLoadDemo}
-            icon={<RefreshCw className="w-4 h-4 text-violet-400" />}
-          >
-            بارگذاری داده‌های نمونه تستی
-          </Button>
-
-          <Button
-            variant="danger"
-            onClick={handleResetData}
-            icon={<Trash2 className="w-4 h-4" />}
-          >
-            پاکسازی کامل تمام اطلاعات
-          </Button>
+        <div className="flex items-center justify-between text-xs p-3 rounded-2xl bg-white/[0.02] border border-white/5">
+          <span className="text-zinc-400">پیش‌نمایش تبدیل مقیاس:</span>
+          <span className="font-mono text-cyan-400 font-bold dir-ltr">
+            {currency === 'toman' ? '100,000 Toman = 1,000,000 Rial' : '1,000,000 Rial = 100,000 Toman'}
+          </span>
         </div>
       </Card>
 
+      {/* 5. Bento Card: Data Management Vault & Backup */}
+      <Card variant="glass" className="p-5 sm:p-6 space-y-5">
+        <div className="flex items-center gap-2.5 pb-3 border-b border-white/10">
+          <div className="p-2 rounded-xl bg-indigo-500/15 text-indigo-400">
+            <Shield className="w-5 h-5" />
+          </div>
+          <div>
+            <h2 className="text-base font-extrabold text-white">
+              خزانه داده‌ها و پشتیبان‌گیری
+            </h2>
+            <p className="text-xs text-zinc-400">
+              دریافت نسخه پشتیبان JSON، بازیابی فایل و بارگذاری داده‌های تستی
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          <button
+            type="button"
+            onClick={handleExportBackup}
+            className="p-4 rounded-2xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/10 text-right transition flex items-center justify-between group active:scale-[0.98]"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-violet-600/20 text-violet-400 flex items-center justify-center shrink-0 border border-violet-500/20 group-hover:scale-105 transition-transform">
+                <Download className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-xs font-bold text-white block">
+                  دانلود فایل پشتیبان (JSON)
+                </span>
+                <span className="text-[11px] text-zinc-400">
+                  خروجی کامل رمزنگاری شده از تمامی تراکنش‌ها
+                </span>
+              </div>
+            </div>
+          </button>
+
+          <label className="p-4 rounded-2xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/10 text-right transition flex items-center justify-between group cursor-pointer active:scale-[0.98]">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/20 group-hover:scale-105 transition-transform">
+                <Upload className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-xs font-bold text-white block">
+                  بازیابی نسخه پشتیبان
+                </span>
+                <span className="text-[11px] text-zinc-400">
+                  فراخوانی مجدد اطلاعات از فایل JSON
+                </span>
+              </div>
+            </div>
+            <input type="file" accept=".json" onChange={handleImportBackup} className="hidden" />
+          </label>
+
+          <button
+            type="button"
+            onClick={handleLoadDemo}
+            className="p-4 rounded-2xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/10 text-right transition flex items-center justify-between group active:scale-[0.98]"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0 border border-cyan-500/20 group-hover:scale-105 transition-transform">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-xs font-bold text-white block">
+                  بارگذاری داده‌های نمونه تستی
+                </span>
+                <span className="text-[11px] text-zinc-400">
+                  تزریق داده‌های فرضی برای مشاهده قابلیت‌ها
+                </span>
+              </div>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleResetData}
+            className="p-4 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 text-right transition flex items-center justify-between group active:scale-[0.98]"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0 border border-rose-500/30 group-hover:scale-105 transition-transform">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-xs font-bold text-rose-300 block">
+                  منطقه خطر: پاکسازی کامل داده‌ها
+                </span>
+                <span className="text-[11px] text-rose-400/70">
+                  حذف غیرقابل بازگشت تمام اطلاعات محلی
+                </span>
+              </div>
+            </div>
+          </button>
+        </div>
+      </Card>
+
+      {/* Modals */}
       <PersonManagerModal
         isOpen={isPersonModalOpen}
         onClose={() => setIsPersonModalOpen(false)}
@@ -593,6 +664,11 @@ export const SettingsView: React.FC = () => {
       <UserProfileModal
         isOpen={isProfileModalOpen}
         onClose={() => setIsProfileModalOpen(false)}
+      />
+
+      <TursoConfigModal
+        isOpen={isTursoModalOpen}
+        onClose={() => setIsTursoModalOpen(false)}
       />
     </div>
   );

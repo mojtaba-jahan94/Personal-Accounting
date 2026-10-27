@@ -355,24 +355,36 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     <div className="space-y-6 pb-12">
       
       {/* Top Action & Customize Bar */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-fintech-text-main tracking-tight">
-            میز کار مالی (Fintech Dashboard)
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[11px] font-mono font-bold tracking-widest text-violet-400 uppercase flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-spin" style={{ animationDuration: '8s' }} />
+              AETHERIUM FINTECH INTELLIGENCE
+            </span>
+            <span className="text-zinc-600">•</span>
+            <span className="text-xs px-2.5 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-300 font-mono">
+              دید کلی ۳۶۰ درجه
+            </span>
+          </div>
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white flex items-center gap-2">
+            میز کار مالی
+            <span className="text-gradient-cyan-violet text-lg sm:text-xl font-normal font-mono">
+              / OVERVIEW
+            </span>
           </h2>
-          <p className="text-xs text-fintech-text-muted mt-0.5">
-            دید ۳۶۰ درجه از تراز حساب‌ها، دارایی‌ها و تعهدات نقدی
-          </p>
         </div>
 
-        <Button
-          variant="secondary"
-          size="sm"
-          icon={<SlidersHorizontal className="w-3.5 h-3.5 text-violet-400" />}
-          onClick={() => setIsCustomizeOpen(true)}
-        >
-          <span>شخصی‌سازی چیدمان</span>
-        </Button>
+        <div className="flex items-center gap-2.5 self-end sm:self-auto">
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={<SlidersHorizontal className="w-3.5 h-3.5 text-violet-400" />}
+            onClick={() => setIsCustomizeOpen(true)}
+          >
+            <span>شخصی‌سازی ویجت‌ها</span>
+          </Button>
+        </div>
       </div>
 
       {/* Main Dynamic Bento Grid Sections */}
@@ -389,28 +401,30 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             return (
               <Card
                 key="hero-card"
-                variant="glass"
-                headerGlow
-                className="p-6 sm:p-8"
+                variant="titanium"
+                className="p-6 sm:p-8 rounded-[2.5rem] relative overflow-hidden"
               >
+                {/* Top Hologram Specular Line */}
+                <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400/40 via-violet-400/60 to-transparent pointer-events-none" />
+
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-6">
                   <div>
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <Badge variant="primary" dot pulse size="sm">
-                        موجودی کل حساب‌ها (TOTAL BALANCE)
+                        تراز کل نقدینگی و حساب‌ها
                       </Badge>
-                      <span className="text-xs text-emerald-400 font-mono font-medium flex items-center gap-0.5">
+                      <span className="text-xs text-emerald-400 font-mono font-medium flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full shadow-sm">
                         <TrendingUp className="w-3.5 h-3.5" />
-                        <span>+{toPersianDigits(incomeDelta)}٪ نسبت به ماه قبل</span>
+                        <span>+{toPersianDigits(incomeDelta)}٪ رشد این دوره</span>
                       </span>
                     </div>
 
-                    <div className="text-3xl sm:text-4xl lg:text-5xl font-mono tabular-nums font-semibold text-fintech-text-main tracking-tight">
+                    <div className="text-3xl sm:text-5xl lg:text-6xl font-mono tabular-nums font-bold text-white tracking-tight drop-shadow-md">
                       <AnimatedNumber value={totalBalance} currency={currency} showCurrency />
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-3">
                     <SegmentedControl<'1M' | '3M' | '6M' | '1Y'>
                       name="balance-range"
                       size="sm"
@@ -431,15 +445,15 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         icon={<ArrowLeftRight className="w-3.5 h-3.5 text-violet-400" />}
                         onClick={onOpenTransferModal}
                       >
-                        <span>انتقال</span>
+                        <span>انتقال وجه</span>
                       </Button>
                       <Button
                         variant="primary"
                         size="sm"
-                        icon={<Plus className="w-3.5 h-3.5" />}
+                        icon={<Plus className="w-3.5 h-3.5 stroke-[2.5]" />}
                         onClick={onOpenTransactionModal}
                       >
-                        <span>ثبت جدید</span>
+                        <span>ثبت سند جدید</span>
                       </Button>
                     </div>
                   </div>
@@ -527,73 +541,83 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             return (
               <div key="kpi-cards" className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Income */}
-                <Card variant="glass" hoverLift className="p-4 sm:p-5">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-mono text-fintech-text-muted uppercase">ورودی ماه</span>
-                    <div className="w-8 h-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center">
-                      <TrendingUp className="w-4 h-4" />
+                <Card variant="glass" hoverLift className="p-5 rounded-[2rem] relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-28 h-28 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-emerald-500/20 transition-all duration-300" />
+                  <div className="flex items-center justify-between mb-3 relative z-10">
+                    <span className="text-[11px] font-mono text-zinc-400 font-medium uppercase tracking-wider">ورودی ماه جاری</span>
+                    <div className="w-10 h-10 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shadow-[0_0_15px_rgba(16,185,129,0.25)] group-hover:scale-110 transition-transform">
+                      <TrendingUp className="w-5 h-5" />
                     </div>
                   </div>
-                  <div className="text-xl sm:text-2xl font-mono tabular-nums font-semibold text-fintech-text-main">
+                  <div className="text-2xl sm:text-3xl font-mono tabular-nums font-bold text-white relative z-10">
                     <AnimatedNumber value={totalIncome} currency={currency} showCurrency />
                   </div>
-                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/[0.06] text-[10px]">
-                    <span className="text-emerald-400 font-mono">+{toPersianDigits(incomeDelta)}٪ vs ماه قبل</span>
-                    <Sparkline data={[10, 15, 12, 18, 24, totalIncome]} width={48} height={16} color="#10B981" />
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[0.08] text-[11px] relative z-10">
+                    <span className="text-emerald-400 font-mono font-medium flex items-center gap-1">
+                      <span>+{toPersianDigits(incomeDelta)}٪</span>
+                      <span className="text-zinc-500 text-[10px]">vs ماه قبل</span>
+                    </span>
+                    <Sparkline data={[10, 15, 12, 18, 24, totalIncome]} width={56} height={18} color="#10B981" />
                   </div>
                 </Card>
 
                 {/* Expense */}
-                <Card variant="glass" hoverLift className="p-4 sm:p-5">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-mono text-fintech-text-muted uppercase">خروجی ماه</span>
-                    <div className="w-8 h-8 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center">
-                      <TrendingDown className="w-4 h-4" />
+                <Card variant="glass" hoverLift className="p-5 rounded-[2rem] relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-28 h-28 bg-rose-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-rose-500/20 transition-all duration-300" />
+                  <div className="flex items-center justify-between mb-3 relative z-10">
+                    <span className="text-[11px] font-mono text-zinc-400 font-medium uppercase tracking-wider">خروجی ماه جاری</span>
+                    <div className="w-10 h-10 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-400 flex items-center justify-center shadow-[0_0_15px_rgba(244,63,94,0.25)] group-hover:scale-110 transition-transform">
+                      <TrendingDown className="w-5 h-5" />
                     </div>
                   </div>
-                  <div className="text-xl sm:text-2xl font-mono tabular-nums font-semibold text-fintech-text-main">
+                  <div className="text-2xl sm:text-3xl font-mono tabular-nums font-bold text-white relative z-10">
                     <AnimatedNumber value={totalExpense} currency={currency} showCurrency />
                   </div>
-                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/[0.06] text-[10px]">
-                    <span className="text-rose-400 font-mono">+{toPersianDigits(expenseDelta)}٪ vs ماه قبل</span>
-                    <Sparkline data={[20, 18, 22, 19, 15, totalExpense]} width={48} height={16} color="#F43F5E" />
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[0.08] text-[11px] relative z-10">
+                    <span className="text-rose-400 font-mono font-medium flex items-center gap-1">
+                      <span>+{toPersianDigits(expenseDelta)}٪</span>
+                      <span className="text-zinc-500 text-[10px]">vs ماه قبل</span>
+                    </span>
+                    <Sparkline data={[20, 18, 22, 19, 15, totalExpense]} width={56} height={18} color="#F43F5E" />
                   </div>
                 </Card>
 
                 {/* Net Savings */}
-                <Card variant="glass" hoverLift className="p-4 sm:p-5">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-mono text-fintech-text-muted uppercase">پس‌انداز خالص</span>
-                    <div className="w-8 h-8 rounded-xl bg-violet-500/15 border border-violet-500/30 text-violet-400 flex items-center justify-center">
-                      <Wallet className="w-4 h-4" />
+                <Card variant="glass" hoverLift className="p-5 rounded-[2rem] relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-28 h-28 bg-violet-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-violet-500/20 transition-all duration-300" />
+                  <div className="flex items-center justify-between mb-3 relative z-10">
+                    <span className="text-[11px] font-mono text-zinc-400 font-medium uppercase tracking-wider">پس‌انداز خالص</span>
+                    <div className="w-10 h-10 rounded-2xl bg-violet-500/15 border border-violet-500/30 text-violet-400 flex items-center justify-center shadow-glow-violet group-hover:scale-110 transition-transform">
+                      <Wallet className="w-5 h-5" />
                     </div>
                   </div>
                   <div
-                    className={`text-xl sm:text-2xl font-mono tabular-nums font-semibold ${
+                    className={`text-2xl sm:text-3xl font-mono tabular-nums font-bold relative z-10 ${
                       netSavings >= 0 ? 'text-emerald-400' : 'text-rose-400'
                     }`}
                   >
                     <AnimatedNumber value={netSavings} currency={currency} showCurrency />
                   </div>
-                  <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/[0.06] text-[10px]">
-                    <span className="text-fintech-text-muted font-mono">تراز منابع و مصارف</span>
-                    <Sparkline data={[5, 8, 4, 12, 10, netSavings]} width={48} height={16} color="#8B5CF6" />
+                  <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[0.08] text-[11px] relative z-10">
+                    <span className="text-zinc-400 font-mono">تراز منابع و مصارف</span>
+                    <Sparkline data={[5, 8, 4, 12, 10, netSavings]} width={56} height={18} color="#8B5CF6" />
                   </div>
                 </Card>
 
                 {/* Savings Rate % */}
-                <Card variant="glass" hoverLift className="p-4 sm:p-5">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-[10px] font-mono text-fintech-text-muted uppercase">نرخ پس‌انداز</span>
-                    <div className="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center">
-                      <Target className="w-4 h-4" />
+                <Card variant="glass" hoverLift className="p-5 rounded-[2rem] relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-28 h-28 bg-amber-500/10 rounded-full blur-2xl pointer-events-none group-hover:bg-amber-500/20 transition-all duration-300" />
+                  <div className="flex items-center justify-between mb-3 relative z-10">
+                    <span className="text-[11px] font-mono text-zinc-400 font-medium uppercase tracking-wider">شاخص سلامت پس‌انداز</span>
+                    <div className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.25)] group-hover:scale-110 transition-transform">
+                      <Target className="w-5 h-5" />
                     </div>
                   </div>
-                  <div className="text-xl sm:text-2xl font-mono tabular-nums font-semibold text-fintech-text-main">
+                  <div className="text-2xl sm:text-3xl font-mono tabular-nums font-bold text-white relative z-10">
                     {toPersianDigits(savingsRate)}٪
                   </div>
-                  <div className="mt-2.5">
-                    <ProgressBar value={savingsRate} variant="primary" size="xs" />
+                  <div className="mt-3 relative z-10">
+                    <ProgressBar value={savingsRate} variant="primary" size="sm" glow />
                   </div>
                 </Card>
               </div>
@@ -607,14 +631,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div key="accounts-section" className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 
                 {/* Stacked Bank Card Tiles (8 cols) */}
-                <Card variant="glass" className="lg:col-span-8 p-6">
+                <Card variant="glass" className="lg:col-span-8 p-6 rounded-[2.5rem] relative overflow-hidden">
                   <div className="flex items-center justify-between mb-6">
                     <div>
-                      <h3 className="text-base font-semibold text-fintech-text-main">
-                        حساب‌ها و کارت‌های بانکی (My Accounts)
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="w-2 h-2 rounded-full bg-violet-400 animate-ping" />
+                        <span className="text-[10px] font-mono tracking-widest text-violet-400 uppercase">
+                          DIGITAL WALLET & CARDS
+                        </span>
+                      </div>
+                      <h3 className="text-lg font-bold text-white tracking-tight">
+                        کارت‌های بانکی و حساب‌ها
                       </h3>
-                      <p className="text-xs text-fintech-text-muted mt-0.5">
-                        روی هر کارت کلیک کنید تا به جلو بیاید و جزئیات نمایش داده شود
+                      <p className="text-xs text-zinc-400 mt-0.5">
+                        روی هر کارت کلیک کنید تا به جلو بیاید و عملیات سریع انجام شود
                       </p>
                     </div>
 
@@ -624,7 +654,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       icon={<CreditCard className="w-3.5 h-3.5 text-violet-400" />}
                       onClick={() => onSelectTab('accounts')}
                     >
-                      <span>مدیریت کارت‌ها</span>
+                      <span>مدیریت همه کارت‌ها</span>
                     </Button>
                   </div>
 
@@ -640,7 +670,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       }
                     />
                   ) : (
-                    <div className="relative h-60 sm:h-64 flex items-center justify-center select-none">
+                    <div className="relative h-64 sm:h-72 flex items-center justify-center select-none perspective-[1000px]">
                       {accounts.slice(0, 5).map((acc, idx) => {
                         const isSelected = idx === selectedAccountIndex;
                         const offset = idx - selectedAccountIndex;
@@ -650,40 +680,63 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             key={acc.id}
                             onClick={() => setSelectedAccountIndex(idx)}
                             animate={{
-                              x: offset * -24,
-                              y: Math.abs(offset) * 12,
-                              scale: isSelected ? 1 : 1 - Math.abs(offset) * 0.06,
+                              x: offset * -28,
+                              y: Math.abs(offset) * 14,
+                              scale: isSelected ? 1 : 1 - Math.abs(offset) * 0.07,
                               zIndex: 10 - Math.abs(offset),
                               opacity: Math.abs(offset) > 2 ? 0.3 : 1,
+                              rotateY: offset * 3,
                             }}
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                            className={`absolute w-72 sm:w-84 h-48 rounded-3xl p-5 border cursor-pointer transition-shadow shadow-2xl flex flex-col justify-between ${
+                            className={`absolute w-80 sm:w-96 h-52 rounded-[2rem] p-6 border cursor-pointer transition-all duration-300 shadow-2xl flex flex-col justify-between overflow-hidden ${
                               isSelected
-                                ? 'border-violet-500/50 shadow-glow-violet bg-gradient-to-br from-violet-900/60 via-[#181424] to-[#120F1A]'
-                                : 'border-white/10 bg-[#151220]'
+                                ? 'border-violet-500/50 shadow-glow-violet bg-gradient-to-br from-[#241B3D] via-[#161224] to-[#0E0C15] ring-1 ring-white/20'
+                                : 'border-white/10 bg-[#141120]/90 hover:border-white/20'
                             }`}
                           >
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <span className="text-[10px] font-mono text-violet-300 uppercase block tracking-wider">
-                                  {acc.bankName || 'حساب بانکی'}
+                            {/* Card Decorative Sheen */}
+                            <div className="absolute inset-0 bg-gradient-to-tr from-white/[0.04] to-transparent pointer-events-none" />
+
+                            {/* Header: Bank Name & Chip */}
+                            <div className="flex items-center justify-between relative z-10">
+                              <div className="flex items-center gap-2">
+                                <span className="px-2.5 py-0.5 rounded-full bg-white/10 border border-white/15 text-[11px] font-mono font-bold text-violet-300">
+                                  {acc.bankName || 'شتاب'}
                                 </span>
-                                <span className="text-sm font-semibold text-white block mt-0.5">
+                                <span className="text-sm font-bold text-white tracking-wide">
                                   {acc.name}
                                 </span>
                               </div>
-                              <div className="w-9 h-9 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center text-white">
-                                <CreditCard className="w-5 h-5" />
+
+                              {/* Metallic EMV Chip graphic */}
+                              <div className="w-10 h-8 rounded-lg bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 p-1 flex items-center justify-center shadow-inner opacity-90 border border-amber-300/40">
+                                <div className="w-full h-full border border-black/20 rounded-md grid grid-cols-2 gap-0.5 opacity-60">
+                                  <div className="border-r border-black/20" />
+                                  <div className="border-l border-black/20" />
+                                </div>
                               </div>
                             </div>
 
-                            <div>
-                              <span className="text-[11px] font-mono tracking-widest text-fintech-text-muted block mb-1">
+                            {/* Middle: Card Number Formatted in Blocks */}
+                            <div className="relative z-10 py-1">
+                              <div className="text-base sm:text-lg font-mono tracking-[0.25em] text-zinc-300 font-semibold drop-shadow-sm" dir="ltr">
                                 {acc.cardNumber ? formatCardNumber(acc.cardNumber) : '•••• •••• •••• ••••'}
-                              </span>
-                              <div className="text-xl sm:text-2xl font-mono tabular-nums font-semibold text-white">
-                                {formatCurrency(acc.balance, currency)}
                               </div>
+                            </div>
+
+                            {/* Footer: Balance & Currency */}
+                            <div className="relative z-10 flex items-end justify-between border-t border-white/10 pt-2.5">
+                              <div>
+                                <span className="text-[10px] font-mono text-zinc-400 block mb-0.5">
+                                  موجودی در دسترس
+                                </span>
+                                <div className="text-xl sm:text-2xl font-mono tabular-nums font-bold text-white tracking-tight">
+                                  {formatCurrency(acc.balance, currency)}
+                                </div>
+                              </div>
+                              <span className="text-xs font-mono font-medium text-violet-400">
+                                شتاب IR
+                              </span>
                             </div>
                           </motion.div>
                         );
@@ -692,19 +745,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   )}
 
                   {/* Actions underneath card */}
-                  <div className="flex items-center justify-center gap-3 mt-4 pt-3 border-t border-white/[0.06]">
+                  <div className="flex items-center justify-center gap-3 mt-4 pt-4 border-t border-white/[0.08]">
                     <Button
                       variant="secondary"
                       size="sm"
                       icon={<ArrowLeftRight className="w-3.5 h-3.5 text-violet-400" />}
                       onClick={onOpenTransferModal}
                     >
-                      انتقال بین حساب‌ها
+                      انتقال بین‌حسابی
                     </Button>
                     <Button
                       variant="primary"
                       size="sm"
-                      icon={<Plus className="w-3.5 h-3.5" />}
+                      icon={<Plus className="w-3.5 h-3.5 stroke-[2.5]" />}
                       onClick={onOpenTransactionModal}
                     >
                       تراکنش به این حساب
@@ -713,51 +766,51 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </Card>
 
                 {/* Net Worth Summary Breakdown (4 cols) */}
-                <Card variant="glass" className="lg:col-span-4 p-6 flex flex-col justify-between">
+                <Card variant="glass" className="lg:col-span-4 p-6 rounded-[2.5rem] flex flex-col justify-between relative overflow-hidden">
                   <div>
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-violet-400 flex items-center gap-1.5 mb-1">
-                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                    <span className="text-[11px] font-mono uppercase tracking-widest text-violet-400 flex items-center gap-1.5 mb-2 font-bold">
+                      <ShieldCheck className="w-4 h-4 text-emerald-400 animate-pulse" />
                       خالص کل دارایی (NET WORTH)
                     </span>
-                    <div className="text-2xl sm:text-3xl font-mono tabular-nums font-semibold text-fintech-text-main mt-1">
+                    <div className="text-3xl sm:text-4xl font-mono tabular-nums font-extrabold text-white mt-1 drop-shadow-sm">
                       <AnimatedNumber value={totalNetWorth} currency={currency} showCurrency />
                     </div>
-                    <p className="text-[11px] text-fintech-text-muted mt-1 leading-relaxed">
-                      ارزش تراز شده کل نقدینگی، پورتفوی دارایی‌ها، منهای تعهدات و بدهی‌های جاری.
+                    <p className="text-xs text-zinc-400 mt-1.5 leading-relaxed">
+                      تراز یکپارچه کل نقدینگی، پورتفوی طلا و ارز، منهای تعهدات و بدهی‌های جاری.
                     </p>
 
                     {/* Breakdown bar */}
-                    <div className="space-y-3 mt-5">
+                    <div className="space-y-3.5 mt-6">
                       <div>
-                        <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="text-fintech-text-muted">موجودی نقد حساب‌ها</span>
-                          <span className="font-mono tabular-nums text-white">{formatCurrency(totalBalance, currency)}</span>
+                        <div className="flex items-center justify-between text-xs mb-1.5">
+                          <span className="text-zinc-300 font-medium">موجودی نقد حساب‌ها</span>
+                          <span className="font-mono tabular-nums text-white font-semibold">{formatCurrency(totalBalance, currency)}</span>
                         </div>
-                        <ProgressBar value={totalNetWorth > 0 ? (totalBalance / totalNetWorth) * 100 : 0} variant="primary" size="xs" />
+                        <ProgressBar value={totalNetWorth > 0 ? (totalBalance / totalNetWorth) * 100 : 0} variant="primary" size="sm" glow />
                       </div>
 
                       <div>
-                        <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="text-fintech-text-muted">سبد طلا، ارز و دارایی</span>
-                          <span className="font-mono tabular-nums text-amber-300">+{formatCurrency(totalPortfolioValueToman, currency)}</span>
+                        <div className="flex items-center justify-between text-xs mb-1.5">
+                          <span className="text-zinc-300 font-medium">سبد طلا، ارز و کریپتو</span>
+                          <span className="font-mono tabular-nums text-amber-400 font-semibold">+{formatCurrency(totalPortfolioValueToman, currency)}</span>
                         </div>
-                        <ProgressBar value={totalNetWorth > 0 ? (totalPortfolioValueToman / totalNetWorth) * 100 : 0} variant="warning" size="xs" />
+                        <ProgressBar value={totalNetWorth > 0 ? (totalPortfolioValueToman / totalNetWorth) * 100 : 0} variant="warning" size="sm" glow />
                       </div>
 
                       <div>
-                        <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="text-fintech-text-muted">مجموع مطالبات (طلب)</span>
-                          <span className="font-mono tabular-nums text-emerald-400">+{formatCurrency(totalReceivables, currency)}</span>
+                        <div className="flex items-center justify-between text-xs mb-1.5">
+                          <span className="text-zinc-300 font-medium">مجموع مطالبات (طلب)</span>
+                          <span className="font-mono tabular-nums text-emerald-400 font-semibold">+{formatCurrency(totalReceivables, currency)}</span>
                         </div>
-                        <ProgressBar value={totalNetWorth > 0 ? (totalReceivables / totalNetWorth) * 100 : 0} variant="success" size="xs" />
+                        <ProgressBar value={totalNetWorth > 0 ? (totalReceivables / totalNetWorth) * 100 : 0} variant="success" size="sm" glow />
                       </div>
 
                       <div>
-                        <div className="flex items-center justify-between text-xs mb-1">
-                          <span className="text-fintech-text-muted">تعهدات و بدهی‌ها</span>
-                          <span className="font-mono tabular-nums text-rose-400">-{formatCurrency(totalPayableDebts, currency)}</span>
+                        <div className="flex items-center justify-between text-xs mb-1.5">
+                          <span className="text-zinc-300 font-medium">تعهدات و بدهی‌ها</span>
+                          <span className="font-mono tabular-nums text-rose-400 font-semibold">-{formatCurrency(totalPayableDebts, currency)}</span>
                         </div>
-                        <ProgressBar value={totalNetWorth > 0 ? (totalPayableDebts / totalNetWorth) * 100 : 0} variant="danger" size="xs" />
+                        <ProgressBar value={totalNetWorth > 0 ? (totalPayableDebts / totalNetWorth) * 100 : 0} variant="danger" size="sm" glow />
                       </div>
                     </div>
                   </div>
@@ -766,10 +819,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     variant="ghost"
                     size="sm"
                     fullWidth
-                    className="mt-5 border border-white/10"
+                    className="mt-6 border border-white/10 hover:border-violet-500/30"
                     onClick={() => onSelectTab('reports')}
                   >
-                    <span>مشاهده گزارش تفصیلی تراز</span>
+                    <span>مشاهده گزارش تحلیلی ترازنامه</span>
                     <ChevronLeft className="w-4 h-4 mr-1" />
                   </Button>
                 </Card>
@@ -784,35 +837,42 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div key="recent-transactions-section" className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 
                 {/* Recent Transactions List (8 cols) */}
-                <Card variant="glass" className="lg:col-span-8 p-6">
-                  <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/[0.08]">
+                <Card variant="glass" className="lg:col-span-8 p-6 sm:p-7 rounded-[2.5rem] relative overflow-hidden">
+                  <div className="flex items-center justify-between mb-5 pb-3 border-b border-white/[0.08]">
                     <div>
-                      <h3 className="text-base font-semibold text-fintech-text-main">
-                        آخرین تراکنش‌ها (Recent Activity)
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="w-2 h-2 rounded-full bg-cyan-400" />
+                        <span className="text-[10px] font-mono tracking-widest text-cyan-400 uppercase">
+                          LIVE LEDGER & LOGS
+                        </span>
+                      </div>
+                      <h3 className="text-lg font-bold text-white tracking-tight">
+                        آخرین تراکنش‌ها و اسناد
                       </h3>
-                      <p className="text-xs text-fintech-text-muted mt-0.5">
-                        فهرست جدیدترین اسناد ثبت‌شده با جزئیات و زمان
+                      <p className="text-xs text-zinc-400 mt-0.5">
+                        فهرست جدیدترین اسناد ثبت‌شده با دسته‌بندی و جزئیات
                       </p>
                     </div>
 
                     <Button
                       variant="ghost"
                       size="sm"
+                      className="border border-white/10 hover:border-violet-500/30"
                       onClick={() => onSelectTab('transactions')}
                     >
-                      <span>مشاهده همه</span>
+                      <span>مشاهده همه اسناد</span>
                       <ChevronLeft className="w-4 h-4 mr-1" />
                     </Button>
                   </div>
 
                   {transactions.length === 0 ? (
                     <EmptyState
-                      icon={<ReceiptText className="w-6 h-6" />}
+                      icon={<ReceiptText className="w-6 h-6 text-violet-400" />}
                       title="هنوز تراکنشی ثبت نشده است"
                       description="اولین تراکنش خود را ثبت کنید تا تاریخچه مالی شکل بگیرد."
                       action={
                         <Button variant="primary" size="sm" onClick={onOpenTransactionModal}>
-                          ثبت تراکنش
+                          ثبت اولین تراکنش
                         </Button>
                       }
                     />
@@ -826,33 +886,33 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         return (
                           <div
                             key={tx.id}
-                            className="py-3 px-2 flex items-center justify-between hover:bg-white/[0.02] rounded-2xl transition"
+                            className="py-3 px-3 flex items-center justify-between hover:bg-white/[0.04] rounded-2xl transition duration-150 group cursor-pointer"
                           >
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3.5">
                               <div
-                                className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border ${
+                                className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 border transition-transform duration-200 group-hover:scale-105 ${
                                   isIncome
-                                    ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
+                                    ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.2)]'
                                     : isTransfer
-                                    ? 'bg-violet-500/15 border-violet-500/30 text-violet-400'
-                                    : 'bg-rose-500/15 border-rose-500/30 text-rose-400'
+                                    ? 'bg-violet-500/15 border-violet-500/30 text-violet-400 shadow-glow-violet'
+                                    : 'bg-rose-500/15 border-rose-500/30 text-rose-400 shadow-[0_0_12px_rgba(244,63,94,0.2)]'
                                 }`}
                               >
                                 {getCategoryIcon(cat?.icon || 'ReceiptText', 'w-5 h-5')}
                               </div>
 
                               <div>
-                                <span className="text-xs sm:text-sm font-medium text-fintech-text-main block">
+                                <span className="text-xs sm:text-sm font-semibold text-white block group-hover:text-violet-300 transition-colors">
                                   {tx.description || cat?.name || 'بدون شرح'}
                                 </span>
-                                <div className="flex items-center gap-2 text-[10px] text-fintech-text-muted font-mono mt-0.5">
+                                <div className="flex items-center gap-2 text-[11px] text-zinc-400 font-mono mt-0.5">
                                   <span>{tx.date}</span>
-                                  {cat && <span>• {cat.name}</span>}
+                                  {cat && <span className="text-zinc-500">• {cat.name}</span>}
                                 </div>
                               </div>
                             </div>
 
-                            <div className="text-left font-mono tabular-nums text-xs sm:text-sm font-semibold">
+                            <div className="text-left font-mono tabular-nums text-sm sm:text-base font-bold">
                               <span
                                 className={
                                   isIncome
@@ -877,19 +937,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 <div className="lg:col-span-4 space-y-6">
                   {/* Smart Insight Card */}
                   {smartInsight && (
-                    <Card variant="gradient" glow className="p-6">
-                      <div className="w-10 h-10 rounded-2xl bg-violet-500/20 border border-violet-500/40 text-violet-300 flex items-center justify-center mb-3">
-                        <Lightbulb className="w-5 h-5" />
+                    <Card variant="gradient" glow className="p-6 sm:p-7 rounded-[2.5rem] relative overflow-hidden group">
+                      <div className="w-12 h-12 rounded-2xl bg-violet-500/20 border border-violet-500/40 text-violet-300 flex items-center justify-center mb-3.5 shadow-glow-violet group-hover:scale-110 transition-transform">
+                        <Lightbulb className="w-6 h-6 text-amber-300" />
                       </div>
-                      <h4 className="text-base font-semibold text-white mb-1.5">
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-violet-300 block mb-1">
+                        AI SMART INSIGHT
+                      </span>
+                      <h4 className="text-base sm:text-lg font-bold text-white mb-2">
                         {smartInsight.title}
                       </h4>
-                      <p className="text-xs text-white/80 leading-relaxed mb-4">
+                      <p className="text-xs text-zinc-300 leading-relaxed mb-5">
                         {smartInsight.desc}
                       </p>
                       <Button
                         variant="secondary"
                         size="sm"
+                        className="bg-white/10 hover:bg-white/20 border-white/20"
                         onClick={() => onSelectTab(smartInsight.tab)}
                       >
                         {smartInsight.actionText}
@@ -899,13 +963,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
 
                   {/* Nearest Goal Card */}
                   {nearestGoal && (
-                    <Card variant="glass" className="p-6">
+                    <Card variant="glass" className="p-6 sm:p-7 rounded-[2.5rem] relative overflow-hidden">
                       <div className="flex items-center justify-between mb-3">
-                        <span className="text-[10px] font-mono uppercase text-violet-400 flex items-center gap-1.5">
+                        <span className="text-[10px] font-mono uppercase text-violet-400 flex items-center gap-1.5 font-bold tracking-wider">
                           <Target className="w-4 h-4 text-emerald-400" />
                           نزدیک‌ترین هدف پس‌انداز
                         </span>
-                        <Badge variant="primary" size="sm">
+                        <Badge variant="primary" size="sm" pulse>
                           {toPersianDigits(
                             Math.round((nearestGoal.currentAmount / nearestGoal.targetAmount) * 100)
                           )}
@@ -913,11 +977,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         </Badge>
                       </div>
 
-                      <h4 className="text-base font-semibold text-fintech-text-main mb-1">
+                      <h4 className="text-base font-bold text-white mb-1.5">
                         {nearestGoal.title}
                       </h4>
 
-                      <div className="flex items-baseline justify-between font-mono tabular-nums text-xs text-fintech-text-muted mt-2 mb-2">
+                      <div className="flex items-baseline justify-between font-mono tabular-nums text-xs text-zinc-400 mt-2 mb-2.5">
                         <span>ذخیره‌شده: {formatCurrency(nearestGoal.currentAmount, currency)}</span>
                         <span>هدف: {formatCurrency(nearestGoal.targetAmount, currency)}</span>
                       </div>
@@ -929,13 +993,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                         glow
                       />
 
-                      <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-between">
-                        <span className="text-[11px] text-fintech-text-muted">
+                      <div className="mt-5 pt-3.5 border-t border-white/[0.08] flex items-center justify-between">
+                        <span className="text-[11px] text-zinc-400 font-mono">
                           باقیمانده: {formatCurrency(Math.max(0, nearestGoal.targetAmount - nearestGoal.currentAmount), currency)}
                         </span>
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="border border-white/10 hover:border-violet-500/30 text-xs"
                           onClick={() => {
                             handleGoalConfetti();
                             onSelectTab('goals');
@@ -958,18 +1023,24 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               <div key="charts-section" className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 
                 {/* 6-Month Income vs Expense Bar Chart with Best Month Highlight (7 cols) */}
-                <Card variant="glass" className="lg:col-span-7 p-6">
-                  <div className="flex items-center justify-between mb-4">
+                <Card variant="glass" className="lg:col-span-7 p-6 sm:p-7 rounded-[2.5rem] relative overflow-hidden">
+                  <div className="flex items-center justify-between mb-5">
                     <div>
-                      <h3 className="text-base font-semibold text-fintech-text-main">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="w-2 h-2 rounded-full bg-violet-400" />
+                        <span className="text-[10px] font-mono tracking-widest text-violet-400 uppercase">
+                          CASHFLOW MOMENTUM
+                        </span>
+                      </div>
+                      <h3 className="text-lg font-bold text-white tracking-tight">
                         مقایسه ۶ ماهه درآمد و مخارج
                       </h3>
-                      <p className="text-xs text-fintech-text-muted mt-0.5">
-                        بهترین ماه پس‌انداز با رنگ متفاوت برجسته شده است
+                      <p className="text-xs text-zinc-400 mt-0.5">
+                        بهترین ماه پس‌انداز با رنگ نئون سبز مشخص شده است
                       </p>
                     </div>
 
-                    <Button variant="ghost" size="sm" onClick={() => onSelectTab('reports')}>
+                    <Button variant="ghost" size="sm" className="border border-white/10 hover:border-violet-500/30 text-xs" onClick={() => onSelectTab('reports')}>
                       گزارش کامل
                     </Button>
                   </div>
@@ -984,17 +1055,18 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           formatter={(val: any) => [formatCurrency(Number(val) || 0, currency), '']}
                           contentStyle={{
                             backgroundColor: '#120F1A',
-                            borderColor: 'rgba(255, 255, 255, 0.12)',
-                            borderRadius: '16px',
+                            borderColor: 'rgba(255, 255, 255, 0.15)',
+                            borderRadius: '18px',
                             color: '#F7F5FA',
                             fontFamily: 'JetBrains Mono',
                             direction: 'rtl',
+                            boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
                           }}
                         />
                         <Bar
                           dataKey="income"
                           name="درآمد"
-                          radius={[6, 6, 0, 0]}
+                          radius={[8, 8, 0, 0]}
                           isAnimationActive={!hasChartAnimatedRef.current}
                           animationDuration={700}
                           animationEasing="ease-out"
@@ -1002,14 +1074,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           {sixMonthBarData.map((entry, index) => (
                             <Cell
                               key={`cell-inc-${index}`}
-                              fill={entry.isBest ? '#10B981' : '#10B98180'}
+                              fill={entry.isBest ? '#10B981' : '#10B98199'}
                             />
                           ))}
                         </Bar>
                         <Bar
                           dataKey="expense"
                           name="مخارج"
-                          radius={[6, 6, 0, 0]}
+                          radius={[8, 8, 0, 0]}
                           isAnimationActive={!hasChartAnimatedRef.current}
                           animationDuration={700}
                           animationEasing="ease-out"
@@ -1017,7 +1089,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           {sixMonthBarData.map((entry, index) => (
                             <Cell
                               key={`cell-exp-${index}`}
-                              fill={entry.isBest ? '#F43F5E' : '#F43F5E80'}
+                              fill={entry.isBest ? '#F43F5E' : '#F43F5E99'}
                             />
                           ))}
                         </Bar>
@@ -1027,40 +1099,46 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 </Card>
 
                 {/* Spending by Category Donut (5 cols) */}
-                <Card variant="glass" className="lg:col-span-5 p-6">
-                  <div className="flex items-center justify-between mb-4">
+                <Card variant="glass" className="lg:col-span-5 p-6 sm:p-7 rounded-[2.5rem] relative overflow-hidden">
+                  <div className="flex items-center justify-between mb-5">
                     <div>
-                      <h3 className="text-base font-semibold text-fintech-text-main">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="w-2 h-2 rounded-full bg-amber-400" />
+                        <span className="text-[10px] font-mono tracking-widest text-amber-400 uppercase">
+                          CATEGORY RADAR
+                        </span>
+                      </div>
+                      <h3 className="text-lg font-bold text-white tracking-tight">
                         سهم مخارج بر اساس دسته‌بندی
                       </h3>
-                      <p className="text-xs text-fintech-text-muted mt-0.5">
+                      <p className="text-xs text-zinc-400 mt-0.5">
                         پایش سهم هزینه‌ها در دوره جاری
                       </p>
                     </div>
                   </div>
 
                   {categoryDonutData.length === 0 ? (
-                    <div className="h-56 flex items-center justify-center text-xs text-fintech-text-muted">
-                      هزینه‌ای برای تحلیل ثبت نشده است
+                    <div className="h-56 flex items-center justify-center text-xs text-zinc-500 font-medium">
+                      هزینه‌ای برای تحلیل در این بازه ثبت نشده است
                     </div>
                   ) : (
                     <div className="space-y-4">
                       <div className="divide-y divide-white/[0.06]">
                         {categoryDonutData.slice(0, 5).map((cat) => (
-                          <div key={cat.id} className="py-2.5 flex items-center justify-between text-xs">
+                          <div key={cat.id} className="py-2.5 flex items-center justify-between text-xs group hover:bg-white/[0.02] px-2 rounded-xl transition">
                             <div className="flex items-center gap-2.5">
                               <div
-                                className="w-2.5 h-2.5 rounded-full"
-                                style={{ backgroundColor: cat.color }}
+                                className="w-3 h-3 rounded-full shadow-[0_0_8px_currentColor]"
+                                style={{ backgroundColor: cat.color, color: cat.color }}
                               />
-                              <span className="font-medium text-fintech-text-main">{cat.name}</span>
+                              <span className="font-semibold text-white group-hover:text-violet-300 transition-colors">{cat.name}</span>
                             </div>
 
                             <div className="flex items-center gap-3">
-                              <span className="font-mono tabular-nums text-fintech-text-muted">
+                              <span className="font-mono tabular-nums text-zinc-400 font-medium">
                                 {toPersianDigits(cat.percent)}٪
                               </span>
-                              <span className="font-mono tabular-nums font-semibold text-fintech-text-main">
+                              <span className="font-mono tabular-nums font-bold text-white">
                                 {formatCurrency(cat.amount, currency)}
                               </span>
                             </div>
@@ -1078,25 +1156,31 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
              ========================================================= */
           case 'showBudgetProgress':
             return (
-              <Card key="budgets-section" variant="glass" className="p-6">
+              <Card key="budgets-section" variant="glass" className="p-6 sm:p-7 rounded-[2.5rem] relative overflow-hidden">
                 <div className="flex items-center justify-between mb-5">
                   <div>
-                    <h3 className="text-base font-semibold text-fintech-text-main">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                      <span className="text-[10px] font-mono tracking-widest text-emerald-400 uppercase">
+                        BUDGET THRESHOLDS
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-bold text-white tracking-tight">
                       وضعیت سقف بودجه‌های ماهانه
                     </h3>
-                    <p className="text-xs text-fintech-text-muted mt-0.5">
+                    <p className="text-xs text-zinc-400 mt-0.5">
                       کنترل هوشمند سقف تعیین‌شده در دسته‌بندی‌های فعال
                     </p>
                   </div>
 
-                  <Button variant="secondary" size="sm" onClick={() => onSelectTab('budgets')}>
+                  <Button variant="secondary" size="sm" className="border-white/10" onClick={() => onSelectTab('budgets')}>
                     مدیریت بودجه‌ها
                   </Button>
                 </div>
 
                 {topBudgets.length === 0 ? (
                   <EmptyState
-                    icon={<PieIcon className="w-6 h-6" />}
+                    icon={<PieIcon className="w-6 h-6 text-violet-400" />}
                     title="هیچ سقف بودجه‌ای تعریف نشده است"
                     description="با تعیین سقف ماهانه برای دسته‌های اصلی از هزینه‌های غیرضروری پیشگیری کنید."
                     action={
@@ -1110,19 +1194,19 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     {topBudgets.map((b) => (
                       <div
                         key={b.id}
-                        className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] space-y-3"
+                        className="p-4 rounded-2xl bg-white/[0.03] hover:bg-white/[0.05] border border-white/[0.08] hover:border-violet-500/30 transition-all duration-200 space-y-3"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-semibold text-fintech-text-main">
+                          <span className="text-xs font-bold text-white">
                             {b.catName}
                           </span>
                           <span
-                            className={`text-xs font-mono font-semibold tabular-nums ${
+                            className={`text-xs font-mono font-bold tabular-nums px-2 py-0.5 rounded-full ${
                               b.isOver
-                                ? 'text-rose-400'
+                                ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
                                 : b.isNear
-                                ? 'text-amber-400'
-                                : 'text-emerald-400'
+                                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                                : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                             }`}
                           >
                             {toPersianDigits(b.percent)}٪
@@ -1133,9 +1217,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                           value={b.percent}
                           variant={b.isOver ? 'danger' : b.isNear ? 'warning' : 'success'}
                           size="sm"
+                          glow
                         />
 
-                        <div className="flex items-center justify-between text-[11px] font-mono text-fintech-text-muted pt-1 border-t border-white/[0.06]">
+                        <div className="flex items-center justify-between text-[11px] font-mono text-zinc-400 pt-1 border-t border-white/[0.06]">
                           <span>مصرف: {formatCurrency(b.spent, currency)}</span>
                           <span>سقف: {formatCurrency(b.amount, currency)}</span>
                         </div>
@@ -1151,24 +1236,30 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
              ========================================================= */
           case 'showCheques':
             return (
-              <Card key="cheques-section" variant="glass" className="p-6">
+              <Card key="cheques-section" variant="glass" className="p-6 sm:p-7 rounded-[2.5rem] relative overflow-hidden">
                 <div className="flex items-center justify-between mb-5">
                   <div>
-                    <h3 className="text-base font-semibold text-fintech-text-main">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="w-2 h-2 rounded-full bg-rose-400" />
+                      <span className="text-[10px] font-mono tracking-widest text-rose-400 uppercase">
+                        LIABILITIES & COMMITMENTS
+                      </span>
+                    </div>
+                    <h3 className="text-lg font-bold text-white tracking-tight">
                       یادآور سررسید چک‌ها و تعهدات نقدی
                     </h3>
-                    <p className="text-xs text-fintech-text-muted mt-0.5">
+                    <p className="text-xs text-zinc-400 mt-0.5">
                       اقلام در انتظار پاس‌شدن و مطالبات نزدیک به موعد سررسید
                     </p>
                   </div>
 
-                  <Button variant="secondary" size="sm" onClick={() => onSelectTab('debts')}>
+                  <Button variant="secondary" size="sm" className="border-white/10" onClick={() => onSelectTab('debts')}>
                     مشاهده دفتر تعهدات
                   </Button>
                 </div>
 
                 {upcomingItems.length === 0 ? (
-                  <div className="py-8 text-center text-xs text-fintech-text-muted">
+                  <div className="py-8 text-center text-xs text-zinc-500 font-medium">
                     هیچ چک یا پرونده بدهی نزدیک به سررسید وجود ندارد.
                   </div>
                 ) : (
@@ -1176,7 +1267,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     {upcomingItems.map((item) => (
                       <div
                         key={item.id}
-                        className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex flex-col justify-between"
+                        className="p-4 rounded-2xl bg-white/[0.03] hover:bg-white/[0.05] border border-white/[0.08] hover:border-violet-500/30 transition-all duration-200 flex flex-col justify-between"
                       >
                         <div>
                           <div className="flex items-center justify-between mb-2">
@@ -1186,20 +1277,20 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                             >
                               {item.isPayable ? 'پرداختنی' : 'دریافتنی'}
                             </Badge>
-                            <span className="text-[10px] font-mono text-fintech-text-muted">
+                            <span className="text-[10px] font-mono text-zinc-400">
                               {item.dueDate}
                             </span>
                           </div>
 
-                          <h5 className="text-xs font-semibold text-fintech-text-main truncate mt-1">
+                          <h5 className="text-xs font-bold text-white truncate mt-1">
                             {item.title}
                           </h5>
                         </div>
 
-                        <div className="mt-3 pt-2 border-t border-white/[0.06] flex items-center justify-between">
-                          <span className="text-[10px] text-fintech-text-muted">مبلغ:</span>
+                        <div className="mt-3 pt-2.5 border-t border-white/[0.06] flex items-center justify-between">
+                          <span className="text-[10px] text-zinc-400 font-mono">مبلغ سند:</span>
                           <span
-                            className={`font-mono tabular-nums font-semibold text-xs ${
+                            className={`font-mono tabular-nums font-bold text-xs ${
                               item.isPayable ? 'text-rose-400' : 'text-emerald-400'
                             }`}
                           >

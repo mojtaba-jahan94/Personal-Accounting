@@ -227,7 +227,7 @@ th {
 }
 
 /* Accent Color Tokens: Nordic Warm Wood Only */
-[data-accent="wood"], :root {
+[data-accent="wood"] {
   --primary-color: #A68A64;
   --primary-rgb: 166, 138, 100;
   --primary-hover: #8A704C;
@@ -262,51 +262,79 @@ th {
 }
 
 /* ==========================================================================
-   Theme Palette: Juniper & Coral (Candle #EFE9D7, Coral #7D2826, Leaf #898861, Juniper #343723)
+   Dynamic Palette Theme Engines (Cyber Violet, Emerald, Gold, Cyan, Crimson, Nordic)
    ========================================================================== */
-[data-theme="juniper_coral"] {
-  --primary-color: #7D2826;
-  --primary-rgb: 125, 40, 38;
-  --primary-hover: #631E1D;
-  --primary-glow: rgba(125, 40, 38, 0.35);
 
-  --bg-base: #EFE9D7;
-  --bg-surface: #FFFFFF;
-  --bg-surface-secondary: #E5DEC8;
-  --text-primary: #343723;
-  --text-muted: #5D6043;
-  --border-subtle: rgba(137, 136, 97, 0.25);
-  --border-cloud: #D6CEBA;
+/* Universal Dynamic Accent Mapping for all Neo-Fintech Themes */
+[data-theme] .text-violet-400,
+[data-theme] .text-violet-500,
+[data-theme] .text-violet-300 {
+  color: var(--primary-color) !important;
 }
 
-[data-theme="juniper_coral"].dark,
-.dark[data-theme="juniper_coral"],
-.dark [data-theme="juniper_coral"] {
-  --primary-color: #E26865;
-  --primary-rgb: 226, 104, 101;
-  --primary-hover: #F87171;
-  --primary-glow: rgba(226, 104, 101, 0.35);
-
-  --bg-base: #202316;
-  --bg-surface: #343723;
-  --bg-surface-secondary: rgba(52, 55, 35, 0.75);
-  --text-primary: #EFE9D7;
-  --text-muted: #C5C3A5;
-  --border-subtle: rgba(137, 136, 97, 0.25);
-  --border-cloud: rgba(239, 233, 215, 0.2);
+[data-theme] .bg-violet-600,
+[data-theme] .bg-violet-500,
+[data-theme] .bg-violet-400 {
+  background-color: var(--primary-color) !important;
 }
 
-/* Primary Accents (Wood #A68A64 -> Coral #7D2826) */
-[data-theme="juniper_coral"] .bg-\[\#A68A64\] {
-  background-color: #7D2826 !important;
-}
-.dark[data-theme="juniper_coral"] .bg-\[\#A68A64\],
-[data-theme="juniper_coral"].dark .bg-\[\#A68A64\] {
-  background-color: #C84643 !important;
+[data-theme] .bg-violet-500\/10,
+[data-theme] .bg-violet-500\/15,
+[data-theme] .bg-violet-500\/20,
+[data-theme] .bg-violet-600\/10,
+[data-theme] .bg-violet-600\/15,
+[data-theme] .bg-violet-600\/20,
+[data-theme] .bg-violet-950\/40,
+[data-theme] .bg-violet-950\/60 {
+  background-color: rgba(var(--primary-rgb), 0.15) !important;
 }
 
-[data-theme="juniper_coral"] .hover\:bg-\[\#8A704C\]:hover {
-  background-color: #631E1D !important;
+[data-theme] .border-violet-500,
+[data-theme] .border-violet-500\/20,
+[data-theme] .border-violet-500\/25,
+[data-theme] .border-violet-500\/30,
+[data-theme] .border-violet-500\/40 {
+  border-color: rgba(var(--primary-rgb), 0.35) !important;
+}
+
+[data-theme] .hover\:border-violet-500\/30:hover,
+[data-theme] .hover\:border-violet-500\/40:hover {
+  border-color: rgba(var(--primary-rgb), 0.5) !important;
+}
+
+[data-theme] .shadow-glow-violet,
+[data-theme] .shadow-violet-500\/25,
+[data-theme] .shadow-violet-500\/20,
+[data-theme] .shadow-violet-500\/15 {
+  box-shadow: 0 0 25px -4px var(--primary-glow) !important;
+}
+
+[data-theme] .from-violet-600 {
+  --tw-gradient-from: var(--accent-from) var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: var(--accent-to) var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important;
+}
+
+[data-theme] .ring-violet-500\/30,
+[data-theme] .ring-violet-500\/20 {
+  --tw-ring-color: rgba(var(--primary-rgb), 0.4) !important;
+}
+
+/* Card and Surface Spatial Classes */
+.card-titanium-holo {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(var(--primary-rgb), 0.08) 100%), var(--bg-card);
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  border: 1px solid rgba(var(--primary-rgb), 0.25);
+  box-shadow: 0 16px 40px -12px rgba(0, 0, 0, 0.7), 0 0 35px -8px var(--primary-glow);
+}
+
+.glass-vision {
+  background: var(--bg-card);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 45px -12px rgba(0, 0, 0, 0.65);
 }
 .dark[data-theme="juniper_coral"] .hover\:bg-\[\#8A704C\]:hover,
 [data-theme="juniper_coral"].dark .hover\:bg-\[\#8A704C\]:hover {
@@ -1007,6 +1035,217 @@ html:not(.dark).no-glass .liquid-glass-card {
 .contain-paint {
   contain: layout paint;
 }
+
+/* ==========================================================================
+   Phase 3: Neo-Fintech & VisionOS Spatial Glass System
+   ========================================================================== */
+
+/* Ambient Cosmic Aurora Keyframes */
+@keyframes auroraFloat1 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.35;
+  }
+  33% {
+    transform: translate3d(60px, -40px, 0) scale(1.15);
+    opacity: 0.55;
+  }
+  66% {
+    transform: translate3d(-40px, 50px, 0) scale(0.95);
+    opacity: 0.4;
+  }
+}
+
+@keyframes auroraFloat2 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.3;
+  }
+  40% {
+    transform: translate3d(-50px, 45px, 0) scale(1.12);
+    opacity: 0.5;
+  }
+  80% {
+    transform: translate3d(45px, -35px, 0) scale(0.92);
+    opacity: 0.35;
+  }
+}
+
+@keyframes auroraFloat3 {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.25;
+  }
+  50% {
+    transform: translate3d(40px, 30px, 0) scale(1.2);
+    opacity: 0.45;
+  }
+}
+
+@keyframes holographicSheen {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes neonBeaconPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-aurora-1 {
+  animation: auroraFloat1 18s ease-in-out infinite;
+}
+
+.animate-aurora-2 {
+  animation: auroraFloat2 22s ease-in-out infinite;
+}
+
+.animate-aurora-3 {
+  animation: auroraFloat3 26s ease-in-out infinite;
+}
+
+.animate-neon-pulse {
+  animation: neonBeaconPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-float-gentle {
+  animation: floatGentle 5s ease-in-out infinite;
+}
+
+/* Futuristic Cyber Grid & Dot Matrix */
+.cyber-grid-pattern {
+  background-image: 
+    radial-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* VisionOS Liquid Glass Card Classes */
+.glass-vision {
+  background: rgba(18, 15, 27, 0.65);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: 
+    0 20px 40px -15px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.14),
+    inset 0 -1px 0 0 rgba(255, 255, 255, 0.02);
+}
+
+.glass-vision-interactive {
+  background: rgba(18, 15, 27, 0.65);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    0 16px 36px -12px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-vision-interactive:hover {
+  background: rgba(26, 21, 38, 0.8);
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 24px 48px -10px rgba(0, 0, 0, 0.8),
+    0 0 25px -4px rgba(139, 92, 246, 0.25),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.22);
+}
+
+/* Titanium Master Credit Card Hologram */
+.card-titanium-holo {
+  background: 
+    radial-gradient(130% 120% at 85% 15%, rgba(139, 92, 246, 0.35) 0%, transparent 60%),
+    radial-gradient(100% 100% at 15% 85%, rgba(16, 185, 129, 0.2) 0%, transparent 60%),
+    linear-gradient(135deg, #181426 0%, #0E0C15 50%, #151122 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.85),
+    0 0 35px -5px rgba(139, 92, 246, 0.3),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.25);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-titanium-holo::after {
+  content: "";
+  position: absolute;
+  inset: -100%;
+  background: linear-gradient(
+    115deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.08) 45%,
+    rgba(139, 92, 246, 0.18) 50%,
+    rgba(16, 185, 129, 0.12) 55%,
+    transparent 65%
+  );
+  background-size: 200% 200%;
+  animation: holographicSheen 8s infinite linear;
+  pointer-events: none;
+}
+
+/* Neon Glow Halos */
+.neon-glow-violet {
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.4), inset 0 0 15px rgba(139, 92, 246, 0.2);
+}
+
+.neon-glow-emerald {
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.35), inset 0 0 15px rgba(16, 185, 129, 0.15);
+}
+
+.neon-glow-rose {
+  box-shadow: 0 0 25px rgba(244, 63, 94, 0.35), inset 0 0 15px rgba(244, 63, 94, 0.15);
+}
+
+.neon-glow-amber {
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.35), inset 0 0 15px rgba(245, 158, 11, 0.15);
+}
+
+/* Text Gradients */
+.text-gradient-cyan-violet {
+  background: linear-gradient(135deg, #38BDF8 0%, #818CF8 50%, #C084FC 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-emerald {
+  background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-rose {
+  background: linear-gradient(135deg, #FB7185 0%, #F43F5E 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-gold {
+  background: linear-gradient(135deg, #FDE68A 0%, #F59E0B 50%, #D97706 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 
 
 

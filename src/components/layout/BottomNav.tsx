@@ -144,18 +144,21 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       <nav
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className="lg:hidden fixed bottom-4 inset-x-0 mx-auto w-[calc(100%-1.75rem)] max-w-md z-40 rounded-full px-5 py-2.5 shadow-2xl backdrop-blur-2xl border transition-[transform,opacity] duration-200 bg-[#120F1A]/85 border-white/10 text-fintech-text-main select-none"
+        className="lg:hidden fixed bottom-4 inset-x-0 mx-auto w-[calc(100%-1.75rem)] max-w-md z-40 rounded-full px-5 py-2 shadow-2xl glass-vision text-fintech-text-main select-none overflow-hidden"
       >
+        {/* Top Edge Specular Shimmer */}
+        <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
+
         <div className="flex items-center justify-between relative">
           
           {/* Tab 1: داشبورد */}
           <button
             type="button"
             onClick={() => onSelectTab('dashboard')}
-            className={`transition-[color,transform] duration-150 active:scale-95 flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl relative ${
+            className={`transition-all duration-200 active:scale-95 flex flex-col items-center justify-center py-1.5 px-3 rounded-2xl relative ${
               currentTab === 'dashboard'
                 ? 'text-white font-semibold'
-                : 'text-fintech-text-muted hover:text-white'
+                : 'text-zinc-400 hover:text-white'
             }`}
             title="داشبورد"
           >
@@ -163,7 +166,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               <motion.div
                 layoutId="bottomNavActive"
                 transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                className="absolute inset-0 bg-white/[0.08] rounded-2xl border border-white/10"
+                className="absolute inset-0 bg-white/[0.1] rounded-2xl border border-white/15 shadow-glow-violet"
               />
             )}
             <LayoutDashboard className="w-5 h-5 relative z-10" />
@@ -174,10 +177,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <button
             type="button"
             onClick={() => onSelectTab('transactions')}
-            className={`transition-[color,transform] duration-150 active:scale-95 flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl relative ${
+            className={`transition-all duration-200 active:scale-95 flex flex-col items-center justify-center py-1.5 px-3 rounded-2xl relative ${
               currentTab === 'transactions'
                 ? 'text-white font-semibold'
-                : 'text-fintech-text-muted hover:text-white'
+                : 'text-zinc-400 hover:text-white'
             }`}
             title="تراکنش‌ها"
           >
@@ -185,7 +188,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               <motion.div
                 layoutId="bottomNavActive"
                 transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                className="absolute inset-0 bg-white/[0.08] rounded-2xl border border-white/10"
+                className="absolute inset-0 bg-white/[0.1] rounded-2xl border border-white/15 shadow-glow-violet"
               />
             )}
             <ReceiptText className="w-5 h-5 relative z-10" />
@@ -193,23 +196,30 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           </button>
 
           {/* Center Prominent Action Button (+) */}
-          <button
-            type="button"
-            onClick={onOpenTransactionModal}
-            className="rounded-full bg-gradient-to-r from-violet-600 via-indigo-600 to-violet-700 text-white p-3.5 shadow-glow-violet hover:scale-105 active:scale-95 transition-[transform,box-shadow] duration-150 flex items-center justify-center border-2 border-[#120F1A]"
-            title="ثبت سریع تراکنش جدید"
-          >
-            <Plus className="w-5 h-5 stroke-[2.5]" />
-          </button>
+          <div className="relative group -my-2">
+            <div
+              className="absolute -inset-1 rounded-full opacity-60 group-hover:opacity-100 blur-md transition duration-300 animate-pulse pointer-events-none"
+              style={{ backgroundImage: 'var(--accent-gradient)' }}
+            />
+            <button
+              type="button"
+              onClick={onOpenTransactionModal}
+              className="relative rounded-full text-white p-3.5 shadow-glow-violet hover:scale-105 active:scale-95 transition-all duration-200 flex items-center justify-center border-2 border-white/20 cursor-pointer"
+              style={{ backgroundImage: 'var(--accent-gradient)' }}
+              title="ثبت سریع تراکنش جدید"
+            >
+              <Plus className="w-5 h-5 stroke-[2.5]" />
+            </button>
+          </div>
 
           {/* Tab 3: دارایی‌ها */}
           <button
             type="button"
             onClick={() => onSelectTab('assets')}
-            className={`transition-[color,transform] duration-150 active:scale-95 flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl relative ${
+            className={`transition-all duration-200 active:scale-95 flex flex-col items-center justify-center py-1.5 px-3 rounded-2xl relative ${
               currentTab === 'assets'
                 ? 'text-white font-semibold'
-                : 'text-fintech-text-muted hover:text-white'
+                : 'text-zinc-400 hover:text-white'
             }`}
             title="دارایی‌ها"
           >
@@ -217,7 +227,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               <motion.div
                 layoutId="bottomNavActive"
                 transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                className="absolute inset-0 bg-white/[0.08] rounded-2xl border border-white/10"
+                className="absolute inset-0 bg-white/[0.1] rounded-2xl border border-white/15 shadow-glow-violet"
               />
             )}
             <Coins className="w-5 h-5 relative z-10" />
@@ -228,10 +238,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <button
             type="button"
             onClick={() => setMoreMenuOpen(true)}
-            className={`transition-[color,transform] duration-150 active:scale-95 flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl relative ${
+            className={`transition-all duration-200 active:scale-95 flex flex-col items-center justify-center py-1.5 px-3 rounded-2xl relative ${
               isMoreActive || moreMenuOpen
                 ? 'text-white font-semibold'
-                : 'text-fintech-text-muted hover:text-white'
+                : 'text-zinc-400 hover:text-white'
             }`}
             title="سایر بخش‌ها"
           >
@@ -239,7 +249,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
               <motion.div
                 layoutId="bottomNavActive"
                 transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                className="absolute inset-0 bg-white/[0.08] rounded-2xl border border-white/10"
+                className="absolute inset-0 bg-white/[0.1] rounded-2xl border border-white/15 shadow-glow-violet"
               />
             )}
             <Menu className="w-5 h-5 relative z-10" />

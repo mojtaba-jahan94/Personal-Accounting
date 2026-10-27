@@ -87,35 +87,50 @@ export const AuthView: React.FC<AuthViewProps> = ({ onSuccess }) => {
   return (
     <div
       dir="rtl"
-      className="min-h-screen w-full flex items-center justify-center p-4 sm:p-6 bg-fintech-bg text-fintech-text-primary relative overflow-hidden select-none"
+      className="min-h-screen w-full flex items-center justify-center p-4 sm:p-6 bg-[#08070C] text-white relative overflow-hidden select-none"
     >
-      {/* Soft Ambient Radiance */}
-      <div className="absolute top-1/4 -right-20 w-96 h-96 bg-violet-600/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 -left-20 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />
+      {/* Cyber Grid Matrix */}
+      <div className="absolute inset-0 cyber-grid-pattern opacity-30" />
+
+      {/* Moving Cosmic Aurora Blobs */}
+      <div className="absolute -top-32 right-[-10%] w-[500px] h-[500px] rounded-full bg-violet-600/25 blur-3xl pointer-events-none animate-aurora-1" />
+      <div className="absolute -bottom-32 -left-[10%] w-[500px] h-[500px] rounded-full bg-indigo-600/20 blur-3xl pointer-events-none animate-aurora-2" />
+      <div className="absolute top-[40%] right-[30%] w-[400px] h-[400px] rounded-full bg-emerald-500/15 blur-3xl pointer-events-none animate-aurora-3" />
 
       <motion.div
-        initial={{ opacity: 0, scale: 0.96 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.3 }}
+        initial={{ opacity: 0, scale: 0.95, y: 15 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.4, type: 'spring', damping: 25 }}
         className="w-full max-w-md relative z-10"
       >
         {/* Brand / Logo header */}
         <div className="text-center mb-6 space-y-2">
-          <div className="inline-flex items-center justify-center mb-2">
-            <BrandLogo size={64} animated={true} />
+          <div className="inline-flex items-center justify-center mb-2 relative group">
+            <div className="absolute -inset-2 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 opacity-50 blur-lg group-hover:opacity-80 transition duration-300" />
+            <div className="relative">
+              <BrandLogo size={68} animated={true} />
+            </div>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-            حسابداری شخصی
+          <div className="flex items-center justify-center gap-2">
+            <span className="text-[10px] tracking-[0.25em] font-mono font-bold bg-gradient-to-r from-violet-400 via-indigo-300 to-cyan-400 bg-clip-text text-transparent uppercase">
+              AETHERIUM OS
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white drop-shadow-md">
+            حسابداری شخصی پیشرفته
           </h1>
-          <p className="text-xs text-fintech-text-muted font-medium">
-            مدیریت دخل و خرج، بودجه‌بندی و پایش هوشمند دارایی‌ها
+          <p className="text-xs text-zinc-400 font-medium max-w-xs mx-auto">
+            مدیریت هوشمند دارایی‌ها، کنترل دخل‌وخرج و تحلیل جریان وجوه نقد
           </p>
         </div>
 
         {/* Auth Glass Card */}
-        <Card variant="glass" className="p-6 sm:p-8 border-white/10 shadow-2xl space-y-6">
+        <Card variant="glass" className="p-6 sm:p-8 rounded-[2.5rem] border-white/10 shadow-2xl space-y-6 relative overflow-hidden backdrop-blur-2xl">
+          {/* Top Specular Shimmer */}
+          <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400/40 via-violet-400/60 to-transparent pointer-events-none" />
+
           {/* Tab selector */}
-          <div className="grid grid-cols-2 gap-1.5 p-1 bg-black/20 dark:bg-white/[0.04] border border-white/5 rounded-2xl text-xs font-bold relative">
+          <div className="grid grid-cols-2 gap-1.5 p-1.5 bg-black/40 border border-white/10 rounded-2xl text-xs font-bold relative">
             <button
               type="button"
               onClick={() => {

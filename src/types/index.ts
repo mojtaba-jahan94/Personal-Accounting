@@ -136,9 +136,15 @@ export interface Cheque {
 
 export type Currency = 'toman' | 'rial';
 
-// Theme Studio Pro Types (Nordic Warm Wood & Juniper Coral Palettes)
-export type ThemePaletteId = 'nordic' | 'juniper_coral';
-export type AccentColor = 'wood';
+export type ThemePaletteId =
+  | 'cyber_violet'
+  | 'emerald_neon'
+  | 'quantum_gold'
+  | 'cyber_cyan'
+  | 'cyber_crimson'
+  | 'nordic'
+  | 'juniper_coral';
+export type AccentColor = 'violet' | 'emerald' | 'gold' | 'wood';
 export type GlassIntensity = 'low' | 'medium' | 'high';
 export type AnimationSpeed = 'fast' | 'normal' | 'none';
 export type BorderRadius = 'sharp' | 'smooth' | 'round';

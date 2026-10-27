@@ -3,37 +3,44 @@ import { useFinance } from '../../context/FinanceContext';
 
 export const MinimalBackground: React.FC = () => {
   const { themeConfig } = useFinance();
-  const isJuniper = themeConfig.palette === 'juniper_coral';
-
-  const primaryGlow = isJuniper ? 'rgba(125,40,38,0.22)' : 'rgba(139,92,246,0.22)';
-  const secondaryGlow = isJuniper ? 'rgba(137,136,97,0.18)' : 'rgba(99,102,241,0.18)';
+  const isDark = themeConfig.mode === 'dark';
 
   return (
     <div
-      className="fixed inset-0 pointer-events-none overflow-hidden z-0 select-none transition-colors duration-300"
+      className="fixed inset-0 pointer-events-none overflow-hidden z-0 select-none transition-colors duration-500"
       aria-hidden="true"
     >
-      {/* 1. Deep Obsidian Base */}
-      <div className="absolute inset-0 bg-[#F8F7FA] dark:bg-[#0A090D] transition-colors duration-300" />
-
-      {/* 2. Top-Right Soft Radial Glow (Pre-baked radial gradient, zero CSS blur filter) */}
+      {/* 1. Deep Void Base */}
       <div
-        className="absolute -top-32 right-[-10%] sm:right-[5%] w-[600px] sm:w-[800px] h-[600px] sm:h-[800px] rounded-full pointer-events-none"
+        className="absolute inset-0 transition-colors duration-500"
+        style={{ backgroundColor: 'var(--bg-app, #08070C)' }}
+      />
+
+      {/* 2. Cyber Matrix Grid */}
+      <div className="absolute inset-0 cyber-grid-pattern opacity-20 dark:opacity-15" />
+
+      {/* 3. Top-Right Soft Radial Glow */}
+      <div
+        className="absolute -top-32 right-[-10%] sm:right-[5%] w-[600px] sm:w-[800px] h-[600px] sm:h-[800px] rounded-full pointer-events-none transition-all duration-700"
         style={{
-          background: `radial-gradient(circle, ${primaryGlow} 0%, rgba(139,92,246,0.05) 50%, transparent 70%)`,
+          background: isDark
+            ? 'radial-gradient(circle, var(--aurora-1, rgba(139,92,246,0.18)) 0%, rgba(var(--primary-rgb, 139, 92, 246), 0.05) 50%, transparent 70%)'
+            : 'radial-gradient(circle, var(--aurora-1, rgba(139,92,246,0.12)) 0%, rgba(var(--primary-rgb, 139, 92, 246), 0.03) 50%, transparent 70%)',
         }}
       />
 
-      {/* 3. Bottom-Left Soft Radial Glow */}
+      {/* 4. Bottom-Left Soft Radial Glow */}
       <div
-        className="absolute top-[40%] sm:top-[30%] -left-[15%] sm:-left-[5%] w-[550px] sm:w-[750px] h-[550px] sm:h-[750px] rounded-full pointer-events-none"
+        className="absolute top-[40%] sm:top-[30%] -left-[15%] sm:-left-[5%] w-[550px] sm:w-[750px] h-[550px] sm:h-[750px] rounded-full pointer-events-none transition-all duration-700"
         style={{
-          background: `radial-gradient(circle, ${secondaryGlow} 0%, rgba(99,102,241,0.04) 50%, transparent 70%)`,
+          background: isDark
+            ? 'radial-gradient(circle, var(--aurora-2, rgba(16,185,129,0.12)) 0%, rgba(var(--primary-rgb, 139, 92, 246), 0.03) 50%, transparent 70%)'
+            : 'radial-gradient(circle, var(--aurora-2, rgba(16,185,129,0.08)) 0%, rgba(var(--primary-rgb, 139, 92, 246), 0.02) 50%, transparent 70%)',
         }}
       />
 
-      {/* 4. Center Subtle Radial Vignette */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(139,92,246,0.05),transparent)] dark:bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(139,92,246,0.08),transparent)]" />
+      {/* 5. Center Subtle Vignette */}
+      <div className="absolute inset-0 bg-radial-vignette opacity-50 dark:opacity-70" />
     </div>
   );
 };

@@ -194,7 +194,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       <motion.div
                         layoutId="sidebarActivePill"
                         transition={{ type: 'spring', stiffness: 500, damping: 35 }}
-                        className="absolute inset-0 rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-violet-700 shadow-glow-violet -z-0"
+                        className="absolute inset-0 rounded-2xl shadow-glow-violet -z-0"
+                        style={{ backgroundImage: 'var(--accent-gradient)' }}
                       />
                     )}
 
@@ -299,10 +300,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <>
       {/* Desktop Sticky Sidebar */}
       <aside
-        className={`hidden lg:flex flex-col shrink-0 p-4 m-4 mr-0 rounded-3xl bg-[#120F1A]/85 backdrop-blur-2xl border border-white/10 shadow-2xl self-start sticky top-20 min-h-[calc(100vh-6rem)] transition-[width] duration-200 select-none z-30 ${
+        className={`hidden lg:flex flex-col shrink-0 p-4 m-4 mr-0 rounded-[2.5rem] glass-vision self-start sticky top-20 min-h-[calc(100vh-6rem)] transition-all duration-300 select-none z-30 relative overflow-hidden ${
           isCollapsed ? 'w-20' : 'w-72'
         }`}
       >
+        {/* Top Edge Specular Shimmer */}
+        <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none" />
         {sidebarContent}
       </aside>
 

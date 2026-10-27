@@ -18,6 +18,7 @@ import {
   Cheque,
   Currency,
   ThemeConfig,
+  ThemePaletteId,
   DashboardSectionConfig,
   Person,
   DebtPayment,
@@ -380,26 +381,26 @@ export const DEFAULT_DASHBOARD_CONFIG: DashboardSectionConfig = {
 };
 
 const DEFAULT_THEME_CONFIG: ThemeConfig = {
-  mode: 'light',
-  palette: 'nordic',
-  accent: 'wood',
-  customAccentHex: '#A68A64',
+  mode: 'dark',
+  palette: 'cyber_violet',
+  accent: 'violet',
+  customAccentHex: '#8B5CF6',
   amoledMode: false,
   liquidGlass: true,
   performanceMode: false,
   lightStyle: 'frost',
-  backgroundStyle: 'clean_minimal',
-  spotlight1Color: '#A68A64',
-  spotlight2Color: '#C2A882',
-  glassIntensity: 'medium',
-  glassOpacity: 0.85,
-  glassBlur: 14,
-  glassRefraction: 0.5,
-  glassSaturation: 160,
+  backgroundStyle: 'silk_wave',
+  spotlight1Color: '#8B5CF6',
+  spotlight2Color: '#6366F1',
+  glassIntensity: 'high',
+  glassOpacity: 0.88,
+  glassBlur: 20,
+  glassRefraction: 0.6,
+  glassSaturation: 170,
   ambientOrbs: true,
-  ambientGlow: 'subtle',
+  ambientGlow: 'vibrant',
   animationSpeed: 'fast',
-  borderRadius: 'smooth',
+  borderRadius: 'round',
 };
 
 export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -664,70 +665,161 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
       root.classList.remove('perf-mode');
     }
 
-    // Apply Palette Identity (Nordic vs Juniper & Coral)
-    const currentPalette = themeConfig.palette || 'nordic';
+    // Apply Palette Identity (Cyber Violet, Emerald Neon, Quantum Gold, Cyber Cyan, Cyber Crimson, Nordic)
+    const currentPalette: ThemePaletteId = themeConfig.palette || 'cyber_violet';
     root.setAttribute('data-theme', currentPalette);
     body?.setAttribute('data-theme', currentPalette);
+    const isDark = themeConfig.mode === 'dark';
 
-    if (currentPalette === 'juniper_coral') {
-      root.setAttribute('data-accent', 'coral');
-      const isDark = themeConfig.mode === 'dark';
-      const coralAccent = isDark ? '#E26865' : '#7D2826';
-      const coralHover = isDark ? '#F87171' : '#631E1D';
-      const coralRgb = isDark ? '226, 104, 101' : '125, 40, 38';
+    interface PaletteTokens {
+      primaryColor: string;
+      primaryRgb: string;
+      primaryHover: string;
+      primaryGlow: string;
+      accentFrom: string;
+      accentTo: string;
+      aurora1: string;
+      aurora2: string;
+      aurora3: string;
+      bgAppDark: string;
+      bgSurfaceDark: string;
+      bgElevatedDark: string;
+    }
 
-      root.style.setProperty('--primary-color', coralAccent);
-      root.style.setProperty('--primary-rgb', coralRgb);
-      root.style.setProperty('--primary-hover', coralHover);
-      root.style.setProperty('--primary-glow', 'rgba(125, 40, 38, 0.35)');
+    const PALETTE_MAP: Record<ThemePaletteId, PaletteTokens> = {
+      cyber_violet: {
+        primaryColor: '#8B5CF6',
+        primaryRgb: '139, 92, 246',
+        primaryHover: '#7C3AED',
+        primaryGlow: 'rgba(139, 92, 246, 0.45)',
+        accentFrom: '#8B5CF6',
+        accentTo: '#6366F1',
+        aurora1: 'rgba(139, 92, 246, 0.30)',
+        aurora2: 'rgba(6, 182, 212, 0.22)',
+        aurora3: 'rgba(244, 63, 94, 0.18)',
+        bgAppDark: '#08070B',
+        bgSurfaceDark: '#110E1B',
+        bgElevatedDark: 'rgba(22, 18, 36, 0.75)',
+      },
+      emerald_neon: {
+        primaryColor: '#10B981',
+        primaryRgb: '16, 185, 129',
+        primaryHover: '#059669',
+        primaryGlow: 'rgba(16, 185, 129, 0.45)',
+        accentFrom: '#10B981',
+        accentTo: '#059669',
+        aurora1: 'rgba(16, 185, 129, 0.32)',
+        aurora2: 'rgba(20, 184, 166, 0.24)',
+        aurora3: 'rgba(6, 182, 212, 0.18)',
+        bgAppDark: '#050D0A',
+        bgSurfaceDark: '#0A1612',
+        bgElevatedDark: 'rgba(15, 34, 27, 0.75)',
+      },
+      quantum_gold: {
+        primaryColor: '#F59E0B',
+        primaryRgb: '245, 158, 11',
+        primaryHover: '#D97706',
+        primaryGlow: 'rgba(245, 158, 11, 0.45)',
+        accentFrom: '#F59E0B',
+        accentTo: '#D97706',
+        aurora1: 'rgba(245, 158, 11, 0.30)',
+        aurora2: 'rgba(251, 146, 60, 0.24)',
+        aurora3: 'rgba(234, 88, 12, 0.18)',
+        bgAppDark: '#0D0A05',
+        bgSurfaceDark: '#17130A',
+        bgElevatedDark: 'rgba(34, 28, 14, 0.75)',
+      },
+      cyber_cyan: {
+        primaryColor: '#06B6D4',
+        primaryRgb: '6, 182, 212',
+        primaryHover: '#0891B2',
+        primaryGlow: 'rgba(6, 182, 212, 0.45)',
+        accentFrom: '#06B6D4',
+        accentTo: '#3B82F6',
+        aurora1: 'rgba(6, 182, 212, 0.32)',
+        aurora2: 'rgba(59, 130, 246, 0.24)',
+        aurora3: 'rgba(99, 102, 241, 0.18)',
+        bgAppDark: '#050B10',
+        bgSurfaceDark: '#08141F',
+        bgElevatedDark: 'rgba(13, 30, 45, 0.75)',
+      },
+      cyber_crimson: {
+        primaryColor: '#F43F5E',
+        primaryRgb: '244, 63, 94',
+        primaryHover: '#E11D48',
+        primaryGlow: 'rgba(244, 63, 94, 0.45)',
+        accentFrom: '#F43F5E',
+        accentTo: '#E11D48',
+        aurora1: 'rgba(244, 63, 94, 0.32)',
+        aurora2: 'rgba(217, 70, 239, 0.24)',
+        aurora3: 'rgba(168, 85, 247, 0.18)',
+        bgAppDark: '#0D0608',
+        bgSurfaceDark: '#170A0F',
+        bgElevatedDark: 'rgba(35, 14, 23, 0.75)',
+      },
+      nordic: {
+        primaryColor: '#94A3B8',
+        primaryRgb: '148, 163, 184',
+        primaryHover: '#64748B',
+        primaryGlow: 'rgba(148, 163, 184, 0.35)',
+        accentFrom: '#94A3B8',
+        accentTo: '#475569',
+        aurora1: 'rgba(148, 163, 184, 0.24)',
+        aurora2: 'rgba(100, 116, 139, 0.18)',
+        aurora3: 'rgba(71, 85, 105, 0.14)',
+        bgAppDark: '#0A0C10',
+        bgSurfaceDark: '#12161E',
+        bgElevatedDark: 'rgba(26, 32, 44, 0.75)',
+      },
+      juniper_coral: {
+        primaryColor: '#E26865',
+        primaryRgb: '226, 104, 101',
+        primaryHover: '#F87171',
+        primaryGlow: 'rgba(226, 104, 101, 0.45)',
+        accentFrom: '#E26865',
+        accentTo: '#7D2826',
+        aurora1: 'rgba(226, 104, 101, 0.30)',
+        aurora2: 'rgba(137, 136, 97, 0.22)',
+        aurora3: 'rgba(52, 55, 35, 0.18)',
+        bgAppDark: '#202316',
+        bgSurfaceDark: '#343723',
+        bgElevatedDark: 'rgba(52, 55, 35, 0.75)',
+      },
+    };
 
-      // Palette core tokens
-      root.style.setProperty('--color-candle', '#EFE9D7');
-      root.style.setProperty('--color-coral', '#7D2826');
-      root.style.setProperty('--color-leaf', '#898861');
-      root.style.setProperty('--color-juniper', '#343723');
+    const activeTokens = PALETTE_MAP[currentPalette] || PALETTE_MAP.cyber_violet;
 
-      if (isDark) {
-        root.style.setProperty('--bg-base', '#202316');
-        root.style.setProperty('--bg-surface', '#343723');
-        root.style.setProperty('--bg-surface-secondary', 'rgba(52, 55, 35, 0.75)');
-        root.style.setProperty('--text-primary', '#EFE9D7');
-        root.style.setProperty('--text-muted', '#C5C3A5');
-        root.style.setProperty('--border-subtle', 'rgba(137, 136, 97, 0.25)');
-        root.style.setProperty('--border-cloud', 'rgba(239, 233, 215, 0.2)');
-      } else {
-        root.style.setProperty('--bg-base', '#EFE9D7');
-        root.style.setProperty('--bg-surface', '#FFFFFF');
-        root.style.setProperty('--bg-surface-secondary', '#E5DEC8');
-        root.style.setProperty('--text-primary', '#343723');
-        root.style.setProperty('--text-muted', '#626647');
-        root.style.setProperty('--border-subtle', 'rgba(137, 136, 97, 0.25)');
-        root.style.setProperty('--border-cloud', '#D6CEBA');
-      }
+    root.style.setProperty('--primary-color', activeTokens.primaryColor);
+    root.style.setProperty('--primary-rgb', activeTokens.primaryRgb);
+    root.style.setProperty('--primary-hover', activeTokens.primaryHover);
+    root.style.setProperty('--primary-glow', activeTokens.primaryGlow);
+    root.style.setProperty('--accent-from', activeTokens.accentFrom);
+    root.style.setProperty('--accent-to', activeTokens.accentTo);
+    root.style.setProperty('--accent-gradient', `linear-gradient(135deg, ${activeTokens.accentFrom} 0%, ${activeTokens.accentTo} 100%)`);
+    root.style.setProperty('--border-glass-glow', activeTokens.primaryGlow);
+
+    root.style.setProperty('--aurora-1', activeTokens.aurora1);
+    root.style.setProperty('--aurora-2', activeTokens.aurora2);
+    root.style.setProperty('--aurora-3', activeTokens.aurora3);
+
+    if (isDark) {
+      root.style.setProperty('--bg-app', activeTokens.bgAppDark);
+      root.style.setProperty('--bg-base', activeTokens.bgAppDark);
+      root.style.setProperty('--bg-surface', activeTokens.bgSurfaceDark);
+      root.style.setProperty('--bg-surface-secondary', activeTokens.bgElevatedDark);
+      root.style.setProperty('--text-primary', '#F7F5FA');
+      root.style.setProperty('--text-muted', '#9E97AA');
+      root.style.setProperty('--border-subtle', 'rgba(255, 255, 255, 0.08)');
+      root.style.setProperty('--border-cloud', 'rgba(255, 255, 255, 0.12)');
     } else {
-      root.setAttribute('data-accent', 'wood');
-      root.style.setProperty('--primary-color', '#A68A64');
-      root.style.setProperty('--primary-rgb', '166, 138, 100');
-      root.style.setProperty('--primary-hover', '#8A704C');
-      root.style.setProperty('--primary-glow', 'rgba(166, 138, 100, 0.35)');
-
-      if (themeConfig.mode === 'dark') {
-        root.style.setProperty('--bg-base', '#1F2933');
-        root.style.setProperty('--bg-surface', '#263340');
-        root.style.setProperty('--bg-surface-secondary', 'rgba(31, 41, 51, 0.75)');
-        root.style.setProperty('--text-primary', '#F7F7F2');
-        root.style.setProperty('--text-muted', '#D1D5DB');
-        root.style.setProperty('--border-subtle', 'rgba(209, 213, 219, 0.15)');
-        root.style.setProperty('--border-cloud', 'rgba(209, 213, 219, 0.22)');
-      } else {
-        root.style.setProperty('--bg-base', '#F7F7F2');
-        root.style.setProperty('--bg-surface', '#FFFFFF');
-        root.style.setProperty('--bg-surface-secondary', '#D1D5DB');
-        root.style.setProperty('--text-primary', '#1F2933');
-        root.style.setProperty('--text-muted', '#6B7280');
-        root.style.setProperty('--border-subtle', 'rgba(107, 114, 128, 0.2)');
-        root.style.setProperty('--border-cloud', '#D1D5DB');
-      }
+      root.style.setProperty('--bg-app', '#F8F7FA');
+      root.style.setProperty('--bg-base', '#F8F7FA');
+      root.style.setProperty('--bg-surface', '#FFFFFF');
+      root.style.setProperty('--bg-surface-secondary', '#F0EDF5');
+      root.style.setProperty('--text-primary', '#14111D');
+      root.style.setProperty('--text-muted', '#6B6476');
+      root.style.setProperty('--border-subtle', 'rgba(0, 0, 0, 0.08)');
+      root.style.setProperty('--border-cloud', 'rgba(0, 0, 0, 0.12)');
     }
 
     root.setAttribute('data-glass', themeConfig.glassIntensity || 'medium');

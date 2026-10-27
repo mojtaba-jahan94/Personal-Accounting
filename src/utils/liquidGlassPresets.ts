@@ -40,11 +40,14 @@ export const JUNIPER_CORAL_PALETTE = {
   },
 } as const;
 
+import { ThemePaletteId } from '../types';
+
 export interface ThemePaletteDefinition {
-  id: 'nordic' | 'juniper_coral';
+  id: ThemePaletteId;
   name: string;
   enName: string;
   desc: string;
+  gradient: string;
   colors: {
     key: string;
     name: string;
@@ -55,27 +58,81 @@ export interface ThemePaletteDefinition {
 
 export const THEME_PALETTES: ThemePaletteDefinition[] = [
   {
-    id: 'nordic',
-    name: 'نوردیک چوب گرم',
-    enName: 'Nordic Warm Wood',
-    desc: 'الهام‌گرفته از اسکاندیناوی با چوب سدر، سنگ فیورد، زغال تیره و برف',
+    id: 'cyber_violet',
+    name: 'سایبر ویولت کیهانی',
+    enName: 'VisionOS Cyber Violet',
+    desc: 'پالت مدرن فین‌تک با بنفش نئونی، سایان کریستالی و سیاه ابسیدین',
+    gradient: 'from-violet-600 via-indigo-600 to-cyan-500',
     colors: [
-      { key: 'snow', name: 'برف کرمی', hex: '#F7F7F2', role: 'روشن / پایه' },
-      { key: 'wood', name: 'چوب سدر', hex: '#A68A64', role: 'اکسنت اصلی' },
-      { key: 'fjord', name: 'سنگ فیورد', hex: '#6B7280', role: 'ثانویه / مات' },
-      { key: 'charcoal', name: 'ذغال نوردیک', hex: '#1F2933', role: 'تیره / عمیق' },
+      { key: 'obsidian', name: 'ابسیدین', hex: '#08070B', role: 'پایه تیره' },
+      { key: 'violet', name: 'بنفش سایبری', hex: '#8B5CF6', role: 'اکسنت نئونی' },
+      { key: 'indigo', name: 'ایندیگو فضایی', hex: '#6366F1', role: 'ثانویه نوری' },
+      { key: 'cyan', name: 'سایان کریستالی', hex: '#06B6D4', role: 'پرتو نوری' },
     ],
   },
   {
-    id: 'juniper_coral',
-    name: 'طبیعت ارس و مرجان',
-    enName: 'Candle, Coral, Leaf & Juniper',
-    desc: 'پالت طبیعی و چشم‌نواز شامل شمعی، مرجان گرم، برگ زیتونی و ارس جنگلی',
+    id: 'emerald_neon',
+    name: 'امرالد نئون سایبری',
+    enName: 'Cyber Emerald & Mint',
+    desc: 'پالت لوکس ثروت با زمرد نئونی، نعنایی درخشان و فیروزه‌ای عمیق',
+    gradient: 'from-emerald-500 via-teal-500 to-cyan-400',
     colors: [
-      { key: 'candle', name: 'Candle', hex: '#EFE9D7', role: 'شمعی / پایه روشن' },
-      { key: 'coral', name: 'Coral', hex: '#7D2826', role: 'مرجانی / اکسنت' },
-      { key: 'leaf', name: 'Leaf', hex: '#898861', role: 'برگ / زیتونی' },
-      { key: 'juniper', name: 'Juniper', hex: '#343723', role: 'ارس / پایه تیره' },
+      { key: 'forest', name: 'ابسیدین زمردی', hex: '#050D0A', role: 'پایه تیره' },
+      { key: 'emerald', name: 'زمرد نئونی', hex: '#10B981', role: 'اکسنت نئونی' },
+      { key: 'mint', name: 'نعنایی لوکس', hex: '#059669', role: 'ثانویه' },
+      { key: 'cyan', name: 'فیروزه‌ای', hex: '#14B8A6', role: 'هایلایت' },
+    ],
+  },
+  {
+    id: 'quantum_gold',
+    name: 'کوانتوم گلد خورشیدی',
+    enName: 'Quantum Solar Gold',
+    desc: 'پالت فاخر با طلای خورشیدی، کهربایی غنی و برنز بلورین',
+    gradient: 'from-amber-400 via-orange-500 to-yellow-500',
+    colors: [
+      { key: 'dark_amber', name: 'زغال کهربایی', hex: '#0D0A05', role: 'پایه تیره' },
+      { key: 'gold', name: 'طلای کوانتوم', hex: '#F59E0B', role: 'اکسنت نئونی' },
+      { key: 'amber', name: 'کهربایی گرم', hex: '#D97706', role: 'ثانویه' },
+      { key: 'solar', name: 'خورشیدی روشن', hex: '#FDE047', role: 'هایلایت' },
+    ],
+  },
+  {
+    id: 'cyber_cyan',
+    name: 'سایان کریستالی اقیانوس',
+    enName: 'Crystal Electric Cyan',
+    desc: 'پالت آینده‌نگر با آبی آسمانی الکتریک، سایان یخی و کبالت عمیق',
+    gradient: 'from-cyan-400 via-sky-500 to-blue-600',
+    colors: [
+      { key: 'ocean_depth', name: 'عمق اقیانوس', hex: '#050B10', role: 'پایه تیره' },
+      { key: 'cyan', name: 'سایان الکتریک', hex: '#06B6D4', role: 'اکسنت نئونی' },
+      { key: 'sky', name: 'آبی کوانتوم', hex: '#0EA5E9', role: 'ثانویه' },
+      { key: 'cobalt', name: 'کبالت فضایی', hex: '#3B82F6', role: 'هایلایت' },
+    ],
+  },
+  {
+    id: 'cyber_crimson',
+    name: 'سایبر یاقوت و رز نئون',
+    enName: 'Cyber Crimson & Ruby',
+    desc: 'پالت پرانرژی با یاقوت سرخ کریستالی، ارغوانی نئونی و روبی آتشین',
+    gradient: 'from-rose-500 via-pink-600 to-fuchsia-600',
+    colors: [
+      { key: 'void_ruby', name: 'ابسیدین یاقوت', hex: '#0D0608', role: 'پایه تیره' },
+      { key: 'crimson', name: 'یاقوت سرخ', hex: '#F43F5E', role: 'اکسنت نئونی' },
+      { key: 'fuchsia', name: 'ارغوانی نئونی', hex: '#D946EF', role: 'ثانویه' },
+      { key: 'coral', name: 'مرجانی کریستالی', hex: '#FB7185', role: 'هایلایت' },
+    ],
+  },
+  {
+    id: 'nordic',
+    name: 'نوردیک استیل مینیمال',
+    enName: 'Nordic Clean Slate',
+    desc: 'پالت مینیمالیستی و صنعتی با تیتانیوم نقره‌ای، خاکستری یخی و گرافیت',
+    gradient: 'from-slate-400 via-zinc-400 to-stone-500',
+    colors: [
+      { key: 'graphite', name: 'گرافیت تیره', hex: '#0A0C10', role: 'پایه تیره' },
+      { key: 'titanium', name: 'تیتانیوم روشن', hex: '#94A3B8', role: 'اکسنت' },
+      { key: 'slate', name: 'سنگ متالیک', hex: '#64748B', role: 'ثانویه' },
+      { key: 'ice', name: 'نقره‌ای یخی', hex: '#E2E8F0', role: 'هایلایت' },
     ],
   },
 ];
