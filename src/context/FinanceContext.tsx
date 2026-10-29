@@ -242,6 +242,8 @@ interface FinanceContextType {
   currency: Currency;
   darkMode: boolean;
   themeConfig: ThemeConfig;
+  isPrivacyMode: boolean;
+  togglePrivacyMode: () => void;
 
   // Actions
   addTransaction: (tx: Omit<Transaction, 'id' | 'createdAt'>) => void;
@@ -359,6 +361,7 @@ const STORAGE_KEYS = {
   ASSET_TRANSACTIONS: 'pf_asset_transactions_v1',
   MARKET_PRICES: 'pf_market_prices_v1',
   PRICE_SOURCE_CONFIG: 'pf_price_source_config_v1',
+  PRIVACY_MODE: 'pf_privacy_mode',
 };
 
 export const DEFAULT_DASHBOARD_CONFIG: DashboardSectionConfig = {
@@ -633,6 +636,26 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
   });
 
   const darkMode = themeConfig.mode === 'dark';
+
+  const [isPrivacyMode, setIsPrivacyMode] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(STORAGE_KEYS.PRIVACY_MODE) === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const togglePrivacyMode = useCallback(() => {
+    setIsPrivacyMode((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem(STORAGE_KEYS.PRIVACY_MODE, String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }, []);
 
   // Apply Theme Settings to Root Document & Body
   useEffect(() => {
@@ -2629,6 +2652,8 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     currency,
     darkMode,
     themeConfig,
+    isPrivacyMode,
+    togglePrivacyMode,
     assets,
     assetTransactions,
     marketPrices,
@@ -2713,6 +2738,8 @@ export const FinanceProvider: React.FC<{ children: React.ReactNode }> = ({ child
     currency,
     darkMode,
     themeConfig,
+    isPrivacyMode,
+    togglePrivacyMode,
     assets,
     assetTransactions,
     marketPrices,

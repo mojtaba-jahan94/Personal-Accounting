@@ -10,6 +10,7 @@ export interface AnimatedNumberProps {
   prefix?: string;
   suffix?: string;
   className?: string;
+  masked?: boolean;
 }
 
 export const AnimatedNumber: React.FC<AnimatedNumberProps> = ({
@@ -20,20 +21,10 @@ export const AnimatedNumber: React.FC<AnimatedNumberProps> = ({
   prefix = '',
   suffix = '',
   className = '',
+  masked = false,
 }) => {
-  const [displayValue, setDisplayValue] = useState<number>(() => {
-    // If animations are off/lite on first render, start directly at target
-    if (typeof window !== 'undefined') {
-      const animLevel = getAnimationLevel();
-      const isReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (animLevel === 'lite' || animLevel === 'off' || isReduced) {
-        return value;
-      }
-    }
-    return 0;
-  });
-
-  const prevValueRef = useRef<number>(displayValue);
+  const [displayValue, setDisplayValue] = useState<number>(() => value);
+  const prevValueRef = useRef<number>(value);
   const isFirstMountRef = useRef<boolean>(true);
 
   useEffect(() => {
@@ -91,6 +82,14 @@ export const AnimatedNumber: React.FC<AnimatedNumberProps> = ({
       cancelAnimationFrame(animationFrameId);
     };
   }, [value, duration]);
+
+  if (masked) {
+    return (
+      <span className={`font-mono tabular-nums tracking-widest inline-flex items-baseline ${className}`}>
+        ••••••••
+      </span>
+    );
+  }
 
   const formattedNumber = toPersianDigits(Math.round(displayValue).toLocaleString('fa-IR'));
 

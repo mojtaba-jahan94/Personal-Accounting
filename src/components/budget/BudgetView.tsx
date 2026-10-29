@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useFinance } from '../../context/FinanceContext';
 import { Budget } from '../../types';
 import { formatCurrency, toPersianDigits } from '../../utils/formatters';
+import { getTodayJalali } from '../../utils/jalali';
 import { getCategoryIcon } from '../../utils/categoryIcons';
 import { BudgetModal } from './BudgetModal';
 import { Card } from '../ui/Card';
@@ -34,12 +35,12 @@ export const BudgetView: React.FC = () => {
 
   const budgetItemsWithStats = budgets.map((b) => {
     const cat = categories.find((c) => c.id === b.categoryId);
-    const normalizedMonth = b.month ? b.month.replace(/-/g, '/') : '';
+    const currentMonthPrefix = getTodayJalali().split('/').slice(0, 2).join('/');
+    const targetMonth = b.month ? b.month.replace(/-/g, '/') : currentMonthPrefix;
     const spent = transactions
       .filter((t) => {
         if (t.type !== 'expense' || t.categoryId !== b.categoryId) return false;
-        if (!normalizedMonth) return true;
-        return t.date.replace(/-/g, '/').startsWith(normalizedMonth);
+        return t.date.replace(/-/g, '/').startsWith(targetMonth);
       })
       .reduce((sum, t) => sum + t.amount, 0);
 
@@ -139,7 +140,7 @@ export const BudgetView: React.FC = () => {
         {/* Global Progress Bar */}
         <ProgressBar
           value={overallPercent}
-          colorVariant={overallPercent > 100 ? 'danger' : overallPercent > 80 ? 'amber' : 'emerald'}
+          variant={overallPercent > 100 ? 'danger' : overallPercent > 80 ? 'amber' : 'emerald'}
           size="md"
           animated={true}
         />
@@ -248,7 +249,7 @@ export const BudgetView: React.FC = () => {
 
                     <ProgressBar
                       value={item.percent}
-                      colorVariant={item.isExceeded ? 'danger' : item.isNearLimit ? 'amber' : 'emerald'}
+                      variant={item.isExceeded ? 'danger' : item.isNearLimit ? 'amber' : 'emerald'}
                       size="sm"
                       animated={true}
                     />

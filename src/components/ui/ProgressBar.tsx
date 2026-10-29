@@ -6,7 +6,9 @@ import { twMerge } from 'tailwind-merge';
 export interface ProgressBarProps {
   value: number; // 0 to 100
   max?: number;
+  /** Primary styling color variant */
   variant?: 'primary' | 'success' | 'danger' | 'warning' | 'gold' | 'emerald' | 'amber' | 'violet';
+  /** Backwards compatible alias for variant */
   colorVariant?: 'primary' | 'success' | 'danger' | 'warning' | 'gold' | 'emerald' | 'amber' | 'violet';
   size?: 'xs' | 'sm' | 'md' | 'lg';
   animated?: boolean;
@@ -17,7 +19,7 @@ export interface ProgressBarProps {
 export const ProgressBar: React.FC<ProgressBarProps> = ({
   value,
   max = 100,
-  variant,
+  variant = 'primary',
   colorVariant,
   size = 'sm',
   animated = true,

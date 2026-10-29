@@ -65,6 +65,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const [inputUnit, setInputUnit] = useState<'toman' | 'rial'>(currency);
 
   useEffect(() => {
+    if (!isOpen) return;
+
     if (initialTransaction) {
       setType(initialTransaction.type);
       const isRial = currency === 'rial';
@@ -93,7 +95,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       setCategoryId(defaultExpCat ? defaultExpCat.id : '');
       const defaultAcc = accounts.find((a) => a.isDefault) || accounts[0];
       setAccountId(defaultAcc ? defaultAcc.id : '');
-      setToAccountId(accounts.length > 1 ? accounts[1].id : '');
+      setToAccountId('');
       setFee('0');
       setTags([]);
       setReceiptUrl(undefined);
@@ -101,7 +103,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       setLinkToDebt(false);
       setSelectedDebtId('');
     }
-  }, [initialTransaction, isOpen, categories, accounts, currency]);
+  }, [initialTransaction, isOpen]);
 
   if (!isOpen) return null;
 
@@ -110,9 +112,16 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     if (newType === 'expense') {
       const firstCat = categories.find((c) => c.type === 'expense');
       if (firstCat) setCategoryId(firstCat.id);
+      setToAccountId('');
     } else if (newType === 'income') {
       const firstCat = categories.find((c) => c.type === 'income');
       if (firstCat) setCategoryId(firstCat.id);
+      setToAccountId('');
+    } else if (newType === 'transfer') {
+      if (!toAccountId && accounts.length > 1) {
+        const other = accounts.find((a) => a.id !== accountId) || accounts[1];
+        setToAccountId(other ? other.id : '');
+      }
     }
   };
 

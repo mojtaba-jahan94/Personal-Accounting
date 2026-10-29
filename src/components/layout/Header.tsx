@@ -50,31 +50,19 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleMobileSidebar,
   currentTab = 'dashboard',
 }) => {
-  const { totalBalance, currency, setCurrency, darkMode, toggleDarkMode, cloudSyncStatus } = useFinance();
+  const {
+    totalBalance,
+    currency,
+    setCurrency,
+    darkMode,
+    toggleDarkMode,
+    cloudSyncStatus,
+    isPrivacyMode,
+    togglePrivacyMode,
+  } = useFinance();
   const { user, tursoStatus } = useAuth();
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-
-  // Privacy Mode / Balance Mask State
-  const [isPrivacyMode, setIsPrivacyMode] = useState<boolean>(() => {
-    try {
-      return localStorage.getItem('pf_privacy_mode') === 'true';
-    } catch {
-      return false;
-    }
-  });
-
-  const togglePrivacyMode = () => {
-    setIsPrivacyMode((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem('pf_privacy_mode', String(next));
-      } catch {
-        // ignore
-      }
-      return next;
-    });
-  };
 
   const todayJalali = getTodayJalali();
   const todayDayName = getPersianDayOfWeek(new Date());

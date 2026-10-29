@@ -64,18 +64,37 @@ export const Sidebar: React.FC<SidebarProps> = ({
     cheques = [],
     transactions = [],
     currency,
+    isPrivacyMode,
   } = useFinance();
 
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    try {
+      return localStorage.getItem('pf_sidebar_collapsed') === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
-  // Compute Net Worth
+  const toggleCollapse = () => {
+    setIsCollapsed((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('pf_sidebar_collapsed', String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
+
+  // Compute Net Worth (only active/unsettled debts)
   const totalReceivables = debts
-    .filter((d) => d.type === 'credit')
+    .filter((d) => d.type === 'credit' && !d.isSettled)
     .reduce((sum, d) => sum + (d.amount - (d.paidAmount || 0)), 0);
 
   const totalPayableDebts = debts
-    .filter((d) => d.type === 'debt')
+    .filter((d) => d.type === 'debt' && !d.isSettled)
     .reduce((sum, d) => sum + (d.amount - (d.paidAmount || 0)), 0);
 
   const totalNetWorth =
@@ -245,7 +264,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <Sparkline data={netWorthTrend} width={64} height={20} color="#8B5CF6" />
             </div>
             <div className="text-base font-semibold font-mono tabular-nums text-fintech-text-main">
-              {formatCurrency(totalNetWorth, currency)}
+              {isPrivacyMode ? '••••••••' : formatCurrency(totalNetWorth, currency)}
             </div>
           </div>
         )}
@@ -280,7 +299,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="hidden lg:flex justify-end pt-1">
           <button
             type="button"
-            onClick={() => setIsCollapsed((prev) => !prev)}
+            onClick={toggleCollapse}
             className="p-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-fintech-text-muted hover:text-white transition"
             title={isCollapsed ? 'گسترش منو' : 'جمع‌کردن منو'}
           >
@@ -328,7 +347,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-              className="relative w-80 max-w-[85vw] h-full p-5 bg-[#120F1A] border-l border-white/10 shadow-2xl z-10 overflow-y-auto"
+              className="relative w-80 max-w-[85vw] h-full p-5 bg-[#120F1A] border-l border-white/10 shadow-2xl z-10 overflow-y-auto mr-0 ml-auto"
             >
               {sidebarContent}
             </motion.div>

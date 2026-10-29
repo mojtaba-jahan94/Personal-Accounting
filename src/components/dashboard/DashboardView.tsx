@@ -89,6 +89,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
     currency,
     dashboardConfig,
     totalPortfolioValueToman,
+    isPrivacyMode,
   } = useFinance();
 
   const [isCustomizeOpen, setIsCustomizeOpen] = useState(false);
@@ -420,7 +421,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                     </div>
 
                     <div className="text-3xl sm:text-5xl lg:text-6xl font-mono tabular-nums font-bold text-white tracking-tight drop-shadow-md">
-                      <AnimatedNumber value={totalBalance} currency={currency} showCurrency />
+                      <AnimatedNumber value={totalBalance} currency={currency} showCurrency masked={isPrivacyMode} />
                     </div>
                   </div>
 
@@ -773,7 +774,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                       خالص کل دارایی (NET WORTH)
                     </span>
                     <div className="text-3xl sm:text-4xl font-mono tabular-nums font-extrabold text-white mt-1 drop-shadow-sm">
-                      <AnimatedNumber value={totalNetWorth} currency={currency} showCurrency />
+                      <AnimatedNumber value={totalNetWorth} currency={currency} showCurrency masked={isPrivacyMode} />
                     </div>
                     <p className="text-xs text-zinc-400 mt-1.5 leading-relaxed">
                       تراز یکپارچه کل نقدینگی، پورتفوی طلا و ارز، منهای تعهدات و بدهی‌های جاری.

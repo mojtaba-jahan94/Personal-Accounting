@@ -18,6 +18,8 @@ export interface ModalShellProps {
   hideCloseButton?: boolean;
 }
 
+let openModalsCount = 0;
+
 export const ModalShell: React.FC<ModalShellProps> = ({
   isOpen,
   onClose,
@@ -43,15 +45,20 @@ export const ModalShell: React.FC<ModalShellProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Lock body scroll when modal is open
+  // Lock body scroll when modal is open with reference counting
   useEffect(() => {
-    if (isOpen) {
+    if (!isOpen) return;
+
+    openModalsCount++;
+    if (openModalsCount === 1) {
       document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
     }
+
     return () => {
-      document.body.style.overflow = '';
+      openModalsCount = Math.max(0, openModalsCount - 1);
+      if (openModalsCount === 0) {
+        document.body.style.overflow = '';
+      }
     };
   }, [isOpen]);
 

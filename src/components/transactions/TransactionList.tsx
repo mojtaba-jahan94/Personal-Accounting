@@ -91,7 +91,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
 
       return true;
     });
-  }, [transactions, startDate, endDate, searchTerm, selectedType, selectedCategory, selectedAccount]);
+  }, [transactions, startDate, endDate, datePreset, searchTerm, selectedType, selectedCategory, selectedAccount]);
 
   // Windowed Pagination: render first 30 rows, load more on scroll
   const [visibleCount, setVisibleCount] = useState(30);
@@ -100,7 +100,7 @@ export const TransactionList: React.FC<TransactionListProps> = ({ onOpenTransact
   // Reset pagination count on filter change
   useEffect(() => {
     setVisibleCount(30);
-  }, [startDate, endDate, searchTerm, selectedType, selectedCategory, selectedAccount]);
+  }, [startDate, endDate, datePreset, searchTerm, selectedType, selectedCategory, selectedAccount]);
 
   // Infinite scroll sentinel observer
   useEffect(() => {

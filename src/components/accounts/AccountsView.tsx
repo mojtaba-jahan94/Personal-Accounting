@@ -96,10 +96,7 @@ export const AccountsView: React.FC<AccountsViewProps> = ({ onSelectTab }) => {
       )
     ) {
       deleteAccount(id);
-      if (selectedAccountId === id) {
-        const remaining = accounts.filter((a) => a.id !== id);
-        setSelectedAccountId(remaining[0]?.id || null);
-      }
+      setSelectedAccountId((prev) => (prev === id ? null : prev));
     }
   };
 

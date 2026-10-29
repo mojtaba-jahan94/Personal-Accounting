@@ -141,6 +141,27 @@ export const ReportsView: React.FC = () => {
       ? Math.max(0, Math.round((netBalance / currentIncomeTotal) * 100))
       : 0;
 
+  const comparisonBarData = useMemo(
+    () => [
+      { name: 'درآمدها', amount: currentIncomeTotal, fill: '#7A9A95' },
+      { name: 'مخارج', amount: currentExpenseTotal, fill: '#C98A82' },
+    ],
+    [currentIncomeTotal, currentExpenseTotal]
+  );
+
+  const formatYAxisTick = (val: number) => {
+    if (val >= 1_000_000_000) {
+      return `${toPersianDigits((val / 1_000_000_000).toFixed(1))}B`;
+    }
+    if (val >= 1_000_000) {
+      return `${toPersianDigits(Math.round(val / 1_000_000))}M`;
+    }
+    if (val >= 1_000) {
+      return `${toPersianDigits(Math.round(val / 1_000))}K`;
+    }
+    return toPersianDigits(val);
+  };
+
   // Expense by category breakdown
   const categoryRanking = useMemo(() => {
     const expenseByCat = expenses.reduce((acc, t) => {
@@ -593,18 +614,12 @@ export const ReportsView: React.FC = () => {
         <div className="w-full">
           <ResponsiveContainer width="100%" height={230} minHeight={200}>
             <BarChart
-              data={useMemo(
-                () => [
-                  { name: 'درآمدها', amount: currentIncomeTotal, fill: '#7A9A95' },
-                  { name: 'مخارج', amount: currentExpenseTotal, fill: '#C98A82' },
-                ],
-                [currentIncomeTotal, currentExpenseTotal]
-              )}
+              data={comparisonBarData}
               margin={{ top: 20, right: 20, left: 20, bottom: 20 }}
             >
               <CartesianGrid strokeDasharray="3 3" opacity={0.06} stroke="#F4F0EA" />
               <XAxis dataKey="name" stroke="#8E8B82" tick={{ fontSize: 12, fill: '#8E8B82' }} />
-              <YAxis stroke="#8E8B82" tick={{ fontSize: 10, fill: '#8E8B82' }} />
+              <YAxis stroke="#8E8B82" tick={{ fontSize: 10, fill: '#8E8B82' }} tickFormatter={formatYAxisTick} />
               <Tooltip
                 formatter={(val: any) => [formatCurrency(Number(val), currency), 'مبلغ']}
                 contentStyle={{

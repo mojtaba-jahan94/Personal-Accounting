@@ -76,9 +76,9 @@ export const GoalModal: React.FC<GoalModalProps> = ({
       return;
     }
 
-    const savedTarget = currency === 'rial' ? numTarget / 10 : numTarget;
+    const savedTarget = currency === 'rial' ? Math.round(numTarget / 10) : numTarget;
     const rawCurrent = parseAmount(currentAmount);
-    const savedCurrent = currency === 'rial' ? rawCurrent / 10 : rawCurrent;
+    const savedCurrent = currency === 'rial' ? Math.round(rawCurrent / 10) : rawCurrent;
 
     const goalData = {
       title: title.trim(),

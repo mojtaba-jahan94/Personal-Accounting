@@ -144,7 +144,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
       <nav
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
-        className="lg:hidden fixed bottom-4 inset-x-0 mx-auto w-[calc(100%-1.75rem)] max-w-md z-40 rounded-full px-5 py-2 shadow-2xl glass-vision text-fintech-text-main select-none overflow-hidden"
+        className="lg:hidden fixed bottom-4 inset-x-0 mx-auto w-[calc(100%-1.75rem)] max-w-md z-40 rounded-full px-5 py-2 shadow-2xl glass-vision text-fintech-text-main select-none overflow-hidden touch-pan-x"
       >
         {/* Top Edge Specular Shimmer */}
         <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
